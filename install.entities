@@ -269,8 +269,8 @@ install() {
 	mkdir -p "$ENTITIES/entities.util"
 	rsync -avl $excl entities.util/*	"$ENTITIES/entities.util/" >/dev/null	|| exit 1
 
-	mkdir -p "$ENTITIES/php"
-	rsync -avl $excl php/*				"$ENTITIES/php/" >/dev/null					|| exit 1
+#	mkdir -p "$ENTITIES/php"
+#	rsync -avl $excl php/*				"$ENTITIES/php/" >/dev/null					|| exit 1
 
 	mkdir -p "$ENTITIES/docs/help"
 	rsync -avl $excl docs/*				"$ENTITIES/docs/" >/dev/null				|| exit 1
@@ -286,9 +286,9 @@ install() {
 #	fi
 
 	# make standard symlinks in $ENTITIES directory
-	msginfo "Make standard symlinks in $ENTITIES directory..."
-	cd "$ENTITIES" 																|| exit 1
-	ln -fs php/string.inc.php	string.inc.php    	|| exit 1
+#	msginfo "Make standard symlinks in $ENTITIES directory..."
+#	cd "$ENTITIES" 																|| exit 1
+#	ln -fs php/string.inc.php	string.inc.php    	|| exit 1
 	
 	# touch420 all files in $ENTITIES directory
 	msginfo "Fix owner/perms, touch420 all files in $ENTITIES directory..."
@@ -318,5 +318,4 @@ testit() {
 
 
 main "$@"
-
 #fin
