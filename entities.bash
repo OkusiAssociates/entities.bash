@@ -1,0 +1,1 @@
+entities.core/entities.bash
