@@ -1,11 +1,8 @@
 #----Intro--entities.bash
      Intro: entities.bash
       Desc: Entities Functions/Globals/Locals Declarations and Initialisations.
-          : entities.bash is a light-weight function library for productive
-          : programmers and administrators. - the soft machine
-          : PRG=basename of current script.
-          : PRGDIR=directory location of current script, with softlinks
-          : resolved to actual location.
+          : entities.bash is a light-weight function productivity library for
+          : programmers and systems administrators. - the soft machine
           : PRG/PRGDIR are *always* initialised as local vars regardless of
           : 'preserve' status when loading entities.bash.
   Synopsis: source entities.bash [ [preserve*] | [new] | [load libname]
