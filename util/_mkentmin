@@ -1,0 +1,66 @@
+#!/bin/bash
+source $OKROOT/entities/entities.bash new || { echo >&2 "$0: source file \$OKROOT/entities/entities.bash not found!"; exit 1; }
+strict.set on
+declare -i auto=0
+
+main() {
+	[[ "${1:-}" == '-q' ]] && VERBOSE=0
+	[[ "${1:-}" == '--auto' ]] && auto=1
+	[[ "${1:-}" == '-y' ]] && auto=1
+
+  if ((auto)); then
+    verbose.set off
+    color.set off
+  fi
+
+
+	cd "$PRGDIR" || msgdie "could not cd into '$PRGDIR'!"
+
+	templates=( 'entities.bash' )
+
+	tab.set 0
+	msg "Entities for Bash - Make Minimal Versions"
+	if ((!auto)); then
+		tab.set ++
+		msginfo ""
+		msginfo "Create minimal versions of standard bash include files"
+		msginfo "without comments, blank lines and leading space."
+		msginfo "minimal include files are named *.min.bash"
+		msginfo ""
+		askyn "Do you wish to proceed?" || exit 1
+		msg ''
+	fi
+
+	[[ "$OKROOT" == '' ]] \
+			&& msgdie "\$OKROOT not defined!" \
+			|| path="$OKROOT/entities/entities.core"
+	cd "$path" || msgdie "Could not cd into '$path'!"
+	
+	for template in ${templates[@]}; do
+		template=$(basename "$template" '.bash')
+		mintemplate="$path/$template.min.bash"
+
+		[[ ! -f "${template}.bash" ]] && msgdie "${template}.bash not found!"
+
+		# remove #comment lines that begin with [space*]#
+		tx=$(grep -v '^$' "$path/$template.bash" | grep -v '^[[:space:]]*#')
+
+		# make the minimal version of entities.bash	
+		echo '#!/bin/bash' > "$mintemplate"
+		local IFS=$'\n'
+		for ln in $tx; do
+			echo $(trim "$ln") >> $mintemplate
+		done
+
+		touch -r "$path/$template.bash" "$mintemplate" || msgdie "file touch failed!"
+		chmod 644 "$mintemplate"	|| msgdie "could not chmod $mintemplate!"
+
+		msgsys log "$mintemplate created."
+	done
+
+	# symlinks
+	cd .. || msgdie "could not cd .. !"
+}
+
+main $@
+#fin

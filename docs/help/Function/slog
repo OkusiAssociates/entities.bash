@@ -1,0 +1,19 @@
+#-Function--slog
+  Function: slog slog.file slog.prefix slog.prefix.eval slog.truncate
+      Desc: write strings to user log file
+  Synopsis: slog string [...]
+   Example: source entities.bash new \\
+          : 		|| { echo &>2 "source entities.bash not found!"; exit 1; }
+          : main() {
+          : 	slog.file "mylog.log"
+          : 	echo 'my log: ' $(slog.file)
+          : 	slog.truncate
+          : 	slog.prefix --long
+          : 	echo 'log prefix: ' $(slog.prefix)
+          : 	for ((i=0; i<10; i++)); do
+          : 	slog "test $i $RANDOM"
+          : 	done
+          : 	cat "$(slog.file)"
+          : }
+          : main "$@"
+#-Function--slog--------------------------------------------------------------

@@ -1,0 +1,7 @@
+#-Function--msg
+  Function: msg
+      Desc: if verbose.set is enabled, send strings to output.
+          : embedded chars (\n \t etc) enabled by default.
+  Synopsis: msg string [string ...]
+   Example: msg "hello world!" "it's so nice to be back!"
+#-Function--msg---------------------------------------------------------------

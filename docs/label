@@ -1,0 +1,55 @@
+#!/bin/bash
+. $OKROOT/entities/entities.bash new
+strict.set on
+verbose.set off
+
+main() {
+	((${#@} < 2)) && exit 1
+	label.display "$@"
+}
+
+label.display() {
+	local IFS=$' \t\n'
+	slabel="${1-Synopsis}"
+	helpdir=help
+	declare findspec="*trim verbose*"
+	findspec="-name \"${findspec// /\" -o -name \"}\""
+#echo "$findspec"; exit
+	declare -a filelist
+	filelist=( $(eval "find -L $helpdir/ -mindepth 1 $findspec -type f") )
+#echo "[$filelist]"
+#echo "${filelist[@]}|"
+#exit
+
+	ent_label.get "$slabel" ${filelist[@]}
+
+}
+
+ent_label.get() {
+	local SearchLabel="${1:-}"
+	local PathSpec=( ${@:2} )
+	[[ ${PathSpec[@]} ]] || { echo 1: return 0; } 
+
+	local -i lenlabel=${#SearchLabel}
+	local -i inlabel=0
+	local line=''
+	
+	local IFS=$'\n'
+	for line in $(cat ${PathSpec[@]}); do
+		line="$(trim "$line")"
+		lbl="${line%%:*}"
+		if [[ "${lbl}" == '' ]]; then
+			((inlabel)) && printf "%${lenlabel}.${lenlabel}s%s\n" ' ' "$line"
+			continue
+		fi
+		# trigger search for 'Label:'
+		if [[ "${lbl,,}:" == "${SearchLabel,,}:" ]]; then
+			echo "$line"
+			inlabel=1
+		elif [[ "${lbl}" != '' ]]; then
+			inlabel=0
+		fi
+	done
+}
+
+main "$@"

@@ -1,0 +1,9 @@
+#-Function--version.set
+  Function: version.set
+      Desc: set or return version of the script.
+  Synopsis: version.set verstring
+          : $(version.set)
+  Defaults: '0.00 prealpha'
+   Example: version.set '4.20 beta'
+          : ver=$(version.set)
+#-Function--version.set-------------------------------------------------------

@@ -1,0 +1,5 @@
+#-Function--lockfiles.delete.all
+  Function: lockfiles.delete.all
+      Desc: delete all lock files in lockfiles() stack. usually done on script exit (see cleanup()).
+  Synopsis: lockfiles.delete.all
+#-Function--lockfiles.delete.all----------------------------------------------

@@ -1,0 +1,4 @@
+#-Function--trap.function
+  Function: trap.function
+  Synopsis: trap.function [{ bash_exit_trap_function } ]
+#-Function--trap.function-----------------------------------------------------

@@ -1,0 +1,5 @@
+#-Function--breakp
+  Function: breakp
+      Desc: prompt to exit script or continue.
+  Synopsis: breakp [msg]
+#-Function--breakp------------------------------------------------------------

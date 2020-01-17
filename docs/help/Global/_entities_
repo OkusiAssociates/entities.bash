@@ -1,0 +1,5 @@
+#---Global--_entities_
+    Global: _entities_
+      Desc: Integer flag to announce that entities.bash has been loaded.
+  Defaults: 0
+#---Global--_entities_--------------------------------------------------------

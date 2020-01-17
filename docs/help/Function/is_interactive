@@ -1,0 +1,7 @@
+#-Function--is_interactive
+  Function: is_interactive
+      Desc: return 0 if tty available, otherwise 1.
+          : this function should be used as a comparison function
+  Synopsis: is_interactive [report|noreport*]
+   Example: is_interactive && askyn "Continue?"
+#-Function--is_interactive----------------------------------------------------

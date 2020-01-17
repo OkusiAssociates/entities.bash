@@ -1,0 +1,6 @@
+#-Function--lockfiles.add
+  Function: lockfiles.add
+      Desc: add a lock file to lockfiles stack
+  Synopsis: lockfiles.add [filename [timeout]] [filename timeout]...
+   Example: files=$(lockfiles.add)
+#-Function--lockfiles.add-----------------------------------------------------

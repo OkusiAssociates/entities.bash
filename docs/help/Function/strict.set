@@ -1,0 +1,11 @@
+#-Function--strict.set
+  Function: strict.set
+      Desc: sets/unsets options errexit, nounset and pipefail.
+          : Default is OFF.
+          : Use of "strict.set on" is recommended for development.
+          : Without parameters, only echos current status (0|1)
+  Synopsis: strict.set [[on|1] | [off|0*]]
+          : curstatus=$(strict.set)
+   Example: strict.set on
+          : curstatus=$(strict.set)
+#-Function--strict.set--------------------------------------------------------

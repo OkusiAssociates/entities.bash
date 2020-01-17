@@ -1,0 +1,14 @@
+#-Function--cleanup
+  Function: cleanup
+      Desc: a call to this function is made in the trap EXIT command.
+          : on exiting the script this function will always be called.
+          : you should define your own cleanup function to delete temporary
+          : files and other detritus before terminating.
+          : if you are not using the exit_if_already_running function
+          : (in other words, you are allowing multiple instances of this
+          : script to run at the same time) then you can delete the deletion
+          : of the .lock file.
+  Synopsis: cleanup [exitcode]
+  See_Also: trap.set trap.function, exit_if_already_running
+   Example: cleanup
+#-Function--cleanup-----------------------------------------------------------

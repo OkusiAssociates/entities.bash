@@ -1,0 +1,34 @@
+#!/bin/bash
+
+	declare -a except=( "gudang" ".gudang" "test-scripts" "dev" ".bak" "tmp" "~" "touch420" )
+	
+	if [[ "${1:-}" ]]; then
+		root="$1"
+	else
+		root=$PWD
+	fi
+
+	cd "$root" || { echo "could not cd into '$root'"; exit 1; }
+	[[ "$PWD" == '/' ]] && { echo "cannot touch420 from a root directory!"; exit 1; }
+	root="$PWD"
+
+		for f in $(find $root/* -maxdepth 2); do
+			echo -n "touch420 $f"
+			base=$(basename "$f")
+
+			reject=0
+			for e in ${except[@]}; do
+				if [[ "$base" =~ "$e" ]]; then
+					echo ": excepting"
+					reject=1
+					break
+				fi
+			done
+			((reject)) && continue
+			
+			fd=$(stat "$f" -c '%y')	|| exit
+			fd=${fd%% *}
+			touch -h -d "$(date +'%F 04:20:42.042042042' -d $fd)" "$f"
+			echo ""
+		done
+

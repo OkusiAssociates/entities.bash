@@ -1,0 +1,19 @@
+alias colour='color'		# for the civilised world
+alias colors='color' 		# legacy
+alias usecolor='color'	# legacy
+alias strictset='strict'	# legacy
+alias set_strict='strict'	# legacy
+alias exittrapset='trap.set'
+alias exittrapfunction='trap.function'	# legacy
+alias usage='synopsis'
+alias infomsg='msginfo' # legacy
+alias sysmsg='msgsys' # legacy
+alias warnmsg='msgwarn'	# legacy
+alias errmsg='msgerr'	# legacy
+alias diemsg='msgdie' # legacy
+alias msgdir='msgdie' # for butter fingers.
+alias critmsg='msgcrit' # legacy
+alias tabwidth='tab.width'
+alias tabset='tab.set'
+alias checkrequiredprograms='check.dependencies'
+shopt -s expand_aliases

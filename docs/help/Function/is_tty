@@ -1,0 +1,6 @@
+#-Function--is_tty
+  Function: is_tty
+      Desc: return 0 if tty available, otherwise 1.
+  Synopsis: is_tty
+   Example: is_tty && askyn "Continue?"
+#-Function--is_tty------------------------------------------------------------

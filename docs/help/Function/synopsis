@@ -1,0 +1,7 @@
+#-Function--synopsis
+  Function: synopsis
+      Desc: display usage information for the script. optionally exit.
+          : calling script should define its own 'synopsis' function.
+  Synopsis: synopsis [-x|--exit]
+   Example: synopsis --exit
+#-Function--synopsis----------------------------------------------------------

@@ -1,0 +1,9 @@
+#---Global--GlobalCharVars
+    Global: GlobalCharVars CH9 LF CR OLDIFS IFS
+      Desc: Constant global char values
+  Synopsis: LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n'
+  Defaults: OLDIFS=$IFS     # captures existing IFS before assigning 'standard' IFS
+          : IFS=$' \\t\\n'  # 'standard' IFS
+   Example: str = "${LF}${CH9}This is a wrapping string.${LF}{$CH9}This is another sentence."
+          : echo -e "$str"
+#---Global--GlobalCharVars----------------------------------------------------

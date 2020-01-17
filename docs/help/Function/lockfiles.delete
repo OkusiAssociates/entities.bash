@@ -1,0 +1,7 @@
+#-Function--lockfiles.delete
+  Function: lockfiles.delete
+      Desc: delete a lockfile. Whenever a lock is removed, lockfile() is assisgned to be
+          : the last item in the lockfiles() stack
+  Synopsis: lockfiles.delete [lockfile]
+   Example: lockfiles.delete
+#-Function--lockfiles.delete--------------------------------------------------

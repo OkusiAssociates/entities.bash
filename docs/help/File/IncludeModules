@@ -1,0 +1,7 @@
+#-----File--IncludeModules
+      File: IncludeModules
+      Desc: .bash module files for inclusion, located in entities.util/
+          : By default, all entities.util/*.bash files will be sourced into entities
+          : #X     :
+          : #X     :
+#-----File--IncludeModules----------------------------------------------------

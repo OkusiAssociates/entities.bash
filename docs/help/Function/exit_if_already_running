@@ -1,0 +1,12 @@
+#-Function--exit_if_already_running
+  Function: exit_if_already_running
+      Desc: if there is an instance of the script already being run on the
+          : server, then throw an error message and exit 1 immediately.
+          : this function is mostly used at the very
+          : beginning of the script.
+  Synopsis: exit_if_already_running [locktimeout]
+          : locktimeout optionally sets the _ent_LOCKTIMEOUT global. if the age of
+          : the lock file+_ent_LOCKTIMEOUT is < than current time, then the
+          : script is immediately exitted.
+   Example: exit_if_already_running 60
+#-Function--exit_if_already_running-------------------------------------------

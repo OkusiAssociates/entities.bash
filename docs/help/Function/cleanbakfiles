@@ -1,0 +1,4 @@
+#-Function--cleanbakfiles
+  Function: cleanbakfiles cln
+      Desc: Remove all *~ files recursively from current directory.
+#-Function--cleanbakfiles-----------------------------------------------------

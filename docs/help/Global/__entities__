@@ -1,0 +1,7 @@
+#---Global--__entities__
+    Global: __entities__
+      Desc: Is entities.bash already loaded? If it is, then use current instance
+          : and return without reinitializing globals and functions.
+          : (--preserve). to override, and reload, use nopreserve.
+          : (("${__entities__:-}")) || { echo >&2 'entities.bash not loaded!'; exit; }
+#---Global--__entities__------------------------------------------------------

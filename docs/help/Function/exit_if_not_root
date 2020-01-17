@@ -1,0 +1,5 @@
+#-Function--exit_if_not_root
+  Function: exit_if_not_root
+      Desc: exit script if not root user
+  Synopsis: exit_if_not_root
+#-Function--exit_if_not_root--------------------------------------------------

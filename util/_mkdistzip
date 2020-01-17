@@ -1,0 +1,49 @@
+#!/bin/bash
+# use production entities.bash
+source entities.bash new || { echo >&2 "../entities.bash not found!"; exit 1; }
+
+strict.set on
+
+main() {
+	msg "$PRG - Make distribution zip for Entities." ""
+
+	# this should not happen, but ...
+	[[ -z "$ENTITIES" ]] && msgdie "Could not find ENTITIES env var!"
+	# neither should this ...
+	[[ -z "$OKROOT" ]] && msgdie "Could not find OKROOT env var!"
+
+	sourcedir="$OKROOT/entities"
+	entitieszip="${sourcedir}/entities.zip"
+
+	cd "${sourcedir}" || msgdie "could not cd into '${sourcedir}'"
+
+	find . -name "*~" -type f -exec rm {} \;
+	find . -name "DEADJOE" -type f -exec rm {} \;
+
+#	${sourcedir}/util/touch420
+
+	$PRGDIR/_mkentmin -q || msgdie "error in _mkentmin!"
+	cp ${sourcedir}/entities.bash ${sourcedir}/entities.min.sh $ENTITIES/
+	$PRGDIR/_mklists || msgdie "error in _mklists!"
+	$PRGDIR/touch420
+
+#	${sourcedir}/install.entities --auto-install -q
+
+	cd "${ENTITIES}" || msgdie "Could not cd into $ENTITIES dir!"
+
+	# zip it
+	msginfo "Creating $entitieszip..."
+	rm -f "${entitieszip}"
+	zip -r --symlink -o "${entitieszip}" * 
+
+	# make public
+	msginfo "Copying to Entities repository location..."
+	scp "${entitieszip}" root@okusi1:/root/okusiassociates.com/entities/
+	scp "${sourcedir}/util/entities.quick.install" root@okusi1:/root/okusiassociates.com/entities/
+	
+#	unzip -l "$entitieszip"
+	msginfo "\nDone.\n"
+}
+
+
+main "${@}"

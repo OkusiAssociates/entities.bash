@@ -1,0 +1,6 @@
+#-Function--str_str
+  Function: str_str
+      Desc: return string that occurs between two strings
+  Synopsis: str_str string beginstr endstr
+   Example: param=$(str_str "this is a [[test]]] of str_str" '[[' ']]'
+#-Function--str_str-----------------------------------------------------------

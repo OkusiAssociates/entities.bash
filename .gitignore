@@ -1,0 +1,23 @@
+# git notes
+git
+
+# rubbish files
+.*~
+*~
+*.bak
+*.old
+old/
+tmp
+t
+tt
+
+# under development 
+dev
+entities
+.gudang
+gudang
+org
+php
+string.inc.php
+test-scripts
+entities.scripts

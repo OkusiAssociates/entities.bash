@@ -1,0 +1,6 @@
+#-Function--entities.help
+  Function: entities.help
+      Desc: display help info about Entities functions and variables.
+  Synopsis: entities.help [function|globalvar|localvar|file] | [-s|--search searchstring] [-h|--help]
+   Example: entities.help askyn msginfo
+#-Function--entities.help-----------------------------------------------------

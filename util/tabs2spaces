@@ -1,0 +1,22 @@
+#!/bin/bash
+
+	[[ -x "$(which expand)" ]] || { 
+		echo >&2 -e "Require 'expand'.\napt install moreutils\n"; 
+		exit 1; 
+	}
+	[[ -x "$(which sponge)" ]] || { 
+		echo >&2 -e "Require 'sponge'.\napt install moreutils\n"; 
+		exit 1; 
+	}
+	[[ "${1:-}" == '' || '-h-?--help' =~ "${1:-}" ]] && {
+		echo -e "Usage: tabs2spaces filespec\n"
+		exit 1
+	}
+	#find ./ -iname '*.php' -type f -exec bash -c 'expand -t 2 "$0" | sponge "$0"' {} \;
+
+	for f in $@; do
+		echo "expanding tabs in '$f' to '$f.sp' ..."
+		bash -c "expand -t 2 '$f' | sponge '$f.sp' {} \;"
+	done
+	echo 'fin.'
+

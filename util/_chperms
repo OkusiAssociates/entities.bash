@@ -1,0 +1,16 @@
+#!/bin/bash
+. entities.bash new || exit
+
+for p in "$OKROOT/entities" "$ENTITIES"; do
+	cd "$p" || { warnmsg "dir $p not found! "; continue; }
+	msg "$p"
+	[[ -d  bash ]] &&        			{ chmod 775 bash             ; chown sysadmin:sysadmin  bash; } 
+	[[ -d  dev ]] &&              { chmod 770 dev              ; chown sysadmin:sysadmin  dev; }
+	[[ -d  .gudang ]] &&          { chmod 770 .gudang          ; chown sysadmin:sysadmin  gudang; }
+	[[ -f  install.entities ]] && { chmod 770 install.entities ; chown sysadmin:sysadmin  install.entities; }
+	[[ -d  org ]] &&              { chmod 775 org              ; chown sysadmin:sysadmin  org; }
+	[[ -d  php ]] &&              { chmod 775 php              ; chown sysadmin:sysadmin  php; }
+	[[ -d  templates ]] &&        { chmod 775 templates        ; chown sysadmin:sysadmin  templates; }
+	[[ -d  tmp ]] &&              { chmod 777 tmp              ; chown sysadmin:sysadmin  tmp; }
+	[[ -d  util ]] &&             { chmod 775 util             ; chown sysadmin:sysadmin  util; }                                    
+done
