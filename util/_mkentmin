@@ -33,7 +33,7 @@ main() {
 
 	[[ "$OKROOT" == '' ]] \
 			&& msgdie "\$OKROOT not defined!" \
-			|| path="$OKROOT/entities/entities.core"
+			|| path="$OKROOT/entities"
 	cd "$path" || msgdie "Could not cd into '$path'!"
 	
 	for template in ${templates[@]}; do

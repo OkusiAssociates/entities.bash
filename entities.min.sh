@@ -1,1 +1,0 @@
-entities.core/entities.min.bash

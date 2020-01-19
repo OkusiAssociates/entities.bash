@@ -8,11 +8,13 @@ elif ((${#BASH_SOURCE})); then
 p_="$(/bin/readlink -e "${BASH_SOURCE:-}")"
 PRG="$(/usr/bin/basename "${p_}")"
 PRGDIR="$(/usr/bin/dirname "${p_}")"
+export ENTITIES="$PRGDIR"
 else
 PRG=''
 PRGDIR=''
 fi
 if (( "${__entities__:-}" )); then
+(($#)) || return 0;  # entities is already loaded, and no parameter has been given, so do not reload.
 while (($#)); do
 case "${1,,}" in
 new|nopreserve|--nopreserve|-n)		break ;;
@@ -24,7 +26,7 @@ echo >&2 "Load directory $tmp not found!"
 else
 rsync -qavl $ENTITIES/* "$tmp/"
 (( $? )) &&	{ echo >&2 "rsync error $ENTITIES > $tmp"; return 0; }
-PATH="${PATH//${ENTITIES}/}:$tmp"
+[[ -n ${ENTITIES:-} ]] && PATH="${PATH//${ENTITIES}/}:$tmp"
 export PATH=${PATH//::/:}
 export ENTITIES=$tmp
 source $ENTITIES/entities.bash new
