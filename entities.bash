@@ -46,17 +46,13 @@ echo bs: "$0"
 		PRGDIR=''
 	fi
 
-cat <<-eot
-
-	\$0           ="$0"
-	dn \$0        ="$(/usr/bin/dirname "$0")"
-
-	BASH_SOURCE   ="$BASH_SOURCE"
-	dn BASH_SOURCE="$(/usr/bin/dirname "$BASH_SOURCE")"
-
-	PRGDIR        ="$PRGDIR"
-
-eot
+#cat <<-eot
+#	\$0           ="$0"
+#	dn \$0        ="$(/usr/bin/dirname "$0")"
+#	BASH_SOURCE   ="$BASH_SOURCE"
+#	dn BASH_SOURCE="$(/usr/bin/dirname "$BASH_SOURCE")"
+#	PRGDIR        ="$PRGDIR"
+#eot
 
 return
 
