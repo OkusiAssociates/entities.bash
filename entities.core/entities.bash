@@ -40,12 +40,10 @@ declare -- PRG PRGDIR
 		p_="$(/bin/readlink -e "${BASH_SOURCE:-}")"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
-export ENTITIES="$PRGDIR"
 	else
 		PRG=''
 		PRGDIR=''
 	fi
-
 
 #X Global   : __entities__
 #X Desc     : Is entities.bash already loaded? If it is, then use current instance 
@@ -53,7 +51,6 @@ export ENTITIES="$PRGDIR"
 #X          : (--preserve). to override, and reload, use nopreserve.
 #X          : (("${__entities__:-}")) || { echo >&2 'entities.bash not loaded!'; exit; }
 if (( "${__entities__:-}" )); then
-	(($#)) || return 0;  # entities is already loaded, and no parameter has been given, so do not reload.
 	while (($#)); do
 		case "${1,,}" in
 			# new load
@@ -61,7 +58,7 @@ if (( "${__entities__:-}" )); then
 			# does the calling script wish to preserve the current Entities environment/functions?
 			# (preserve is the default)
 			preserve|--preserve|-p)						return 0;;
-			# load entities into a new location (like a ram drive)
+
 			load) shift; tmp="${1:-}"
 						mkdir -p "$tmp"
 						if [[ ! -d "$tmp" ]]; then
@@ -69,7 +66,7 @@ if (( "${__entities__:-}" )); then
 						else
 							rsync -qavl $ENTITIES/* "$tmp/"
 							(( $? )) &&	{ echo >&2 "rsync error $ENTITIES > $tmp"; return 0; } 
-							[[ -n ${ENTITIES:-} ]] && PATH="${PATH//${ENTITIES}/}:$tmp"
+							PATH="${PATH//${ENTITIES}/}:$tmp"
 							export PATH=${PATH//::/:}
 							export ENTITIES=$tmp
 							source $ENTITIES/entities.bash new
@@ -84,7 +81,7 @@ if (( "${__entities__:-}" )); then
 	done
 fi
 
-# turn off strict! (strict is default)
+# turn off strict!
 set +o errexit +o nounset +o pipefail
 
 

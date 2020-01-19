@@ -10,6 +10,7 @@ old/
 tmp
 t
 tt
+.bash_*
 
 # under development 
 dev
