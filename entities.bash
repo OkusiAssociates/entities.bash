@@ -32,15 +32,18 @@
 #X          :       # set ENTITIES globalvar to new position. 
 
 declare -- PRG PRGDIR
+	# script is being run
 	if ((SHLVL > 1 && ${#0} > 0)); then
 		p_="$(/bin/readlink -e "${0:-}")"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
+	# source entities has been executed at the shell command prompt
 	elif ((${#BASH_SOURCE})); then
 		p_="$(/bin/readlink -e "${BASH_SOURCE:-}")"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
-export ENTITIES="$PRGDIR"
+		export ENTITIES="$PRGDIR"
+	# dunno ....
 	else
 		PRG=''
 		PRGDIR=''
