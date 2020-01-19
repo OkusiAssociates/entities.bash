@@ -264,7 +264,8 @@ install() {
 	msginfo "Start creating $ENTITIES"
 	mkdir -p "$ENTITIES" || exit 1	
 	[[ -d "$ENTITIES" ]] || exit 1
-	rsync -avl $excl entities.core/* 			"$ENTITIES/" >/dev/null		|| exit 1
+	rsync -av $excl entities.bash 			"$ENTITIES/" >/dev/null		|| exit 1
+	rsync -av $excl entities.min.bash 	"$ENTITIES/" >/dev/null		|| exit 1
 
 	mkdir -p "$ENTITIES/entities.libs"
 	rsync -avl $excl entities.libs/*	"$ENTITIES/entities.libs/" >/dev/null	|| exit 1
