@@ -1,0 +1,9 @@
+#-Function--askyn
+  Function: askyn
+      Desc: ask y/n question and return 0/1
+          : NOTE: if verbose() is disabled, or there is no tty, askyn() will
+          : *always* return 0, without printing the string or waiting for a
+          : response.
+  Synopsis: askyn string
+   Example: askyn "Continue?" || msgdie 'Not Continuing.'
+#-Function--askyn-------------------------------------------------------------

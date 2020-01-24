@@ -1,0 +1,9 @@
+#-Function--msgerr
+  Function: msgerr
+      Desc: output an error message, with option to write to systemd journal.
+          : message is coloured red on terminals.
+  Synopsis: msgerr [log] string [string ...]
+          : 'log'		if specified, write log entry to journal err.
+          : string	write string/s to stderr.
+   Example: msgerr log "Sir!" "I think you better come here."
+#-Function--msgerr------------------------------------------------------------

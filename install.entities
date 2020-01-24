@@ -271,14 +271,8 @@ install() {
 	rsync -av $excl entities.bash 			"$ENTITIES/" >/dev/null		|| exit 1
 	rsync -av $excl entities.min.bash 	"$ENTITIES/" >/dev/null		|| exit 1
 
-	mkdir -p "$ENTITIES/entities.libs"
-	rsync -avl $excl entities.libs/*	"$ENTITIES/entities.libs/" >/dev/null	|| exit 1
-
-	mkdir -p "$ENTITIES/entities.scripts"
-	rsync -avl $excl entities.scripts/*	"$ENTITIES/entities.scripts/" >/dev/null	|| exit 1
-
-	mkdir -p "$ENTITIES/entities.util"
-	rsync -avl $excl entities.util/*	"$ENTITIES/entities.util/" >/dev/null	|| exit 1
+	mkdir -p "$ENTITIES/entities.d"
+	rsync -avl $excl entities.d/*	"$ENTITIES/entities.d/" >/dev/null	|| exit 1
 
 	mkdir -p "$ENTITIES/php"
 	rsync -avl $excl php/*				"$ENTITIES/php/" >/dev/null					|| exit 1

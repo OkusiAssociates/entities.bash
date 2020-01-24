@@ -904,11 +904,11 @@ breakp() {
 declare -fx breakp
 
 #X File: IncludeModules 
-#X Desc: By default, all .bash module files located in  
-#X     : ENTITIES/entities.* directories are automatically included in 
-#X		 : the entities.bash source file. 
+#X Desc: By default, all *.bash module files located in  
+#X     : ENTITIES/entities.d/ directory and sub-directories are 
+#X     : automatically included in the entities.bash source file. 
 #X     :
-for e in $ENTITIES/entities.*/*.bash; do
+for e in $ENTITIES/entities.d/*.bash; do
 	source "$e" || msg.err "Source file [$e] could not be included!"
 done
 

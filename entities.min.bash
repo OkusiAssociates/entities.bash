@@ -539,7 +539,7 @@ read -e -n1 -p "breakpoint${prompt}: continue? y/n " b
 [[ "${b,,}" == 'y' ]] || exit 1
 }
 declare -fx breakp
-for e in $ENTITIES/entities.*/*.bash; do
+for e in $ENTITIES/entities.d/*.bash; do
 source "$e" || msg.err "Source file [$e] could not be included!"
 done
 shopt -s expand_aliases # Enables alias expansion.

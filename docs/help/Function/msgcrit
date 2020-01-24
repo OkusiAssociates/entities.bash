@@ -1,0 +1,10 @@
+#-Function--msgcrit
+  Function: msgcrit
+      Desc: output a critical error message, with option to write to systemd journal.
+          : message is coloured red on terminals.
+          : immediately exit 1 from the script.
+  Synopsis: msgcrit [log] string [string ...]
+          : 'log'   if specified, write log entry to journal err.
+          :  string  write string/s to stderr.
+   Example: msgcrit log "Good god!" "Oh, the Humanity..."
+#-Function--msgcrit-----------------------------------------------------------
