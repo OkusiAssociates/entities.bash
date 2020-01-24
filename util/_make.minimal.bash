@@ -13,8 +13,8 @@ main() {
     color.set off
   fi
 
-
-	cd "$PRGDIR" || msgdie "could not cd into '$PRGDIR'!"
+	cwd=$(pwd)	
+	cd "$PRGDIR" || msg.die "could not cd into '$PRGDIR'!"
 
 	templates=( 'entities.bash' )
 
@@ -22,44 +22,49 @@ main() {
 	msg "Entities for Bash - Make Minimal Versions"
 	if ((!auto)); then
 		tab.set ++
-		msginfo ""
-		msginfo "Create minimal versions of standard bash include files"
-		msginfo "without comments, blank lines and leading space."
-		msginfo "minimal include files are named *.min.bash"
-		msginfo ""
+		msg.info ""
+		msg.info "Create minimal versions of standard bash include files"
+		msg.info "without comments, blank lines and leading space."
+		msg.info "minimal include files are named *.min.bash"
+		msg.info ""
 		ask.yn "Do you wish to proceed?" || exit 1
 		msg ''
 	fi
 
 	[[ "$OKROOT" == '' ]] \
-			&& msgdie "\$OKROOT not defined!" \
+			&& msg.die "\$OKROOT not defined!" \
 			|| path="$OKROOT/entities"
-	cd "$path" || msgdie "Could not cd into '$path'!"
+	cd "$path" || msg.die "Could not cd into '$path'!"
 	
 	for template in ${templates[@]}; do
 		template=$(basename "$template" '.bash')
 		mintemplate="$path/$template.min.bash"
 
-		[[ ! -f "${template}.bash" ]] && msgdie "${template}.bash not found!"
+		[[ ! -f "${template}.bash" ]] && msg.die "${template}.bash not found!"
 
 		# remove #comment lines that begin with [space*]#
 		tx=$(grep -v '^$' "$path/$template.bash" | grep -v '^[[:space:]]*#')
 
 		# make the minimal version of entities.bash	
 		echo '#!/bin/bash' > "$mintemplate"
-		local IFS=$'\n'
-		for ln in $tx; do
-			echo $(trim "$ln") >> $mintemplate
-		done
+		(
+			local IFS=$'\n'
+			for ln in $tx; do
+				echo $(trim "$ln") >> $mintemplate
+			done
+		)
 
-		touch -r "$path/$template.bash" "$mintemplate" || msgdie "file touch failed!"
-		chmod 644 "$mintemplate"	|| msgdie "could not chmod $mintemplate!"
+		# make timestamps the same for *.bash and *.min.bash
+		touch -r "$path/$template.bash" "$mintemplate" || msg.die "File touch $mintemplate failed!"
+		
+		# check permissions
+		chmod 644 "$mintemplate"	|| msg.die "Could not chmod $mintemplate!"
 
-		msgsys log "$mintemplate created."
+		msg.sys log "$mintemplate created."
 	done
 
 	# symlinks
-	cd .. || msgdie "could not cd .. !"
+	cd "$cwd" || msg.die "Could not cd to $cwd!"
 }
 
 main $@

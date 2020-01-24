@@ -38,7 +38,7 @@ useage() {
 	source $canonical new || { echo >&2 "Could not open [$canonical]!"; exit 1; }
 	ENTITIES=$OENTITIES;
 	PRG=$OPRG; PRGDIR=$OPRGDIR
-	
+
 	# let's start
 	strict.set on
 	trap.set on
@@ -47,6 +47,9 @@ useage() {
 	# set ENTITIES as the destination (production) directory
 	# 	ENTITIES in this case is the destination directory for the install
 	ENTITIES='/lib/include/entities'
+
+	# are we trying to install into the install directory?
+	[[ $ENTITIES == $PRGDIR ]] &&	msg.die "Cannot install over installation directory!"		
 
 	declare env_entities
 	env_entities="$(cat <<-eot
@@ -67,7 +70,7 @@ useage() {
 		eot
 		)"
 
-	declare -a exclude=( t tt *~ *.bak *.old gudang/ .gudang/ *.zip chperms mkdistzip _* dev/ )
+	declare -a exclude=( t tt *~ *.bak *.old gudang/ .gudang/ *.zip mkdistzip _* dev/ )
 
 main() {
 	while (($#)); do
@@ -101,8 +104,6 @@ main() {
 		tab.set ++
 		msg.sys "Updating entities help files..."
 		$PRGDIR/docs/entities.help.make --auto	|| msg.die "[PRGDIR=$PRGDIR] entities.help.make failed!"
-		msg.sys "Updating entities.min.bash..."
-		$PRGDIR/util/_mkentmin --auto 					|| msg.die "[PRGDIR=$PRGDIR] make entities.min.bash failed!"
 		#if [[ -x entities.scripts/_linkscripts2entities ]]; then
 		#	msg.info "Running linkscripts2entities"
 		#	cd entities.scripts || msg.die "could not cd into entities.scripts!"
@@ -111,6 +112,9 @@ main() {
 		#fi
 	fi
 	tab.set 1
+
+	msg.sys "Updating entities.min.bash..."
+	$PRGDIR/util/_make.minimal.bash --auto	|| msg.die "[PRGDIR=$PRGDIR] make entities.min.bash failed!"
 
 	makeprofile
 	makeuserprofiles
@@ -319,7 +323,7 @@ testit() {
 		cd "$ENTITIES" || { echo >&2 'wtf?'; exit 1; } 
 		strict.set off
 		trap.set off
-		source entities.bash new || { echo >&2 "wtf??"; exit; }
+		source entities.bash new || { echo >&2 'wtf??'; exit 1; }
 		strict.set on
 		trap.set on
 }

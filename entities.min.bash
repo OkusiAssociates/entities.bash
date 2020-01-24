@@ -14,6 +14,8 @@ PATH="${PATH//\:\:/\:}"
 fi
 export ENTITIES="$PRGDIR"
 export PATH="${PATH}:${ENTITIES}"
+__entities__=0
+
 else
 p_="$(/bin/readlink -e "${0:-}")"
 PRG="$(/usr/bin/basename "${p_}")"
