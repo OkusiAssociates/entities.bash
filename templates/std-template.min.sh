@@ -1,13 +1,13 @@
 #!/bin/bash
 source entities.bash || { echo >&2 "Could not open entities.bash!"; exit 1; }
 	strict.set on
-	verbose on
+	verbose.set on
 
 main() {
 #	exit_if_not_root
 #	exit_if_already_running
 	
-	
+	nop	
 	
 }
 

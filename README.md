@@ -23,7 +23,7 @@ Some of the important functions and globals include:
   * rtrim strval
   * ltrim strval
   * exit_if_not_root
-  * askyn [prompt]
+  * ask.yn [prompt]
   * check.dependencies [program ...]
   * is_interactive
 

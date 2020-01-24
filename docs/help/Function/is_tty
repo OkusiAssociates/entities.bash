@@ -2,5 +2,5 @@
   Function: is_tty
       Desc: return 0 if tty available, otherwise 1.
   Synopsis: is_tty
-   Example: is_tty && askyn "Continue?"
+   Example: is_tty && ask.yn "Continue?"
 #-Function--is_tty------------------------------------------------------------

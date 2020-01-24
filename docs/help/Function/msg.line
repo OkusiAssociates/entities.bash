@@ -1,0 +1,6 @@
+#-Function--msg.line
+  Function: msg.line
+      Desc: print an underline from current cursor position to end of screen
+  Synopsis: msg.line
+   Example: msg.line
+#-Function--msg.line----------------------------------------------------------

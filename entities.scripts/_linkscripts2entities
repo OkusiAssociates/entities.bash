@@ -1,0 +1,63 @@
+#!/bin/bash
+
+	CURDIR="$PWD"
+
+	DEST="$OKROOT/entities/entities.scripts"
+
+	#
+	cd $DEST || exit
+
+	[[ -L		addslashes			]] ||		ln -s $OKROOT/addslashes/addslashes 						addslashes			
+	[[ -L		atls						]] ||		ln -s $OKROOT/atls/atls 												atls  					
+	[[ -L		chkusers				]] ||		ln -s $OKROOT/chkusers/chkusers 								chkusers				
+	[[ -L		fixname					]] ||		ln -s $OKROOT/fixname/fixname 									fixname					
+	[[ -L		header					]] ||		ln -s $OKROOT/header/header 										header					
+	[[ -L		httpstatus			]] ||		ln -s $OKROOT/httpstatus/httpstatus 						httpstatus			
+	[[ -L		internetip			]] ||		ln -s $OKROOT/internetip/internetip 						internetip			
+	[[ -L		validip					]] ||		ln -s $OKROOT/internetip/validip 								validip					
+	[[ -L		watchip					]] ||		ln -s $OKROOT/internetip/watchip 								watchip					
+	[[ -L		kalendar				]] ||		ln -s $OKROOT/kalendar/													kalendar				
+	[[ -L		lhssh						]] ||		ln -s $OKROOT/lhssh/lhssh 											lhssh						
+	[[ -L		lsop						]] ||		ln -s $OKROOT/lsop/lsop 												lsop						
+	[[ -L		mksig						]] ||		ln -s $OKROOT/mksig/ 														mksig						
+	[[ -L		mkuser					]] ||		ln -s $OKROOT/mkuser/														mkuser					
+	[[ -L		psg							]] ||		ln -s $OKROOT/psg/psg 													psg							
+	[[ -L		screenmonitor		]] ||		ln -s $OKROOT/screenmonitor/ 										screenmonitor		
+	[[ -L		sms							]] ||		ln -s $OKROOT/sms 															sms							
+	[[ -L		sqlite-vacuum		]] ||		ln -s $OKROOT/sqlite-vacuum/sqlite-vacuum 			sqlite-vacuum		
+	[[ -L		TaskMaster			]] ||		ln -s $OKROOT/TaskMaster/												TaskMaster			
+	[[ -L		tinyfy					]] ||		ln -s $OKROOT/tinyfy/tinyfy 										tinyfy					
+	[[ -L		update-upgrade	]] ||		ln -s $OKROOT/update-upgrade/update-upgrade 		update-upgrade	
+	[[ -L		userlog					]] ||		ln -s $OKROOT/userlog/userlog 									userlog					
+	[[ -L		username				]] ||		ln -s $OKROOT/username/username 								username				  
+	
+	#		
+	cd ..
+
+	[[ -L		addslashes			]] ||	ln -s	entities.scripts/addslashes				  addslashes			
+	[[ -L		atls						]] ||	ln -s	entities.scripts/atls							  atls						
+	[[ -L		chkusers				]] ||	ln -s	entities.scripts/chkusers					  chkusers				
+	[[ -L		fixname					]] ||	ln -s	entities.scripts/fixname						  fixname				
+	[[ -L		header					]] ||	ln -s	entities.scripts/header						  header					
+	[[ -L		httpstatus			]] ||	ln -s	entities.scripts/httpstatus				  httpstatus			
+	[[ -L		internetip			]] ||	ln -s	entities.scripts/internetip				  internetip			
+	[[ -L		validip					]] ||	ln -s	entities.scripts/validip						  validip				
+	[[ -L		watchip					]] ||	ln -s	entities.scripts/watchip						  watchip				
+	
+	[[ -L		lhssh						]] ||	ln -s	entities.scripts/lhssh							  lhssh					
+	[[ -L		lsop						]] ||	ln -s	entities.scripts/lsop							  lsop						
+	
+	
+	[[ -L		psg							]] ||	ln -s	entities.scripts/psg								  psg						
+	
+	[[ -L		sms							]] ||	ln -s	entities.scripts/sms								  sms						
+	[[ -L		sqlite-vacuum		]] ||	ln -s	entities.scripts/sqlite-vacuum			  sqlite-vacuum	
+	
+	[[ -L		tinyfy					]] ||	ln -s	entities.scripts/tinyfy						  tinyfy					
+	[[ -L		update-upgrade	]] ||	ln -s	entities.scripts/update-upgrade		  update-upgrade	
+	[[ -L		userlog					]] ||	ln -s	entities.scripts/userlog						  userlog				
+	[[ -L		username				]] ||	ln -s	entities.scripts/username					  username				 
+
+	#
+	cd "$CURDIR"
+

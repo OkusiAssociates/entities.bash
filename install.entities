@@ -42,7 +42,7 @@ useage() {
 	# let's start
 	strict.set on
 	trap.set on
-	cd "$PRGDIR" || msgdie "Could not change into directory $PRGDIR!!"
+	cd "$PRGDIR" || msg.die "Could not change into directory $PRGDIR!!"
 
 	# set ENTITIES as the destination (production) directory
 	# 	ENTITIES in this case is the destination directory for the install
@@ -78,36 +78,36 @@ main() {
 			-v|--verbose)						VERBOSE=1;;
 			-q|--quiet)							VERBOSE=0;;
 			-h|--help)							useage;;
-			*)											msgdie log "Bad command line argument '$1'";;
+			*)											msg.die log "Bad command line argument '$1'";;
 		esac
 		shift
 	done
 	
 	((autoinstall)) && color.set off
 
-	msginfo "entities.bash shall be installed to $ENTITIES."
+	msg.info "entities.bash shall be installed to $ENTITIES."
 	if [[ -f $ENTITIES/entities.bash ]]; then
-		msgwarn "A version of entities is already installed at $ENTITIES."
+		msg.warn "A version of entities is already installed at $ENTITIES."
 	fi
 	
 	if ((!autoinstall)); then
 		infotext
-		askyn 'Install entities.bash with these settings?' || msgdie ''
+		ask.yn 'Install entities.bash with these settings?' || msg.die ''
 		msg ''
 	fi
 
 	if ((production)); then
-		msgsys "Production: Updating help files and creating entities.min.bash"
+		msg.sys "Production: Updating help files and creating entities.min.bash"
 		tab.set ++
-		msgsys "Updating entities help files..."
-		$PRGDIR/docs/entities.help.make --auto	|| msgdie "[PRGDIR=$PRGDIR] entities.help.make failed!"
-		msgsys "Updating entities.min.bash..."
-		$PRGDIR/util/_mkentmin --auto 					|| msgdie "[PRGDIR=$PRGDIR] make entities.min.bash failed!"
+		msg.sys "Updating entities help files..."
+		$PRGDIR/docs/entities.help.make --auto	|| msg.die "[PRGDIR=$PRGDIR] entities.help.make failed!"
+		msg.sys "Updating entities.min.bash..."
+		$PRGDIR/util/_mkentmin --auto 					|| msg.die "[PRGDIR=$PRGDIR] make entities.min.bash failed!"
 		#if [[ -x entities.scripts/_linkscripts2entities ]]; then
-		#	msginfo "Running linkscripts2entities"
-		#	cd entities.scripts || msgdie "could not cd into entities.scripts!"
-		#	./_linkscripts2entities || msgdie "Error in ./linkscripts2entities!"
-		#	cd "$PRGDIR" || msgdie "Could not change into directory $PRGDIR!"
+		#	msg.info "Running linkscripts2entities"
+		#	cd entities.scripts || msg.die "could not cd into entities.scripts!"
+		#	./_linkscripts2entities || msg.die "Error in ./linkscripts2entities!"
+		#	cd "$PRGDIR" || msg.die "Could not change into directory $PRGDIR!"
 		#fi
 	fi
 	tab.set 1
@@ -133,11 +133,11 @@ main() {
 }
 
 makeprofile() {
-	msginfo "Making ${etc_profile_d}..."
-	mkdir -p "$(dirname "$etc_profile_d")" || msgdie "could not create $(dirname "$etc_profile_d")"
+	msg.info "Making ${etc_profile_d}..."
+	mkdir -p "$(dirname "$etc_profile_d")" || msg.die "could not create $(dirname "$etc_profile_d")"
 	echo -e "${env_entities}"	> "$etc_profile_d"			
-	chmod 644 "$etc_profile_d" 				|| msgdie "could not chmod $etc_profile_d"
-	chown root:root "$etc_profile_d"	|| msgdie "could not chown $etc_profile_d"
+	chmod 644 "$etc_profile_d" 				|| msg.die "could not chmod $etc_profile_d"
+	chown root:root "$etc_profile_d"	|| msg.die "could not chown $etc_profile_d"
 }
 
 # Dep: cat touch chmod chown
@@ -154,10 +154,10 @@ makeuserprofiles() {
 
 	for user in $bashuser; do 
 		userfile="/home/$user/.profile"
-		msginfo "Making user profile $userfile..."
+		msg.info "Making user profile $userfile..."
 		if [[ ! -f "$userfile" ]]; then
 			tab.set ++
-			msgwarn "$userfile was not found. creating..."
+			msg.warn "$userfile was not found. creating..."
 			tab.set --
 			touch "$userfile"; chown "$user" "$userfile"; chmod 640 "$userfile"
 		fi	
@@ -189,7 +189,7 @@ makeuserprofiles() {
 # Dep: /etc/environment cat
 makeenvirnonment() {
 	envfile=/etc/environment
-	msginfo "Changing $envfile..."
+	msg.info "Changing $envfile..."
 	tmpfile="$(mktemp --tmpdir 'ent-XXXX')"
 	(	cat "$envfile" | while read -r line; do
 			env=${line%=*}
@@ -206,9 +206,9 @@ makeenvirnonment() {
 		done
 	) > "$tmpfile"
 	echo "ENTITIES=\"$ENTITIES\"" >> "$tmpfile" 
-	cp -p "$envfile" "${envfile}~"	|| msgdie "Could not backup $envfile to ${envfile}~!"
-	chown root:root "$tmpfile"			|| msgdie "$tmpfile chown error!"
-	chmod 644 "$tmpfile" 						|| msgdie "$tmpfile chmod error!"
+	cp -p "$envfile" "${envfile}~"	|| msg.die "Could not backup $envfile to ${envfile}~!"
+	chown root:root "$tmpfile"			|| msg.die "$tmpfile chown error!"
+	chmod 644 "$tmpfile" 						|| msg.die "$tmpfile chmod error!"
 	mv "$tmpfile" "$envfile"
 }
 
@@ -238,7 +238,7 @@ infotext() {
 
 # Dep: mkdir cd rsync find ln touch cp
 install() {
-	msginfo "Installing Entities into ${ENTITIES}..."
+	msg.info "Installing Entities into ${ENTITIES}..."
 
 	cd "$PRGDIR" || exit 1
 	
@@ -246,22 +246,22 @@ install() {
 	for e in "${exclude[@]}"; do excl+=" --exclude $e"; done
 
 	# do backup of existing $ENTITIES directory
-	msginfo "Doing backup of existing $ENTITIES directory..."
+	msg.info "Doing backup of existing $ENTITIES directory..."
 	tab.set ++
 	if [[ -d "${ENTITIES}.old" ]]; then
 		if [[ -d "${ENTITIES}" ]]; then
-			msginfo "* Deleting $ENTITIES.old."
+			msg.info "* Deleting $ENTITIES.old."
 			rm -rf "${ENTITIES}.old"	
 		fi
 	fi
 	if [[ -d "${ENTITIES}" ]]; then
-		msginfo "* Renaming $ENTITIES to $ENTITIES.old."
+		msg.info "* Renaming $ENTITIES to $ENTITIES.old."
 		mv "${ENTITIES}" "${ENTITIES}.old" || exit 1
 	fi
 	tab.set --
 
 	# start creating $ENTITIES
-	msginfo "Start creating $ENTITIES"
+	msg.info "Start creating $ENTITIES"
 	mkdir -p "$ENTITIES" || exit 1	
 	[[ -d "$ENTITIES" ]] || exit 1
 	rsync -av $excl entities.bash 			"$ENTITIES/" >/dev/null		|| exit 1
@@ -270,17 +270,20 @@ install() {
 	mkdir -p "$ENTITIES/entities.libs"
 	rsync -avl $excl entities.libs/*	"$ENTITIES/entities.libs/" >/dev/null	|| exit 1
 
+	mkdir -p "$ENTITIES/entities.scripts"
+	rsync -avl $excl entities.scripts/*	"$ENTITIES/entities.scripts/" >/dev/null	|| exit 1
+
 	mkdir -p "$ENTITIES/entities.util"
 	rsync -avl $excl entities.util/*	"$ENTITIES/entities.util/" >/dev/null	|| exit 1
 
-#	mkdir -p "$ENTITIES/php"
-#	rsync -avl $excl php/*				"$ENTITIES/php/" >/dev/null					|| exit 1
+	mkdir -p "$ENTITIES/php"
+	rsync -avl $excl php/*				"$ENTITIES/php/" >/dev/null					|| exit 1
 
 	mkdir -p "$ENTITIES/docs/help"
 	rsync -avl $excl docs/*				"$ENTITIES/docs/" >/dev/null				|| exit 1
 
 	mkdir -p "$ENTITIES/templates"
-	rsync -avl $excl --exclude entities.scripts/ templates/*	"$ENTITIES/templates/" >/dev/null	|| exit 1
+	rsync -avl $excl templates/*	"$ENTITIES/templates/" >/dev/null	|| exit 1
 
 	mkdir -p "$ENTITIES/util"
 	rsync -avl $excl util/*			"$ENTITIES/util/" >/dev/null				|| exit 1
@@ -289,13 +292,14 @@ install() {
 #		ln -s ~/entities-user.inc.sh "$ENTITIES/entities-user.inc.sh"
 #	fi
 
-	# make standard symlinks in $ENTITIES directory
-#	msginfo "Make standard symlinks in $ENTITIES directory..."
-#	cd "$ENTITIES" 																|| exit 1
-#	ln -fs php/string.inc.php	string.inc.php    	|| exit 1
+	# make symlinks in $ENTITIES directory
+	msg.info "Make symlinks in $ENTITIES directory..."
+	cd "$ENTITIES" 																|| exit 1
+	ln -fs php/string.inc.php	string.inc.php    	|| exit 1
+	ln  -s entities.bash entities						    	|| exit 1
 	
 	# touch420 all files in $ENTITIES directory
-	msginfo "Fix owner/perms, touch420 all files in $ENTITIES directory..."
+	msg.info "Fix owner/perms, touch420 all files in $ENTITIES directory..."
 	cd "$ENTITIES" || exit 1
 	chown root:root * -R
 	declare IFS=$'\n'

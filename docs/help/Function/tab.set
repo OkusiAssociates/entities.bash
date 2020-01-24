@@ -1,14 +1,14 @@
 #-Function--tab.set
   Function: tab.set tab.width
-      Desc: tab.set    set tab position for output from *msg functions.
+      Desc: tab.set    set tab position for output from msg.* functions.
           : tab.width  set tab width (default 4).
-          : used for formatting output for msg*() and askyn() functions.
+          : used for formatting output for msg.* and ask.* functions.
   Synopsis: tab.set [offset]; tab.width [tabvalue]
           : tab.set [reset | [forward|++] | [backward|--] [indent|+indent|-indent] ]
           : no argument causes current tab level to be returned.
-   Example: tab.width 2; msginfo "tab.width is $(tab.width)"
-          : tab.set ++; msgsys "indent 2 columns"
-          : tab.set reset; msgwarn "indent reset to 0"
-          : tab.set +3; msginfo "indent to column 6"
+   Example: tab.width 2; msg.info "tab.width is $(tab.width)"
+          : tab.set ++; msg.sys "indent 2 columns"
+          : tab.set reset; msg.warn "indent reset to 0"
+          : tab.set +3; msg.info "indent to column 6"
           : msg "current tab setting is $(tab.set)"
 #-Function--tab.set-----------------------------------------------------------

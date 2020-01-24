@@ -60,7 +60,9 @@ main() {
 		mkdir -p "$DestDir"
 	fi
 
-bashfiles="$(find $ENTITIES/ -name "*.bash" -type f | grep -v 'docs/' | grep -v '.gudang' | grep -v '.min.')"
+bashfiles="$(find "$ENTITIES/" -name "*.bash"  -not -name "_*" -type f \
+							| grep -v 'docs/' | grep -v '.gudang' | grep -v '.min.')"
+#bashfiles="$(find $ENTITIES/ -name "*.bash" -type f | grep -v 'docs/' | grep -v '.gudang' | grep -v '.min.')"
 for file in ${bashfiles[@]}; do
 	msginfo "" "Processing $file for documentation"
 	hlp="$(grep '^#X\+' "$file" | grep ':')"

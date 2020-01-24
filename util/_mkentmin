@@ -27,7 +27,7 @@ main() {
 		msginfo "without comments, blank lines and leading space."
 		msginfo "minimal include files are named *.min.bash"
 		msginfo ""
-		askyn "Do you wish to proceed?" || exit 1
+		ask.yn "Do you wish to proceed?" || exit 1
 		msg ''
 	fi
 

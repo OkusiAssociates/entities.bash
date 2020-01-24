@@ -37,18 +37,26 @@ declare -- PRG PRGDIR
 		p_="$(/bin/readlink -e "${0:-}")"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
+
 	# source entities has been executed at the shell command prompt
-	elif ((${#BASH_SOURCE})); then
-		p_="$(/bin/readlink -e "${BASH_SOURCE:-}")"
+	elif ((${#BASH_SOURCE[0]})); then
+		p_="$(/bin/readlink -e "${BASH_SOURCE[0]:-}")"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
+		if [[ -n "${ENTITIES:-}" ]]; then
+			PATH="${PATH//\:${ENTITIES}/}"
+			PATH="${PATH//\:\:/\:}"
+		fi
 		export ENTITIES="$PRGDIR"
+		export PATH="${PATH}:${ENTITIES}"		
+		__entities__=0
+		
 	# dunno ....
 	else
-		PRG=''
-		PRGDIR=''
+		p_="$(/bin/readlink -e "${0:-}")"
+		PRG="$(/usr/bin/basename "${p_}")"
+		PRGDIR="$(/usr/bin/dirname "${p_}")"
 	fi
-
 
 #X Global   : __entities__
 #X Desc     : Is entities.bash already loaded? If it is, then use current instance 
@@ -123,8 +131,8 @@ declare -fx onoff
 #X Function : verbose.set 
 #X Desc     : if it's a shell terminal then turn verbose ON by default,
 #X          : otherwise, called from another script/program, turn verbose OFF.
-#X          : verbose.set() status is used in the askyn() and msg*() commands.
-#X          : msgsys(), msgdie() and msgcrit() will ignore verbose status.
+#X          : verbose.set() status is used in the ask.yn() and msg.*() commands.
+#X          : msg.sys(), msg.die() and msg.crit() will ignore verbose status.
 #X Synopsis : verbose.set [[on|1] | [off|0]]
 #X          : curstatus=$(verbose.set)      
 declare -ix _ent_VERBOSE=$( [[ -t 0 ]] && echo 1 || echo 0)
@@ -138,10 +146,9 @@ verbose.set() {
 	return 0    	
 }
 declare -fx verbose.set
-	alias verbose='verbose.set'		# legacy
 
 #X Function : color.set
-#X Desc     : turn on/off colorized output from msg* functions.
+#X Desc     : turn on/off colorized output from msg.* functions.
 #X          : color is turned off if verbose() is also set to off.
 #X Synopsis : color.set [on|1] | [off|0]
 #X          : curstatus=$(color.set)
@@ -153,14 +160,11 @@ color.set() {
 	return 0   
 }
 declare -fx color.set
-	alias color='color.set'		# legacy
-	alias colour='color.set'		# for the civilised world
-	alias colors='color.set' 		# legacy
-	alias usecolor='color.set'	# legacy
+	alias colour.set='color.set'		# for the civilised world
 
 
 #X Global   : colorreset color0 colordebug colorinfo colornotice colorwarning colorwarn colorerr colorerror colorcrit colorcritical coloralert coloremerg colorpanic coloremergency 
-#X Desc     : colors used by entities msg* functions.
+#X Desc     : colors used by entities msg.* functions.
 #X          : emerg alert crit err warning notice info debug
 #X          : panic (dep=emerg) error (dep=err) warn (dep=warning)
 #X See Also :
@@ -197,7 +201,6 @@ version.set() {
 	return 0
 }
 declare -fx version.set
-	alias version='version.set'			# legacy
 
 
 #X Function : dryrun.set
@@ -213,7 +216,6 @@ dryrun.set() {
 	return 0
 }
 declare -fx dryrun.set
-	alias dryrun='dryrun.set'			# legacy
 
 #X Function : debug.set
 #X Desc     : general purpose global var for debugging. 
@@ -323,7 +325,7 @@ declare -fx lockfiles.delete.all
 #X Function: lockfiles.timeout
 lockfiles.timeout() {
 	if ((${#@})); then
-		source "$1" || msgdie log "log file $1 not found, or not a entities log file!"
+		source "$1" || msg.die log "log file $1 not found, or not a entities log file!"
 		return "$(( $(date +'%s') < _LockExpire ))"
 	else
 		lockfiles.timeout "${_ent_LOCKFILE}"
@@ -356,10 +358,6 @@ strict.set() {
 	return 0
 }
 declare -fx strict.set
-	alias strict='strict.set'			# legacy
-	alias strictset='strict.set'	# legacy
-	alias set_strict='strict.set'	# legacy
-
 
 #X Function : cleanup
 #X Desc     : a call to this function is made in the trap EXIT command.
@@ -376,7 +374,7 @@ declare -fx strict.set
 cleanup() {
 	[[ "${1:-}" == '' ]] && exitcode="$?" || exitcode="$1"
 	#lockfiles.delete.all
-	((_ent_DEBUG)) && msginfo "$PRG exit with code $exitcode."
+	((_ent_DEBUG)) && msg.info "$PRG exit with code $exitcode."
 	exit $exitcode
 }
 declare -fx cleanup
@@ -394,7 +392,7 @@ trap.set() {
 	return 0
 }
 declare -fx trap.set
-	alias exittrapset='trap.set'
+
 #X Function : trap.function
 #X Synopsis : trap.function [{ bash_exit_trap_function } ]
 declare -x _ent_EXITTRAPFUNCTION='{ cleanup "$?" "${LINENO:-}"; }'
@@ -403,7 +401,6 @@ trap.function() {
 	return 0
 }
 declare -fx trap.function
-	alias exittrapfunction='trap.function'	# legacy
 
 #X Function : synopsis
 #X Desc     : display usage information for the script. optionally exit.
@@ -415,7 +412,7 @@ synopsis() {
 	while (($#)); do
 		case "${1,,}" in
 			-x|--exit|exit)	xt=1	;;
-			*)							diemsg log "Bad command line argument '$1'!" ;;
+			*)							msg.die log "Bad command line argument '$1'!" ;;
 		esac
 		shift
 	done
@@ -427,7 +424,6 @@ synopsis() {
 	return 0
 }
 declare -fx synopsis
-	alias usage='synopsis'
 
 
 #X Function : msg
@@ -461,111 +457,117 @@ __msgx() {
 }
 declare -fx __msgx
 
-#X Function : msginfo
+#X Function : msg.info
 #X Desc     : output an information message, with option to write to systemd journal.
-#X Synopsis : msginfo [log] string [string ...]
+#X Synopsis : msg.info [log] string [string ...]
 #X          : 	'log'	if specified, write log entry to journal info. 'log' is positional, 
 #X					:	and must appear before the strings to be printed.
 #X          : if verbose() enabled, write string/s to stdout.
-#X Example  : msginfo "Sir. There's something I think you should know."
-msginfo() {
+#X Example  : msg.info "Sir. There's something I think you should know."
+msg.info() {
 	declare log="${1:-}"
 	[[ "${log}" == 'log' ]] && shift
 	[[ -z "$log" ]] && log=X
 	__msgx "$log" "info" "${_ent_VERBOSE}" "$@"
 	return 0
 }
-declare -fx msginfo
-	alias infomsg='msginfo' # legacy
+declare -fx msg.info
+	alias msginfo='msg.info' # legacy
+	alias infomsg='msg.info' # legacy
 
-#X Function : msgsys
+#X Function : msg.sys
 #X Desc     : output an informational message, with option to write to systemd journal.
-#X Synopsis : msgsys [log] string [string ...]
+#X Synopsis : msg.sys [log] string [string ...]
 #X          : 	'log'		if specified, write log entry to journal info.
 #X          : 	string	if verbose() enabled, write string/s to stdout.
-#X Example  : msgsys "Sir. There's something I think you should know."
-msgsys() {
+#X Example  : msg.sys "Sir. There's something I think you should know."
+msg.sys() {
 	declare log="${1:-}"
 	[[ "${log}" == 'log' ]] && shift
 	__msgx "$log" "notice" "${_ent_VERBOSE}" "$@"
 	return 0
 }
-declare -fx msgsys
-	alias sysmsg='msgsys' # legacy
+declare -fx msg.sys
+	alias msgsys='msg.sys' # legacy
+	alias sysmsg='msg.sys' # legacy
 
-#X Function : msgwarn
+#X Function : msg.warn
 #X Desc     : output a warning message, with option to write to systemd journal.
 #X          : message is coloured red on terminals.
-#X Synopsis : msgwarn [log] string [string ...]
+#X Synopsis : msg.warn [log] string [string ...]
 #X          : 	'log'		if specified, write log entry to journal info.
 #X          : 	string	if verbose() enabled, write string/s to stdout.
-#X Example : msgwarn log "Pardon me, Sir." "Is this supposed to happen?"
-msgwarn() {
+#X Example : msg.warn log "Pardon me, Sir." "Is this supposed to happen?"
+msg.warn() {
 	declare log="${1:-}"
 	[[ "${log}" == 'log' ]] && shift || log='X'
 	__msgx "$log" warning "${_ent_VERBOSE}" "$@"
 	return 0
 }
-declare -fx msgwarn
-	alias warnmsg='msgwarn'	# legacy
+declare -fx msg.warn
+	alias msgwarn='msg.warn'	# legacy
+	alias warnmsg='msg.warn'	# legacy
 
-#X Function : msgerr
+#X Function : msg.err
 #X Desc     : output an error message, with option to write to systemd journal.
 #X          : message is coloured red on terminals.
-#X Synopsis : msgerr [log] string [string ...]
+#X Synopsis : msg.err [log] string [string ...]
 #X          : 'log'		if specified, write log entry to journal err.
 #X          : string	write string/s to stderr.
-#X Example  : msgerr log "Sir!" "I think you better come here."
-msgerr() {
+#X Example  : msg.err log "Sir!" "I think you better come here."
+msg.err() {
 	declare log="${1:-}"
 	[[ "${log}" == 'log' ]] && shift
 	__msgx >&2 "$log" "err" "1" "$@"
 	return 0
 }
-declare -fx msgerr
-	alias errmsg='msgerr'	# legacy
+declare -fx msg.err
+	alias msgerr='msg.err' # make canonical
+	alias errmsg='msg.err'	# legacy
 
-#X Function : msgdie
+#X Function : msg.die
 #X Desc     : output an error message, with option to write to systemd journal.
 #X          : message is coloured red on terminals.
 #X          : immediately exit 1 from the script.
-#X Synopsis : msgdie [log] string [string ...]
+#X Synopsis : msg.die [log] string [string ...]
 #X          :  'log'   if specified, write log entry to journal err.
 #X          :  string  write string/s to stderr.
-#X Example  : msgdie log "I'm sorry, Sir." "I give up." "There's nothing more I can do."
-msgdie() {
+#X Example  : msg.die log "I'm sorry, Sir." "I give up." "There's nothing more I can do."
+msg.die() {
 	declare log="${1:-}"
 	[[ "${log}" == 'log' ]] && shift
 	__msgx >&2 "$log" "crit" "1" "$@" 'Aborting.'
 	exit 1
 }
-declare -fx msgdie
-	alias diemsg='msgdie' # legacy
-	alias msgdir='msgdie' # for butter fingers.
+declare -fx msg.die
+	alias msgdie='msg.die' # legacy
+	alias diemsg='msg.die' # legacy
+	alias msgdir='msg.die' # for butter fingers.
 
-#X Function : msgcrit
+#X Function : msg.crit
 #X Desc     : output a critical error message, with option to write to systemd journal.
 #X          : message is coloured red on terminals.
 #X          : immediately exit 1 from the script.
-#X Synopsis : msgcrit [log] string [string ...]
+#X Synopsis : msg.crit [log] string [string ...]
 #X          : 'log'   if specified, write log entry to journal err.
 #X          :  string  write string/s to stderr.
-#X Example  : msgcrit log "Good god!" "Oh, the Humanity..."
-msgcrit() {
+#X Example  : msg.crit log "Good god!" "Oh, the Humanity..."
+msg.crit() {
 	declare log="${1:-}"
 	[[ "${log}" == 'log' ]] && shift
 	__msgx >&2 "$log" "emerg" "1" "$@" 'Call Sysadmin immediately.'
 	#mail --to sysadmin@megacorp.dev -s "hello Sir, how are you? are you sitting down?" <<< "Sir, a funny thing just happened."
 	exit 1
 }
-declare -fx msgcrit
-	alias critmsg='msgcrit' # legacy
+declare -fx msg.crit
+	alias msgcrit='msg.crit' # legacy
+	alias critmsg='msg.crit' # legacy
 
-#X Function : msgline 
+#X Function : msg.line 
 #X Desc     : print an underline from current cursor position to end of screen
-#X Synopsis : msgline
-#X Example  : msgline
-msgline() {
+#X Synopsis : msg.line
+#X Example  : msg.line
+msg.line() {
 	((_ent_VERBOSE)) || return 0
 	local sx sz IFS=' '
 	sz=( $(stty size) )
@@ -578,18 +580,19 @@ msgline() {
 	msg $(printf '_%.0s' $(seq 1 $sx) )
 	return 0
 }
+	alias msgline='msg.line'
 
 #X Function : tab.set tab.width
 #X Synopsis : tab.set [offset]; tab.width [tabvalue]
-#X Desc     : tab.set    set tab position for output from *msg functions.
+#X Desc     : tab.set    set tab position for output from msg.* functions.
 #X          : tab.width  set tab width (default 4).
-#X          : used for formatting output for msg*() and askyn() functions.
+#X          : used for formatting output for msg.* and ask.* functions.
 #X Synopsis : tab.set [reset | [forward|++] | [backward|--] [indent|+indent|-indent] ]
 #X          : no argument causes current tab level to be returned.
-#X Example  : tab.width 2; msginfo "tab.width is $(tab.width)"
-#X          : tab.set ++; msgsys "indent 2 columns"
-#X          : tab.set reset; msgwarn "indent reset to 0"
-#X          : tab.set +3; msginfo "indent to column 6"
+#X Example  : tab.width 2; msg.info "tab.width is $(tab.width)"
+#X          : tab.set ++; msg.sys "indent 2 columns"
+#X          : tab.set reset; msg.warn "indent reset to 0"
+#X          : tab.set +3; msg.info "indent to column 6"
 #X          : msg "current tab setting is $(tab.set)" 
 declare -ix TABWIDTH=4
 tab.width() {
@@ -602,7 +605,7 @@ tab.width() {
 	return 0    	
 }
 declare -fx tab.width
-	alias tabwidth='tab.width'
+
 declare -ix TABSET=0
 tab.set() {
 	if ((${#@})); then
@@ -624,7 +627,6 @@ tab.set() {
 	return 0
 }
 declare -fx	tab.set
-	alias tabset='tab.set'
 
 _printmsg() {
 	local line IFS=$'\t\n'
@@ -725,9 +727,9 @@ exit_if_already_running() {
 	if [[ -f "$lockfile" ]]; then
 		if lockfiles.timeout $lockfile; then
 			trap.set off	# we don't want to exit through the cleanup() function or we will clobber the .lock file.
-			msgdie "$0 is currently running!" "Duplicate instances of this program are not permitted."
+			msg.die "$0 is currently running!" "Duplicate instances of this program are not permitted."
 		fi
-		msgwarn log "Lock file '$lockfile' is more than ${_ent_LOCKTIMEOUT} seconds old." "Relocking and Proceeding..."
+		msg.warn log "Lock file '$lockfile' is more than ${_ent_LOCKTIMEOUT} seconds old." "Relocking and Proceeding..."
 		touch $lockfile
 	else
 		lockfiles.add "${lockfile}" ${_ent_LOCKTIMEOUT}
@@ -740,7 +742,7 @@ declare -fx exit_if_already_running
 #X Desc     : exit script if not root user
 #X Synopsis : exit_if_not_root
 exit_if_not_root() {
-	[[ "$USER" == 'root' || EUID==0 ]] || msgdie "$PRG can only be executed by root user."
+	[[ "$USER" == 'root' || EUID==0 ]] || msg.die "$PRG can only be executed by root user."
 	return 0
 }
 declare -fx exit_if_not_root
@@ -756,19 +758,19 @@ str_str() {
  	echo -n "$str"
 }
 	
-#X Function : askyn
+#X Function : ask.yn
 #X Desc     : ask y/n question and return 0/1 
-#X          : NOTE: if verbose() is disabled, or there is no tty, askyn() will 
+#X          : NOTE: if verbose() is disabled, or there is no tty, ask.yn will 
 #X					: *always* return 0, without printing the string or waiting for a 
 #X					: response.
-#X Synopsis : askyn string
-#X Example  : askyn "Continue?" || msgdie 'Not Continuing.'
-askyn() {
+#X Synopsis : ask.yn string
+#X Example  : ask.yn "Continue?" || msg.die 'Not Continuing.'
+ask.yn() {
 	((_ent_VERBOSE)) || return 0
 	is_tty || return 0
 	local question="${1:-}" yn
 	while true; do
-		question=$(msgwarn "${question} (y/n)")
+		question=$(msg.warn "${question} (y/n)")
 		question="${question//$'\n'/ }"
 		read -p "${question}" yn
 		case "${yn,,}" in
@@ -778,12 +780,13 @@ askyn() {
 		esac
 	done
 }
-declare -fx askyn
+declare -fx ask.yn
+	alias askyn='ask.yn'
 
 #X Function : entities.help 
 #X Desc     : display help info about Entities functions and variables.
 #X Synopsis : entities.help [function|globalvar|localvar|file] | [-s|--search searchstring] [-h|--help]
-#X Example  : entities.help askyn msginfo
+#X Example  : entities.help ask.yn msg.info
 entities.help() {
 	$ENTITIES/docs/entities.help "$@"
 	return 0
@@ -795,7 +798,7 @@ declare -fx entities.help
 #X Synopsis : check.dependencies [-q|--quiet] name [...]
 #X          : 	name				is the name of a program, script or function.
 #X					:		-q|--quiet	do not print 'dependency-not-found' messages.
-#X Example  : (( check.dependencies dirname ln )) && msgdie "Dependencies missing."
+#X Example  : (( check.dependencies dirname ln )) && msg.die "Dependencies missing."
 check.dependencies() {
 	((${#@})) || return 0
 	local needed_dep=''
@@ -818,17 +821,16 @@ check.dependencies() {
   	fi
 	done
 	((missing && _ent_VERBOSE)) && \
-			msgerr "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
+			msg.err "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
 	return $missing
 }
 declare -fx check.dependencies
-	alias checkrequiredprograms='check.dependencies'
 
 
 #X Function : is_tty 
 #X Desc     : return 0 if tty available, otherwise 1.
 #X Synopsis : is_tty
-#X Example  : is_tty && askyn "Continue?"
+#X Example  : is_tty && ask.yn "Continue?"
 is_tty() {
 	tty --quiet	# [[ -t 0 ]] is this the same??
 	return $?
@@ -840,7 +842,7 @@ declare -fx is_tty
 #X Desc     : return 0 if tty available, otherwise 1.
 #X          : this function should be used as a comparison function
 #X Synopsis : is_interactive [report|noreport*]
-#X Example  : is_interactive && askyn "Continue?"
+#X Example  : is_interactive && ask.yn "Continue?"
 is_interactive() {
 	declare report=${1:-}
 	declare -i isit=0 echoit=0
@@ -890,14 +892,6 @@ is_interactive() {
 }
 declare -fx is_interactive
 
-#X Function: cleanbakfiles cln
-#X Desc    : Remove all *~ files recursively from current directory.
-cleanbakfiles() {
-	find . -name "*~" -type f -exec rm {} \;; find . -name "DEADJOE" -type f -exec rm {} \;
-}
-declare -fx cleanbakfiles
-	alias cln='cleanbakfiles'
-
 #X Function: breakp
 #X Synopsis: breakp [msg]
 #X Desc    : prompt to exit script or continue.
@@ -910,13 +904,12 @@ breakp() {
 declare -fx breakp
 
 #X File: IncludeModules 
-#X Desc: .bash module files for inclusion, located in entities.util/ 
-#X     : By default, all entities.util/*.bash files will be sourced into entities
+#X Desc: By default, all .bash module files located in  
+#X     : ENTITIES/entities.* directories are automatically included in 
+#X		 : the entities.bash source file. 
 #X     :
-#X     :
-for e in $ENTITIES/entities.util/*.bash; do
-#for e in $OKROOT/entities/entities.util/*.bash; do
-	source "$e" || msgerr "Source file [$e] could not be included!"
+for e in $ENTITIES/entities.*/*.bash; do
+	source "$e" || msg.err "Source file [$e] could not be included!"
 done
 
 
@@ -926,8 +919,8 @@ done
 # expand all the aliases defined above.
 shopt -s expand_aliases # Enables alias expansion.
 
-if ! check.dependencies basename dirname readlink mkdir ln cat systemd-cat printf stty; then
-	msgdie "Dependencies not found. Entities cannot run."	
+if ! check.dependencies basename dirname readlink mkdir ln cat systemd-cat stty; then
+	msg.die 'Dependencies not found. Entities cannot run.'	
 fi 
 
 #X Global   : _entities_

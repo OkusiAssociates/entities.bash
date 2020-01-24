@@ -4,14 +4,20 @@ if ((SHLVL > 1 && ${#0} > 0)); then
 p_="$(/bin/readlink -e "${0:-}")"
 PRG="$(/usr/bin/basename "${p_}")"
 PRGDIR="$(/usr/bin/dirname "${p_}")"
-elif ((${#BASH_SOURCE})); then
-p_="$(/bin/readlink -e "${BASH_SOURCE:-}")"
+elif ((${#BASH_SOURCE[0]})); then
+p_="$(/bin/readlink -e "${BASH_SOURCE[0]:-}")"
 PRG="$(/usr/bin/basename "${p_}")"
 PRGDIR="$(/usr/bin/dirname "${p_}")"
+if [[ -n "${ENTITIES:-}" ]]; then
+PATH="${PATH//\:${ENTITIES}/}"
+PATH="${PATH//\:\:/\:}"
+fi
 export ENTITIES="$PRGDIR"
+export PATH="${PATH}:${ENTITIES}"
 else
-PRG=''
-PRGDIR=''
+p_="$(/bin/readlink -e "${0:-}")"
+PRG="$(/usr/bin/basename "${p_}")"
+PRGDIR="$(/usr/bin/dirname "${p_}")"
 fi
 if (( "${__entities__:-}" )); then
 (($#)) || return 0;  # entities is already loaded, and no parameter has been given, so do not reload.
@@ -63,17 +69,13 @@ fi
 return 0
 }
 declare -fx verbose.set
-alias verbose='verbose.set'		# legacy
 declare -ix _ent_COLOR=1
 color.set() {
 ((${#@})) && _ent_COLOR=$(onoff "${1}" "${_ent_COLOR}") || echo -n "${_ent_COLOR}"
 return 0
 }
 declare -fx color.set
-alias color='color.set'		# legacy
-alias colour='color.set'		# for the civilised world
-alias colors='color.set' 		# legacy
-alias usecolor='color.set'	# legacy
+alias colour.set='color.set'		# for the civilised world
 declare  -x colorreset="\x1b[0;39;49m"
 declare  -x color0="\x1b[0;39;49m"
 declare  -x colordebug="\x1b[35m"
@@ -95,14 +97,12 @@ version.set() {
 return 0
 }
 declare -fx version.set
-alias version='version.set'			# legacy
 declare -ix _ent_DRYRUN=0
 dryrun.set() {
 ((${#@})) && _ent_DRYRUN=$(("$1")) || echo -n ${_ent_DRYRUN}
 return 0
 }
 declare -fx dryrun.set
-alias dryrun='dryrun.set'			# legacy
 declare -ix _ent_DEBUG=0
 debug.set() {
 ((${#@})) && _ent_DEBUG=$(("$1")) || echo -n ${_ent_DEBUG}
@@ -174,7 +174,7 @@ return 0
 declare -fx lockfiles.delete.all
 lockfiles.timeout() {
 if ((${#@})); then
-source "$1" || msgdie log "log file $1 not found, or not a entities log file!"
+source "$1" || msg.die log "log file $1 not found, or not a entities log file!"
 return "$(( $(date +'%s') < _LockExpire ))"
 else
 lockfiles.timeout "${_ent_LOCKFILE}"
@@ -195,12 +195,9 @@ fi
 return 0
 }
 declare -fx strict.set
-alias strict='strict.set'			# legacy
-alias strictset='strict.set'	# legacy
-alias set_strict='strict.set'	# legacy
 cleanup() {
 [[ "${1:-}" == '' ]] && exitcode="$?" || exitcode="$1"
-((_ent_DEBUG)) && msginfo "$PRG exit with code $exitcode."
+((_ent_DEBUG)) && msg.info "$PRG exit with code $exitcode."
 exit $exitcode
 }
 declare -fx cleanup
@@ -215,20 +212,18 @@ fi
 return 0
 }
 declare -fx trap.set
-alias exittrapset='trap.set'
 declare -x _ent_EXITTRAPFUNCTION='{ cleanup "$?" "${LINENO:-}"; }'
 trap.function() {
 ((${#@})) && _ent_EXITTRAPFUNCTION="$1" || echo -n "$_ent_EXITTRAPFUNCTION"
 return 0
 }
 declare -fx trap.function
-alias exittrapfunction='trap.function'	# legacy
 synopsis() {
 local xt=0
 while (($#)); do
 case "${1,,}" in
 -x|--exit|exit)	xt=1	;;
-*)							diemsg log "Bad command line argument '$1'!" ;;
+*)							msg.die log "Bad command line argument '$1'!" ;;
 esac
 shift
 done
@@ -240,7 +235,6 @@ syn
 return 0
 }
 declare -fx synopsis
-alias usage='synopsis'
 msg() { ((_ent_VERBOSE)) && _printmsg "$@"; return 0; }
 declare -fx msg
 __msgx() {
@@ -257,57 +251,63 @@ fi
 return 0
 }
 declare -fx __msgx
-msginfo() {
+msg.info() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift
 [[ -z "$log" ]] && log=X
 __msgx "$log" "info" "${_ent_VERBOSE}" "$@"
 return 0
 }
-declare -fx msginfo
-alias infomsg='msginfo' # legacy
-msgsys() {
+declare -fx msg.info
+alias msginfo='msg.info' # legacy
+alias infomsg='msg.info' # legacy
+msg.sys() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift
 __msgx "$log" "notice" "${_ent_VERBOSE}" "$@"
 return 0
 }
-declare -fx msgsys
-alias sysmsg='msgsys' # legacy
-msgwarn() {
+declare -fx msg.sys
+alias msgsys='msg.sys' # legacy
+alias sysmsg='msg.sys' # legacy
+msg.warn() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift || log='X'
 __msgx "$log" warning "${_ent_VERBOSE}" "$@"
 return 0
 }
-declare -fx msgwarn
-alias warnmsg='msgwarn'	# legacy
-msgerr() {
+declare -fx msg.warn
+alias msgwarn='msg.warn'	# legacy
+alias warnmsg='msg.warn'	# legacy
+msg.err() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift
 __msgx >&2 "$log" "err" "1" "$@"
 return 0
 }
-declare -fx msgerr
-alias errmsg='msgerr'	# legacy
-msgdie() {
+declare -fx msg.err
+alias msgerr='msg.err' # make canonical
+alias errmsg='msg.err'	# legacy
+msg.die() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift
 __msgx >&2 "$log" "crit" "1" "$@" 'Aborting.'
 exit 1
 }
-declare -fx msgdie
-alias diemsg='msgdie' # legacy
-alias msgdir='msgdie' # for butter fingers.
-msgcrit() {
+declare -fx msg.die
+alias msgdie='msg.die' # legacy
+alias diemsg='msg.die' # legacy
+alias msgdir='msg.die' # for butter fingers.
+msg.crit() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift
 __msgx >&2 "$log" "emerg" "1" "$@" 'Call Sysadmin immediately.'
 exit 1
 }
-declare -fx msgcrit
-alias critmsg='msgcrit' # legacy
-msgline() {
+declare -fx msg.crit
+alias msgcrit='msg.crit' # legacy
+alias critmsg='msg.crit' # legacy
+msg.line() {
 ((_ent_VERBOSE)) || return 0
 local sx sz IFS=' '
 sz=( $(stty size) )
@@ -320,6 +320,7 @@ IFS=$' \t\n'
 msg $(printf '_%.0s' $(seq 1 $sx) )
 return 0
 }
+alias msgline='msg.line'
 declare -ix TABWIDTH=4
 tab.width() {
 if ((${#@})); then
@@ -331,7 +332,6 @@ fi
 return 0
 }
 declare -fx tab.width
-alias tabwidth='tab.width'
 declare -ix TABSET=0
 tab.set() {
 if ((${#@})); then
@@ -353,7 +353,6 @@ fi
 return 0
 }
 declare -fx	tab.set
-alias tabset='tab.set'
 _printmsg() {
 local line IFS=$'\t\n'
 for line in "$@"; do
@@ -417,9 +416,9 @@ local lockfile="/run/lock/${PRG}.lock"
 if [[ -f "$lockfile" ]]; then
 if lockfiles.timeout $lockfile; then
 trap.set off	# we don't want to exit through the cleanup() function or we will clobber the .lock file.
-msgdie "$0 is currently running!" "Duplicate instances of this program are not permitted."
+msg.die "$0 is currently running!" "Duplicate instances of this program are not permitted."
 fi
-msgwarn log "Lock file '$lockfile' is more than ${_ent_LOCKTIMEOUT} seconds old." "Relocking and Proceeding..."
+msg.warn log "Lock file '$lockfile' is more than ${_ent_LOCKTIMEOUT} seconds old." "Relocking and Proceeding..."
 touch $lockfile
 else
 lockfiles.add "${lockfile}" ${_ent_LOCKTIMEOUT}
@@ -428,7 +427,7 @@ return 0
 }
 declare -fx exit_if_already_running
 exit_if_not_root() {
-[[ "$USER" == 'root' || EUID==0 ]] || msgdie "$PRG can only be executed by root user."
+[[ "$USER" == 'root' || EUID==0 ]] || msg.die "$PRG can only be executed by root user."
 return 0
 }
 declare -fx exit_if_not_root
@@ -439,12 +438,12 @@ str="${str%%${3}*}"
 echo -n "$str"
 }
 
-askyn() {
+ask.yn() {
 ((_ent_VERBOSE)) || return 0
 is_tty || return 0
 local question="${1:-}" yn
 while true; do
-question=$(msgwarn "${question} (y/n)")
+question=$(msg.warn "${question} (y/n)")
 question="${question//$'\n'/ }"
 read -p "${question}" yn
 case "${yn,,}" in
@@ -454,7 +453,8 @@ case "${yn,,}" in
 esac
 done
 }
-declare -fx askyn
+declare -fx ask.yn
+alias askyn='ask.yn'
 entities.help() {
 $ENTITIES/docs/entities.help "$@"
 return 0
@@ -482,11 +482,10 @@ fi
 fi
 done
 ((missing && _ent_VERBOSE)) && \
-msgerr "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
+msg.err "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
 return $missing
 }
 declare -fx check.dependencies
-alias checkrequiredprograms='check.dependencies'
 is_tty() {
 tty --quiet	# [[ -t 0 ]] is this the same??
 return $?
@@ -531,11 +530,6 @@ fi
 return 0
 }
 declare -fx is_interactive
-cleanbakfiles() {
-find . -name "*~" -type f -exec rm {} \;; find . -name "DEADJOE" -type f -exec rm {} \;
-}
-declare -fx cleanbakfiles
-alias cln='cleanbakfiles'
 breakp() {
 local b='' prompt=${1:-}
 ((${#prompt})) && prompt=" $prompt"
@@ -543,11 +537,11 @@ read -e -n1 -p "breakpoint${prompt}: continue? y/n " b
 [[ "${b,,}" == 'y' ]] || exit 1
 }
 declare -fx breakp
-for e in $ENTITIES/entities.util/*.bash; do
-source "$e" || msgerr "Source file [$e] could not be included!"
+for e in $ENTITIES/entities.*/*.bash; do
+source "$e" || msg.err "Source file [$e] could not be included!"
 done
 shopt -s expand_aliases # Enables alias expansion.
-if ! check.dependencies basename dirname readlink mkdir ln cat systemd-cat printf stty; then
-msgdie "Dependencies not found. Entities cannot run."
+if ! check.dependencies basename dirname readlink mkdir ln cat systemd-cat stty; then
+msg.die 'Dependencies not found. Entities cannot run.'
 fi
 declare -xig __entities__=1
