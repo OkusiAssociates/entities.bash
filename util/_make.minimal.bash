@@ -1,15 +1,20 @@
 #!/bin/bash
-source $OKROOT/entities/entities.bash new || { echo >&2 "$0: source file \$OKROOT/entities/entities.bash not found!"; exit 1; }
+source $OKROOT/entities/entities.bash || { echo >&2 "$0: source file \$OKROOT/entities/entities.bash not found!"; exit 1; }
 strict.set on
 declare -i auto=0
 
 main() {
-	[[ "${1:-}" == '-q' ]] && VERBOSE=0
-	[[ "${1:-}" == '--auto' ]] && auto=1
-	[[ "${1:-}" == '-y' ]] && auto=1
+	while (($#)); do
+		case "$1" in
+			-q|--quiet)		verbose.set off;;
+			-v|--verbose)	verbose.set on;;
+			--auto|-y)		auto=1;;
+			*)						msg.die "Bad parameter $1";;
+		esac
+		shift
+	done
 
   if ((auto)); then
-    verbose.set off
     color.set off
   fi
 
@@ -18,8 +23,7 @@ main() {
 
 	templates=( 'entities.bash' )
 
-	tab.set 0
-	msg "Entities for Bash - Make Minimal Versions"
+	msg.info "Entities for Bash - Make Minimal Versions"
 	if ((!auto)); then
 		tab.set ++
 		msg.info ""
@@ -29,11 +33,13 @@ main() {
 		msg.info ""
 		ask.yn "Do you wish to proceed?" || exit 1
 		msg ''
+		tab.set --
 	fi
+	tab.set ++
 
-	[[ "$OKROOT" == '' ]] \
-			&& msg.die "\$OKROOT not defined!" \
-			|| path="$OKROOT/entities"
+	if [[ "$OKROOT" == '' ]]; then msg.die "\$OKROOT not defined!"
+														else path="$OKROOT/entities"
+	fi
 	cd "$path" || msg.die "Could not cd into '$path'!"
 	
 	for template in ${templates[@]}; do

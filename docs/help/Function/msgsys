@@ -1,8 +1,0 @@
-#-Function--msgsys
-  Function: msgsys
-      Desc: output an informational message, with option to write to systemd journal.
-  Synopsis: msgsys [log] string [string ...]
-          : 	'log'		if specified, write log entry to journal info.
-          : 	string	if verbose() enabled, write string/s to stdout.
-   Example: msgsys "Sir. There's something I think you should know."
-#-Function--msgsys------------------------------------------------------------

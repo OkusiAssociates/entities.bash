@@ -1,9 +1,0 @@
-#-Function--msgwarn
-  Function: msgwarn
-      Desc: output a warning message, with option to write to systemd journal.
-          : message is coloured red on terminals.
-  Synopsis: msgwarn [log] string [string ...]
-          : 	'log'		if specified, write log entry to journal info.
-          : 	string	if verbose() enabled, write string/s to stdout.
-   Example: msgwarn log "Pardon me, Sir." "Is this supposed to happen?"
-#-Function--msgwarn-----------------------------------------------------------

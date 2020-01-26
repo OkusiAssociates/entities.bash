@@ -1,0 +1,5 @@
+#-Function--trap.breakp
+  Function: trap.breakp
+      Desc: prompt to exit script or continue.
+  Synopsis: trap.breakp [msg]
+#-Function--trap.breakp-------------------------------------------------------

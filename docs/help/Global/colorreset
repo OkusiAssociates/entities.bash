@@ -1,7 +1,7 @@
 #---Global--colorreset
-    Global: colorreset color0 colordebug colorinfo colornotice colorwarning colorwarn colorerr colorerror colorcrit colorcritical coloralert coloremerg colorpanic coloremergency
-      Desc: colors used by entities msg.* functions.
+    Global: colorreset colordebug colorinfo colornotice colorwarning colorerr colorcrit coloralert coloremerg
+      Desc: Colors used by entities msg.* functions.
           : emerg alert crit err warning notice info debug
-          : panic (dep=emerg) error (dep=err) warn (dep=warning)
+          : panic (dep=emerg) err (dep=error) warning (dep=warn)
   See_Also: #X See Also :
 #---Global--colorreset--------------------------------------------------------

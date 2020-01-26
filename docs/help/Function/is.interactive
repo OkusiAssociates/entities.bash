@@ -1,0 +1,7 @@
+#-Function--is.interactive
+  Function: is.interactive
+      Desc: return 0 if tty available, otherwise 1.
+          : this function should be used as a comparison function
+  Synopsis: is.interactive [report|noreport*]
+   Example: is.interactive && ask.yn "Continue?"
+#-Function--is.interactive----------------------------------------------------

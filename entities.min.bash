@@ -1,52 +1,83 @@
 #!/bin/bash
 declare -- PRG PRGDIR
-if ((SHLVL > 1 && ${#0} > 0)); then
-p_="$(/bin/readlink -e "${0:-}")"
+declare -x _ent_scriptstatus="\$0=$0|"
+if ((SHLVL > 1)) || [[ ! $0 == *'bash' ]]; then
+p_="$(/bin/readlink -f "${0}")"
+_ent_scriptstatus+="script|\$p_=$p_|"
+if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
+_ent_scriptstatus+='execute|'
+__entities__=0
+while (($#)); do
+case "${1,,}" in
+help|''|-h|--help)
+echo 'tbd: entities execute help'
+break
+;;
+-*)	echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
+*)	echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
+esac
+shift
+done
+exit
+fi
+_ent_scriptstatus+="sourced-from-script|SHLVL=$SHLVL|"
 PRG="$(/usr/bin/basename "${p_}")"
 PRGDIR="$(/usr/bin/dirname "${p_}")"
-elif ((${#BASH_SOURCE[0]})); then
-p_="$(/bin/readlink -e "${BASH_SOURCE[0]:-}")"
+_ent_scriptstatus+="PRGDIR=$PRGDIR|"
+unset _p
+if (( ! $# )); then
+(( ${__entities__:-} )) && return 0
+fi
+else
+_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|"
+p_="$(/bin/readlink -f "${BASH_SOURCE[0]}")"
 PRG="$(/usr/bin/basename "${p_}")"
 PRGDIR="$(/usr/bin/dirname "${p_}")"
+_ent_scriptstatus+="PRGDIR=$PRGDIR|"
+unset _p
 if [[ -n "${ENTITIES:-}" ]]; then
 PATH="${PATH//\:${ENTITIES}/}"
 PATH="${PATH//\:\:/\:}"
 fi
 export ENTITIES="$PRGDIR"
 export PATH="${PATH}:${ENTITIES}"
-__entities__=0
-
-else
-p_="$(/bin/readlink -e "${0:-}")"
-PRG="$(/usr/bin/basename "${p_}")"
-PRGDIR="$(/usr/bin/dirname "${p_}")"
+__entities__=0		# always reload when sourced from command line
 fi
-if (( "${__entities__:-}" )); then
-(($#)) || return 0;  # entities is already loaded, and no parameter has been given, so do not reload.
 while (($#)); do
 case "${1,,}" in
-new|nopreserve|--nopreserve|-n)		break ;;
-preserve|--preserve|-p)						return 0;;
-load) shift; tmp="${1:-}"
-mkdir -p "$tmp"
-if [[ ! -d "$tmp" ]]; then
-echo >&2 "Load directory $tmp not found!"
+new)
+__entities__=0
+;;
+''|inherit|preserve)
+__entities__=${__entities__:-}
+;;
+load)
+shift
+_tmp="${1:-}"
+mkdir -p "$_tmp"
+if [[ ! -d "$_tmp" ]]; then
+echo >&2 "Load directory $_tmp not found!"
+((SHLVL>1)) && exit 1
+return 1
 else
-rsync -qavl $ENTITIES/* "$tmp/"
-(( $? )) &&	{ echo >&2 "rsync error $ENTITIES > $tmp"; return 0; }
-[[ -n ${ENTITIES:-} ]] && PATH="${PATH//${ENTITIES}/}:$tmp"
+rsync -qavl $ENTITIES/* "$_tmp/"
+(( $? )) &&	{ echo >&2 "rsync error $ENTITIES > $_tmp"; return 0; }
+[[ -n ${ENTITIES:-} ]] && PATH="${PATH//${ENTITIES}/}:$_tmp"
 export PATH=${PATH//::/:}
-export ENTITIES=$tmp
-source $ENTITIES/entities.bash new
-return 0
+export ENTITIES=${_tmp}
+unset _tmp
+__entities__=0
+source "$ENTITIES/entities.bash" new
+((SHLVL>1)) && exit
+return
 fi
 ;;
--*)	echo >&2 "$0: Bad option '$1' in entities.bash!"; exit 1 ;;
-*)	echo >&2 "$0: Bad argument '$1' in entities.bash!"; exit 1 ;;
+*)	break;;
 esac
 shift
 done
-fi
+((__entities__)) && return 0;
+_ent_scriptstatus+="reloading|"
 set +o errexit +o nounset +o pipefail
 declare --  LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n'
 declare -nx OIFS="OLDIFS"
@@ -55,7 +86,9 @@ local o="${1:-}"
 case "${o,,}" in
 on|1)			o=1;;
 off|0)		o=0;;
-*)				[[ ${2:-} ]] && o=$(( ${2} )) || o=0;; # yes, i know. but what am i to do?
+*)				if [[ ${2:-} ]]; 	then o=$(( ${2} ))
+else o=0 # yes, i know. but what am i to do?
+fi;;
 esac
 echo -n $((o))
 return 0
@@ -73,7 +106,9 @@ return 0
 declare -fx verbose.set
 declare -ix _ent_COLOR=1
 color.set() {
-((${#@})) && _ent_COLOR=$(onoff "${1}" "${_ent_COLOR}") || echo -n "${_ent_COLOR}"
+if ((${#@})); then _ent_COLOR=$(onoff "${1}" "${_ent_COLOR}")
+else echo -n "${_ent_COLOR}"
+fi
 return 0
 }
 declare -fx color.set
@@ -83,31 +118,32 @@ declare  -x color0="\x1b[0;39;49m"
 declare  -x colordebug="\x1b[35m"
 declare  -x colorinfo="\x1b[32m"
 declare  -x colornotice="\x1b[34m"
-declare  -x colorwarning="\x1b[33m"
-declare -nx colorwarn='colorwarning'
-declare  -x colorerr="\x1b[31m"
-declare -nx colorerror='colorerr'
-declare  -x colorcrit="\x1b[1;31m"
-declare -nx colorcritical='colorcrit'
+declare  -x colorwarning="\x1b[33m"				; declare -nx colorwarn='colorwarning'
+declare  -x colorerr="\x1b[31m"						; declare -nx colorerror='colorerr'
+declare  -x colorcrit="\x1b[1;31m"				; declare -nx colorcritical='colorcrit'
 declare  -x coloralert="\x1b[1;33;41m"
-declare  -x coloremerg="\x1b[1;4;5;33;41m"
-declare -nx colorpanic='coloremerg'
-declare -p _ent_VERSION &>/dev/null || declare -r _ent_VERSION='4.20.420 beta'
+declare  -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 declare -x _ent_SCRIPT_VERSION='0.00 prealpha'
 version.set() {
-((${#@})) && _ent_SCRIPT_VERSION="$1" || echo -n "${_ent_SCRIPT_VERSION}"
+if ((${#@})); then _ent_SCRIPT_VERSION="$1"
+else echo -n "${_ent_SCRIPT_VERSION}"
+fi
 return 0
 }
 declare -fx version.set
 declare -ix _ent_DRYRUN=0
 dryrun.set() {
-((${#@})) && _ent_DRYRUN=$(("$1")) || echo -n ${_ent_DRYRUN}
+if ((${#@})); then _ent_DRYRUN=$(("$1"))
+else echo -n ${_ent_DRYRUN}
+fi
 return 0
 }
 declare -fx dryrun.set
 declare -ix _ent_DEBUG=0
 debug.set() {
-((${#@})) && _ent_DEBUG=$(("$1")) || echo -n ${_ent_DEBUG}
+if ((${#@})); then _ent_DEBUG=$(("$1"))
+else echo -n ${_ent_DEBUG}
+fi
 return 0
 }
 declare -fx debug.set
@@ -115,7 +151,9 @@ declare -x  _ent_LOCKFILE=''
 declare -ax _ent_LOCKFILES=()
 declare -ix _ent_LOCKTIMEOUT=86400
 lockfile() {
-((${#@})) && lockfile.add "$1" ||	echo -n "${_ent_LOCKFILE}"
+if ((${#@})); then lockfile.add "$1"
+else echo -n "${_ent_LOCKFILE}"
+fi
 return 0
 }
 declare -fx lockfile
@@ -133,8 +171,8 @@ lockfiles.add "$@" "${_ent_LOCKTIMEOUT}"
 return 0
 fi
 declare -a newlockfiles=($@)
-declare j i
-declare lk='' to=''
+local -i j i
+local lk='' to=''
 for ((i=0; i < ${#newlockfiles[@]}; i+=2)); do
 j=$((i+1))
 lk="${newlockfiles[$i]}"
@@ -154,16 +192,19 @@ return 0
 }
 declare -fx lockfiles.add
 lockfiles.delete() {
-if (( ${#@} == 0 )); then
-[[ ${_ent_LOCKFILE} ]] && lockfiles.delete "${_ent_LOCKFILE}"
-return 0
-fi
+if ((${#@})); then
+local lk lf
 for lk in ${@}; do
 rm -f "${lk}"
 _ent_LOCKFILES=( ${_ent_LOCKFILES[@]/$lk} )
 lf=${#_ent_LOCKFILES[@]}; ((lf+=-1))
-((lf>=0)) && _ent_LOCKFILE="${_ent_LOCKFILES[$lf]}" || _ent_LOCKFILE=''
+if ((lf>=0)); then _ent_LOCKFILE="${_ent_LOCKFILES[$lf]}"
+else _ent_LOCKFILE=''
+fi
 done
+else
+[[ ${_ent_LOCKFILE} ]] && lockfiles.delete "${_ent_LOCKFILE}"
+fi
 return 0
 }
 declare -fx lockfiles.delete
@@ -198,7 +239,9 @@ return 0
 }
 declare -fx strict.set
 cleanup() {
-[[ "${1:-}" == '' ]] && exitcode="$?" || exitcode="$1"
+if [[ "${1:-}" == '' ]];	then exitcode="$?"
+else exitcode="$1"
+fi
 ((_ent_DEBUG)) && msg.info "$PRG exit with code $exitcode."
 exit $exitcode
 }
@@ -207,7 +250,11 @@ declare -ix _ent_EXITTRAP=0
 trap.set() {
 if ((${#@})); then
 _ent_EXITTRAP=$(onoff "${1}" $_ent_EXITTRAP)
-((_ent_EXITTRAP)) && trap "$_ent_EXITTRAPFUNCTION" EXIT || trap -- EXIT
+if ((_ent_EXITTRAP)); then
+trap "$_ent_EXITTRAPFUNCTION" EXIT
+else
+trap -- EXIT
+fi
 else
 echo -n ${_ent_EXITTRAP}
 fi
@@ -216,12 +263,14 @@ return 0
 declare -fx trap.set
 declare -x _ent_EXITTRAPFUNCTION='{ cleanup "$?" "${LINENO:-}"; }'
 trap.function() {
-((${#@})) && _ent_EXITTRAPFUNCTION="$1" || echo -n "$_ent_EXITTRAPFUNCTION"
+if ((${#@})); then _ent_EXITTRAPFUNCTION="$1"
+else echo -n "$_ent_EXITTRAPFUNCTION"
+fi
 return 0
 }
 declare -fx trap.function
 synopsis() {
-local xt=0
+local -i xt=0
 while (($#)); do
 case "${1,,}" in
 -x|--exit|exit)	xt=1	;;
@@ -274,7 +323,9 @@ alias msgsys='msg.sys' # legacy
 alias sysmsg='msg.sys' # legacy
 msg.warn() {
 declare log="${1:-}"
-[[ "${log}" == 'log' ]] && shift || log='X'
+if [[ "${log}" == 'log' ]]; then shift
+else log='X'
+fi
 __msgx "$log" warning "${_ent_VERBOSE}" "$@"
 return 0
 }
@@ -314,7 +365,7 @@ msg.line() {
 local sx sz IFS=' '
 sz=( $(stty size) )
 if (( ${#sz[@]} > 0 )); then
-sx=$(( (${sz[1]} - (TABSET * TABWIDTH)) - 1 ))
+sx=$(( (sz[1] - (TABSET * TABWIDTH)) - 1 ))
 else
 sx=$(( (COLUMNS - (TABSET * TABWIDTH)) - 1))
 fi
@@ -429,10 +480,15 @@ return 0
 }
 declare -fx exit_if_already_running
 exit_if_not_root() {
-[[ "$USER" == 'root' || EUID==0 ]] || msg.die "$PRG can only be executed by root user."
+is.root || msg.die "$PRG can only be executed by root user."
 return 0
 }
 declare -fx exit_if_not_root
+is.root() {
+[[ "$USER" == 'root' || $EUID == 0 ]] && return 0
+return 1
+}
+declare -fx is.root
 str_str() {
 local str
 str="${1#*${2}}"
@@ -442,12 +498,12 @@ echo -n "$str"
 
 ask.yn() {
 ((_ent_VERBOSE)) || return 0
-is_tty || return 0
+is.tty || return 0
 local question="${1:-}" yn
-while true; do
 question=$(msg.warn "${question} (y/n)")
 question="${question//$'\n'/ }"
-read -p "${question}" yn
+while true; do
+read -e -n1 -r -p "${question}" yn
 case "${yn,,}" in
 [y]* ) return 0;;
 [n]* ) return 1;;
@@ -456,7 +512,7 @@ esac
 done
 }
 declare -fx ask.yn
-alias askyn='ask.yn'
+alias askyn='ask.yn' # legacy
 entities.help() {
 $ENTITIES/docs/entities.help "$@"
 return 0
@@ -488,12 +544,14 @@ msg.err "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) mis
 return $missing
 }
 declare -fx check.dependencies
-is_tty() {
+is.tty() {
 tty --quiet	# [[ -t 0 ]] is this the same??
 return $?
 }
-declare -fx is_tty
-is_interactive() {
+declare -fx is.tty
+alias is_tty='is.tty'
+
+is.interactive() {
 declare report=${1:-}
 declare -i isit=0 echoit=0
 if [[ -n $report ]]; then
@@ -528,20 +586,27 @@ isit=0
 ((echoit)) && echo "${isit}: STDOUT is attached to a redirection."
 fi
 
-((isit)) && echo 1 || echo 0
-return 0
+return $(( ! isit ))
 }
-declare -fx is_interactive
-breakp() {
+declare -fx is.interactive
+alias is_interactive='is.interactive'
+trap.breakp() {
 local b='' prompt=${1:-}
 ((${#prompt})) && prompt=" $prompt"
 read -e -n1 -p "breakpoint${prompt}: continue? y/n " b
 [[ "${b,,}" == 'y' ]] || exit 1
 }
-declare -fx breakp
-for e in $ENTITIES/entities.d/*.bash; do
-source "$e" || msg.err "Source file [$e] could not be included!"
+declare -fx trap.breakp
+alias breakp='trap.breakp'
+if [[ -d "$ENTITIES/entities.d" ]]; then
+shopt -s globstar
+for _e in $ENTITIES/entities.d/**/*.bash; do
+if [[ -r "$_e" ]]; then
+source "$_e" || msg.err "Source file [$_e] could not be included!"
+fi
 done
+unset _e
+fi
 shopt -s expand_aliases # Enables alias expansion.
 if ! check.dependencies basename dirname readlink mkdir ln cat systemd-cat stty; then
 msg.die 'Dependencies not found. Entities cannot run.'

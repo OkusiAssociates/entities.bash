@@ -1,44 +1,45 @@
 #!/bin/bash
+source entities.bash || exit 1
+	version.set '0.1.420.0.0'
+	verbose.set on
+	strict.set on
+
 main() {
-
-	# list of include files.  leave out the .sh extension
-	templates=( 'std-template' 'std-args.inc' )
-
-	cat <<-hello
-		STD BASH Editing Template
-
-		Create minimal bash startup templates without comments.
-
-	hello
-
-	[[ $OKROOT == '' ]] && path=/usr/share/okusi/include/templates || path="$OKROOT/include/templates"
-
-	cd $path || die "Could not cd into '$path'!"
+	is.root || { msg.err "Require root access."; exit 1; }
 	
-	for template in ${templates[@]}; do
-		# just in case someone put a .sh extension on the template filenames...
-		template=${template//.sh/}
-
-		# remove #comment lines that begin with [space*]#[space]
-		tx=$(grep -v "^[[:space:]]*# " "$path/$template.sh")
-		
-		tx=${tx//std-head.sh/std-head.min.sh}
-		tx=${tx//std-functions.sh/std-functions.min.sh}
-
-		# for horrible spacepeople.
-		# turn tabs into n spaces.
-		#tab=$'\t'; tx="${tx//$tab/  }"
-	
-		echo "$tx" > "$path/$template.min.sh"
-		touch -r "$path/$template.sh" "$path/$template.min.sh"
-		chmod 644 "$path/$template.min.sh"	
-		echo "$path/$template.min.sh created."
+	cmd=()
+	while (($#)); do
+		case "$1" in
+			-V|--version)	echo "$PRG $(version.set)"; exit 0;;
+			-h|--help)		usage exit 1;;
+			-v|--verbose)	verbose.set on;;
+			-q|--quiet)		verbose.set off;;
+			*)						cmd+=( "$1" );;
+		esac
+		shift
 	done
-}
-die() {
-	echo 2> "$1"
-	exit 1
+
+	
+	
 }
 
-main $@
+cleanup() {
+	if [[ "${1:-}" == '' ]];	then exitcode="$?"
+														else exitcode="$1"
+	fi
+	exit "$exitcode"
+}
+
+usage() {
+	cat <<-usage
+		Usage: $PRG 
+		
+	usage
+	[[ ${1:-} == 'exit' ]] && exit 1
+	return 0
+}
+
+main "$@"
 #fin
+
+

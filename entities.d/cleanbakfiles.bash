@@ -5,7 +5,9 @@
 #X Desc    : Remove all *~ files recursively from current directory.
 cleanbakfiles() {
 	local dir=${1-}
-	((${#dir})) || dir=$(pwd) && dir="$(readlink -f "$dir")"
+	if ((${#dir})); then dir="$(readlink -f "$dir")"
+ 									else dir=$(pwd) 
+	fi
 	if [[ -d $dir ]]; then 
 		echo "Cleaning ${dir}..."
 		find "$dir" -name "*~" 			-type f -exec rm {} \;

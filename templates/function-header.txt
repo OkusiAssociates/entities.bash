@@ -1,6 +1,0 @@
-#X
-#X Function|Global|Local : 
-#X Desc     : 
-#X Synopsis : 
-#X Example  : 
-#X See Also :

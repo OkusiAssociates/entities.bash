@@ -1,9 +1,14 @@
 #-Function--verbose.set
   Function: verbose.set
-      Desc: if it's a shell terminal then turn verbose ON by default,
-          : otherwise, called from another script/program, turn verbose OFF.
-          : verbose.set() status is used in the ask.yn() and msg.*() commands.
-          : msg.sys(), msg.die() and msg.crit() will ignore verbose status.
-  Synopsis: verbose.set [[on|1] | [off|0]]
+      Desc: Set global verbose status. For shell terminal verbose ON by default,
+          : otherwise, called from another script, verbose is OFF by default.
+          : verbose.set() status is used in the ask.yn() and some msg.*()
+          : commands, except msg.sys(), msg.die() and msg.crit(), which will
+          : always ignore verbose status.
+  Synopsis: verbose.set [ON|1] | [OFF|0]
           : curstatus=$(verbose.set)
+          : oldverbose=$(verbose.set)
+          : verbose.set on
+          : # do stuff... #
+          : verbose.set $oldverbose
 #-Function--verbose.set-------------------------------------------------------

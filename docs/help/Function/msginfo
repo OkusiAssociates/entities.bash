@@ -1,9 +1,0 @@
-#-Function--msginfo
-  Function: msginfo
-      Desc: output an information message, with option to write to systemd journal.
-  Synopsis: msginfo [log] string [string ...]
-          : 	'log'	if specified, write log entry to journal info. 'log' is positional,
-          : #X					:	and must appear before the strings to be printed.
-          : if verbose() enabled, write string/s to stdout.
-   Example: msginfo "Sir. There's something I think you should know."
-#-Function--msginfo-----------------------------------------------------------

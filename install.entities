@@ -15,6 +15,7 @@ useage() {
 	declare -i production=0
 	declare -i autoinstall=0
 	declare -i install=0
+	declare -i userprofiles=1
 	
 	declare etc_profile_d="/etc/profile.d/entities.env.sh"
 
@@ -77,6 +78,7 @@ main() {
 		case "$1" in
 			--dev|-p|--production)	production=1;;
 			-y|--auto)							autoinstall=1;;
+			-n|--nouserprofiles)		userprofiles=0;;
 			-i|--install)						install=1;;
 			-v|--verbose)						VERBOSE=1;;
 			-q|--quiet)							VERBOSE=0;;
@@ -117,7 +119,7 @@ main() {
 	$PRGDIR/util/_make.minimal.bash --auto	|| msg.die "[PRGDIR=$PRGDIR] make entities.min.bash failed!"
 
 	makeprofile
-	makeuserprofiles
+	((userprofiles)) && makeuserprofiles
 	makeenvirnonment
 	install
 
@@ -148,6 +150,7 @@ makeprofile() {
 # Env: HOME USER HOSTNAME
 makeuserprofiles() {
 	local bashuser user userfile oldprofile profile inent
+	msg.info "Making user's .profile ..."
 	bashuser=$(
 		for u in $(find /home -maxdepth 1 -type d); do 
 			user=$(basename "$u");
@@ -272,7 +275,7 @@ install() {
 	rsync -av $excl entities.min.bash 	"$ENTITIES/" >/dev/null		|| exit 1
 
 	mkdir -p "$ENTITIES/entities.d"
-	rsync -avl $excl entities.d/*	"$ENTITIES/entities.d/" >/dev/null	|| exit 1
+	rsync -avl entities.d/*	"$ENTITIES/entities.d/" >/dev/null	|| exit 1
 
 	mkdir -p "$ENTITIES/php"
 	rsync -avl $excl php/*				"$ENTITIES/php/" >/dev/null					|| exit 1
@@ -301,7 +304,7 @@ install() {
 	cd "$ENTITIES" || exit 1
 	chown root:root * -R
 	declare IFS=$'\n'
-	for f in $(find .); do 
+	for f in $(find | grep -v ".g"); do 
 		[[ -d "$f" ]] && chmod 775 "$f" || chmod u+rw,g+rw,o+rw "$f"
 		fd=$(stat "$f" -c '%y');
 		fd=${fd%% *} 

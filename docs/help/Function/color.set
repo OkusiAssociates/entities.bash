@@ -2,8 +2,10 @@
   Function: color.set
       Desc: turn on/off colorized output from msg.* functions.
           : color is turned off if verbose() is also set to off.
-  Synopsis: color.set [on|1] | [off|0]
+  Synopsis: color.set [ON|1] | [OFF|0]
           : curstatus=$(color.set)
-   Example: color.set off
-          : status=$(color.set)
+          : oldstatus=$(color.set)
+          : color.set off
+          : # do stuff... #
+          : color.set $oldstatus
 #-Function--color.set---------------------------------------------------------

@@ -1,0 +1,6 @@
+#-Function--is.tty
+  Function: is.tty
+      Desc: return 0 if tty available, otherwise 1.
+  Synopsis: is.tty
+   Example: is.tty && ask.yn "Continue?"
+#-Function--is.tty------------------------------------------------------------
