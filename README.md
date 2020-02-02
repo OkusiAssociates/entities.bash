@@ -1,5 +1,7 @@
 # Entities Function Library
 
+Beta -- not production ready
+
 Entities is a lightweight Bash scripting library for systems and network administrators.
 
 To invoke Entities, just [source entitites.bash], at the top of your script, or at the command line.
@@ -11,19 +13,19 @@ Some of the important functions and globals include:
   *  PRG		fq basename of current script name.
   *  PRGDIR	fq path for current script directory.
   
+  * msg{.info|.err|.warn|.crit|.die} [log] message
+  * ask.yn [prompt]
+  * tab.set [++|--|numval]
+  * tab.width [numval]
   * verbose.set [[on|1] | [off|0]]
   * color.set [[on|1] | [off|0]]
   * strict.set [[on|1] | [off|0*]]
   * trap.set [[on|1] | [off|0*]]
   * trap.function [function_name]
-  * tab.set [++|--|numval]
-  * tab.width [numval]
-  * msg[.info|.err|.warn|.crit|.die] [log] message
   * trim strval
   * rtrim strval
   * ltrim strval
   * exit_if_not_root
-  * ask.yn [prompt]
   * check.dependencies [program ...]
   * is_interactive
 
