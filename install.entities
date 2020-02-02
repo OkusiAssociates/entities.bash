@@ -2,15 +2,16 @@
 useage() {
 	echo "$(basename $0)"
 	echo 'entities.bash installation script.'
-	[[ "$USER" == 'root' || $EUID == 0 ]] \
-			|| { echo ''; echo "Requires root to install. Current user is $USER."; }
-	echo "Usage: $(basename $0) [-y|--auto] [--dev]"
+	[[ "${USER:-}" == 'root' || $EUID == 0 ]] \
+			|| { echo ''; echo "Requires root to install. Current user is [${USER:-}]."; }
+	echo ''
+	echo "Usage: $(basename $0) [-y|--auto] [--dev] [-n|--nouserprofiles]"
 	echo '           [-i|--install] [-h|--help]'
 	echo ''
 	exit 1
 }
 	[[ "$@" == "" || "$@" == *"--help"* || "$@" == *"/?"* || "$@" == *-h* ]] && useage
-	[[ $USER == 'root' || $EUID == 0 ]] || useage
+	[[ ${USER:-} == 'root' || ${EUID} == 0 ]] || useage
 
 	declare -i production=0
 	declare -i autoinstall=0
@@ -48,9 +49,15 @@ useage() {
 	# set ENTITIES as the destination (production) directory
 	# 	ENTITIES in this case is the destination directory for the install
 	ENTITIES='/lib/include/entities'
-
+	mkdir -p $ENTITIES
+	
 	# are we trying to install into the install directory?
 	[[ $ENTITIES == $PRGDIR ]] &&	msg.die "Cannot install over installation directory!"		
+
+	# get rid of old symlinks (legacy; remove soon)
+	declare -a del=()
+	del=( $( find $PRGDIR -type l | grep -v 'docs/' | grep -v "./entities$" | grep -v '/string.inc.php$' | grep -v '/entities.help' ) ) || del=()
+	for l in ${del[@]:-}; do msg.info "* removing $l"; rm "$l"; done
 
 	declare env_entities
 	env_entities="$(cat <<-eot
@@ -59,7 +66,7 @@ useage() {
 			#   * Add '${ENTITIES}' path to PATH
 			#   * export ENTITIES='${ENTITIES}'
 			# Installed by $(readlink -f "$0")
-			#   on $(date +'%F %T').420 by ${USER}@${HOSTNAME}
+			#   on $(date +'%F %T').420 by ${USER:-}@${HOSTNAME}
 			# https://github.com/OkusiAssociates/entities.bash
 			if [[ ":\${PATH}:" != *":${ENTITIES}:"* ]]; then
 			  PATH=\${PATH}:${ENTITIES}
@@ -80,8 +87,8 @@ main() {
 			-y|--auto)							autoinstall=1;;
 			-n|--nouserprofiles)		userprofiles=0;;
 			-i|--install)						install=1;;
-			-v|--verbose)						VERBOSE=1;;
-			-q|--quiet)							VERBOSE=0;;
+			-v|--verbose)						verbose.set on;;
+			-q|--quiet)							verbose.set off;;
 			-h|--help)							useage;;
 			*)											msg.die log "Bad command line argument '$1'";;
 		esac
@@ -95,9 +102,9 @@ main() {
 		msg.warn "A version of entities is already installed at $ENTITIES."
 	fi
 	
-	if ((!autoinstall)); then
+	if ((autoinstall==0)); then
 		infotext
-		ask.yn 'Install entities.bash with these settings?' || msg.die ''
+		ask.yn 'Install entities.bash with these settings?' || msg.die 'Exiting...'
 		msg ''
 	fi
 

@@ -48,15 +48,15 @@ main() {
 	done
 
 	tab.set ++
-	for u in /home/*; do 
+	for u in /root /home/*; do 
 		user="$(basename "$u")"
 		id "$user" &>/dev/null || {
 			msg.warn "User $user does not exist.";
 			continue;
 		}
 
-		ualiases="/home/$user/.bash_aliases"
-		if [[ -f "$ualiases" ]]; then
+		ualiases="$u/.bash_aliases"
+		if [[ ! -f "$ualiases" ]]; then
 			msg.info "Creating ${ualiases}..."
 			touch "$ualiases"
 			chown "$user" "$ualiases"

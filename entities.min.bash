@@ -9,7 +9,7 @@ _ent_scriptstatus+='execute|'
 __entities__=0
 while (($#)); do
 case "${1,,}" in
-help|''|-h|--help)
+help|-h|--help)
 echo 'tbd: entities execute help'
 break
 ;;
@@ -79,7 +79,7 @@ done
 ((__entities__)) && return 0;
 _ent_scriptstatus+="reloading|"
 set +o errexit +o nounset +o pipefail
-declare --  LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n'
+declare -x  LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n'
 declare -nx OIFS="OLDIFS"
 onoff() {
 local o="${1:-}"

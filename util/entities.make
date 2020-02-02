@@ -16,11 +16,6 @@ main() {
 	fi
 	msg ''
 	tab.set ++
-
-	msg.info 'Fixing owner-permissions...'
-	fixperms
-	msg ''
-
 	msg.info 'Building version/build file...'
 	IFS='.'
 	declare -a arr
@@ -61,8 +56,11 @@ main() {
 	msg ''
 
 	$entROOT/docs/entities.help.make --auto
-	
-	fixperms	# yes again, just to keep everyone kosher
+	msg ''
+		
+	msg.info 'Fixing owner-permissions...'
+	fixperms
+	msg ''
 }
 
 fixperms() {

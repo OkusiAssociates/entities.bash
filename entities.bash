@@ -47,7 +47,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			while (($#)); do
 				# do options for execute
 		    case "${1,,}" in
-					help|''|-h|--help)
+					help|-h|--help)
 							echo 'tbd: entities execute help'
 							break
 						;;
@@ -148,7 +148,7 @@ set +o errexit +o nounset +o pipefail
 #X          : IFS=$' \\t\\n'  # 'standard' IFS
 #X Example  : str = "${LF}${CH9}This is a wrapping string.${LF}{$CH9}This is another sentence."
 #X          : echo -e "$str"
-declare --  LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n'
+declare -x  LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n'
 declare -nx OIFS="OLDIFS"
 
 
