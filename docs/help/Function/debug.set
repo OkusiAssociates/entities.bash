@@ -1,9 +1,1 @@
-#-Function--debug.set
-  Function: debug.set
-      Desc: general purpose global var for debugging.
-  Synopsis: debug.set [[on|1] | [off|0]]
-          : $(debug.set)
-  Defaults: 0
-   Example: debug.set on
-          : ((debug.set)) && msg "my debug message"
-#-Function--debug.set---------------------------------------------------------
+debug

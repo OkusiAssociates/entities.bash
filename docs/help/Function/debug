@@ -1,0 +1,16 @@
+#-Function--debug
+  Function: debug debug.set
+      Desc: general purpose global setting for debugging.
+          : debug.set sets the debug value (0|1) when a
+          : parameter is passed. If a parameter is not passed,
+          : the current status of debug is echoed.
+          : debug is a conditional test function, returning
+          : !(debug.set).
+  Synopsis: debug.set [[on|1] | [off|0]]
+          : $(debug.set)
+          : debug
+  Defaults: 0|off
+   Example: debug.set on
+          : debug && msg "my debug message"
+          : olddebug=$(debug.set)
+#-Function--debug-------------------------------------------------------------

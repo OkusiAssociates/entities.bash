@@ -266,17 +266,26 @@ dryrun.set() {
 }
 declare -fx dryrun.set
 
-#X Function : debug.set
-#X Desc     : general purpose global var for debugging. 
-#X Defaults : 0
-#X Synopsis : debug.set [[on|1] | [off|0]]
-#X          : $(debug.set)
-#X Example  : debug.set on
-#X          : ((debug.set)) && msg "my debug message"
+#X Function: debug debug.set
+#X Desc    : general purpose global setting for debugging. 
+#X         : debug.set sets the debug value (0|1) when a 
+#X         : parameter is passed. If a parameter is not passed, 
+#X         : the current status of debug is echoed.
+#X         : debug is a conditional test function, returning 
+#X         : !(debug.set).
+#X Defaults: 0|off
+#X Synopsis: debug.set [[on|1] | [off|0]]
+#X         : $(debug.set)
+#X         : debug
+#X Example : debug.set on
+#X         : debug && msg "my debug message"
+#X         : olddebug=$(debug.set)
 declare -ix _ent_DEBUG=0
+debug() {	return $(( ! _ent_DEBUG )); }
+declare -fx debug
 debug.set() {
-	if ((${#@})); then _ent_DEBUG=$(("$1"))
-								else echo -n ${_ent_DEBUG}
+	if ((${#@})); then 	_ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
+	else								echo ${_ent_DEBUG}
 	fi
 	return 0
 }

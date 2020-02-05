@@ -140,9 +140,11 @@ return 0
 }
 declare -fx dryrun.set
 declare -ix _ent_DEBUG=0
+debug() {	return $(( ! _ent_DEBUG )); }
+declare -fx debug
 debug.set() {
-if ((${#@})); then _ent_DEBUG=$(("$1"))
-else echo -n ${_ent_DEBUG}
+if ((${#@})); then 	_ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
+else								echo ${_ent_DEBUG}
 fi
 return 0
 }
