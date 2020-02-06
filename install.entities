@@ -56,7 +56,7 @@ useage() {
 
 	# get rid of old symlinks (legacy; remove soon)
 	declare -a del=()
-	del=( $( find $PRGDIR -type l | grep -v 'docs/' | grep -v "./entities$" | grep -v '/string.inc.php$' | grep -v '/entities.help' ) ) || del=()
+	del=( $( /usr/bin/find $PRGDIR -type l | grep -v 'docs/' | grep -v "./entities$" | grep -v '/string.inc.php$' | grep -v '/entities.help' ) ) || del=()
 	for l in ${del[@]:-}; do msg.info "* removing $l"; rm "$l"; done
 
 	declare env_entities
@@ -173,7 +173,7 @@ makeuserprofiles() {
 			tab.set ++
 			msg.warn "$userfile was not found. creating..."
 			tab.set --
-			touch "$userfile"; chown "$user" "$userfile"; chmod 640 "$userfile"
+			/usr/bin/touch "$userfile"; chown "$user" "$userfile"; chmod 640 "$userfile"
 		fi	
 
 		oldprofile=''
@@ -278,23 +278,23 @@ install() {
 	msg.info "Start creating $ENTITIES"
 	mkdir -p "$ENTITIES" || exit 1	
 	[[ -d "$ENTITIES" ]] || exit 1
-	rsync -av $excl entities.bash 			"$ENTITIES/" >/dev/null		|| exit 1
-	rsync -av $excl entities.min.bash 	"$ENTITIES/" >/dev/null		|| exit 1
+	/usr/bin/rsync -av $excl entities.bash 			"$ENTITIES/" >/dev/null		|| exit 1
+	/usr/bin/rsync -av $excl entities.min.bash 	"$ENTITIES/" >/dev/null		|| exit 1
 
 	mkdir -p "$ENTITIES/entities.d"
-	rsync -avl entities.d/*	"$ENTITIES/entities.d/" >/dev/null	|| exit 1
+	/usr/bin/rsync -avl entities.d/*	"$ENTITIES/entities.d/" >/dev/null	|| exit 1
 
 	mkdir -p "$ENTITIES/php"
-	rsync -avl $excl php/*				"$ENTITIES/php/" >/dev/null					|| exit 1
+	/usr/bin/rsync -avl $excl php/*				"$ENTITIES/php/" >/dev/null					|| exit 1
 
 	mkdir -p "$ENTITIES/docs/help"
-	rsync -avl $excl docs/*				"$ENTITIES/docs/" >/dev/null				|| exit 1
+	/usr/bin/rsync -avl $excl docs/*				"$ENTITIES/docs/" >/dev/null				|| exit 1
 
 	mkdir -p "$ENTITIES/templates"
-	rsync -avl $excl templates/*	"$ENTITIES/templates/" >/dev/null	|| exit 1
+	/usr/bin/rsync -avl $excl templates/*	"$ENTITIES/templates/" >/dev/null	|| exit 1
 
 	mkdir -p "$ENTITIES/util"
-	rsync -avl $excl util/*			"$ENTITIES/util/" >/dev/null				|| exit 1
+	/usr/bin/rsync -avl $excl util/*			"$ENTITIES/util/" >/dev/null				|| exit 1
 
 #	if [[ ! -L "$ENTITIES/entities-user.inc.sh" ]]; then
 #		ln -s ~/entities-user.inc.sh "$ENTITIES/entities-user.inc.sh"
@@ -311,11 +311,11 @@ install() {
 	cd "$ENTITIES" || exit 1
 	chown root:root * -R
 	declare IFS=$'\n'
-	for f in $(find | grep -v ".g"); do 
+	for f in $(/usr/bin/find | grep -v ".g"); do 
 		[[ -d "$f" ]] && chmod 775 "$f" || chmod u+rw,g+rw,o+rw "$f"
 		fd=$(stat "$f" -c '%y');
 		fd=${fd%% *} 
-		touch -h -d "$(date +'%F 04:20:00' -d $fd)" "$f"
+		/usr/bin/touch -h -d "$(date +'%F 04:20:00' -d $fd)" "$f"
 	done
 
 	# back to base	

@@ -37,7 +37,7 @@ declare -- PRG PRGDIR
 declare -x _ent_scriptstatus="\$0=$0|"
 
 	# is script is being run?
-	if ((SHLVL > 1)) || [[ ! $0 == *'bash' ]]; then
+	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
 		p_="$(/bin/readlink -f "${0}")"
 		_ent_scriptstatus+="script|\$p_=$p_|"
 		# has entities.bash been executed?
@@ -110,7 +110,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
             ((SHLVL>1)) && exit 1
 						return 1
 					else
-						rsync -qavl $ENTITIES/* "$_tmp/"
+						/usr/bin/rsync -qavl $ENTITIES/* "$_tmp/"
 						(( $? )) &&	{ echo >&2 "rsync error $ENTITIES > $_tmp"; return 0; } 
 						[[ -n ${ENTITIES:-} ]] && PATH="${PATH//${ENTITIES}/}:$_tmp"
 						export PATH=${PATH//::/:}
@@ -999,19 +999,22 @@ if [[ -d "$ENTITIES/entities.d" ]]; then
 	shopt -s globstar
 	for _e in $ENTITIES/entities.d/**/*.bash; do
 		if [[ -r "$_e" ]]; then
-			source "$_e" || msg.err "Source file [$_e] could not be included!"
+			if [[ ! -L "$_e" ]] ; then
+				source "$_e" || msg.warn "**Source file [$_e] could not be included!" && true
+			fi
 		fi
 	done
 	unset _e
 fi
-
 #-Function Declarations End --------------------------------------------------
 
 
 # expand all the aliases defined above.
 shopt -s expand_aliases # Enables alias expansion.
 
-if ! check.dependencies basename dirname readlink mkdir ln cat systemd-cat stty; then
+if ! check.dependencies \
+		basename dirname readlink mkdir ln cat \
+    systemd-cat stty wget base64 seq tty find touch tree lynx; then
 	msg.die 'Dependencies not found. Entities cannot run.'	
 fi 
 

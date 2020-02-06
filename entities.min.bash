@@ -1,7 +1,7 @@
 #!/bin/bash
 declare -- PRG PRGDIR
 declare -x _ent_scriptstatus="\$0=$0|"
-if ((SHLVL > 1)) || [[ ! $0 == *'bash' ]]; then
+if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
 p_="$(/bin/readlink -f "${0}")"
 _ent_scriptstatus+="script|\$p_=$p_|"
 if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
@@ -604,7 +604,9 @@ if [[ -d "$ENTITIES/entities.d" ]]; then
 shopt -s globstar
 for _e in $ENTITIES/entities.d/**/*.bash; do
 if [[ -r "$_e" ]]; then
-source "$_e" || msg.err "Source file [$_e] could not be included!"
+if [[ ! -L "$_e" ]] ; then
+source "$_e" || msg.warn "**Source file [$_e] could not be included!" && true
+fi
 fi
 done
 unset _e

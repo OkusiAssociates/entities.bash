@@ -1,0 +1,10 @@
+#!/bin/bash
+	PRG=$(basename "$0")
+	PRGDIR=$(readlink -f $(dirname "$0"))
+
+	source $PRGDIR/$PRG.bash
+
+	$PRG "$@"
+
+
+

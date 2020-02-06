@@ -60,7 +60,7 @@ display_tree() {
 	pwd="$(pwd)"
 
 	cd "$helpfilesdir" || msgdie "cd err"
-		tree --noreport -H ./ -T "entities.bash help files" "$(pwd)" > "$htmfile"
+		/usr/bin/tree --noreport -H ./ -T "entities.bash help files" "$(pwd)" > "$htmfile"
 		# clean up html output
 		tmp=$(cat "$htmfile")
 		tmp="${tmp/<!--/}" 
@@ -72,7 +72,7 @@ display_tree() {
 		chmod 666 "$htmfile"
 	cd "$pwd"
 
-	lynx "$helpfilesdir/index.html" 
+	/usr/bin/lynx "$helpfilesdir/index.html" 
 
 	return 0 
 }

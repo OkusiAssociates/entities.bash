@@ -61,7 +61,7 @@ main() {
 		)
 
 		# make timestamps the same for *.bash and *.min.bash
-		touch -r "$path/$template.bash" "$mintemplate" || msg.die "File touch $mintemplate failed!"
+		/usr/bin/touch -r "$path/$template.bash" "$mintemplate" || msg.die "File touch $mintemplate failed!"
 		
 		# check permissions
 		chmod 644 "$mintemplate"	|| msg.die "Could not chmod $mintemplate!"

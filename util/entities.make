@@ -68,8 +68,8 @@ fixperms() {
 	pwd=$(pwd)
 	cd "$entROOT" || exit 1
 	chown sysadmin:sysadmin * -R || exit
-	find -type d -exec chmod 770 {} \;
-	find -type f -exec chmod u+rw,g+rw,o-w {} \;
+	/usr/bin/find -type d -exec chmod 770 {} \;
+	/usr/bin/find -type f -exec chmod u+rw,g+rw,o-w {} \;
 	cd "$pwd"
 }
 
