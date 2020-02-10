@@ -60,7 +60,7 @@ echo >&2 "Load directory $_tmp not found!"
 ((SHLVL>1)) && exit 1
 return 1
 else
-rsync -qavl $ENTITIES/* "$_tmp/"
+/usr/bin/rsync -qavl $ENTITIES/* "$_tmp/"
 (( $? )) &&	{ echo >&2 "rsync error $ENTITIES > $_tmp"; return 0; }
 [[ -n ${ENTITIES:-} ]] && PATH="${PATH//${ENTITIES}/}:$_tmp"
 export PATH=${PATH//::/:}
@@ -105,11 +105,19 @@ return 0
 }
 declare -fx verbose.set
 declare -ix _ent_COLOR=1
+color() { return $(( ! _ent_COLOR)); }
+declare -fx color
 color.set() {
-if ((${#@})); then _ent_COLOR=$(onoff "${1}" "${_ent_COLOR}")
-else echo -n "${_ent_COLOR}"
+if ((${#@})); then
+if [[ $1 == 'auto' ]]; then
+is.tty && status=1 || status=0
+else
+status=$1
 fi
-return 0
+_ent_COLOR=$(onoff "${status}" "${_ent_COLOR}")
+else
+echo -n "${_ent_COLOR}"
+fi
 }
 declare -fx color.set
 alias colour.set='color.set'		# for the civilised world
@@ -487,16 +495,10 @@ return 0
 }
 declare -fx exit_if_not_root
 is.root() {
-[[ "$USER" == 'root' || $EUID == 0 ]] && return 0
+[[ "$(whoami)" == 'root' || $EUID == 0 ]] && return 0
 return 1
 }
 declare -fx is.root
-str_str() {
-local str
-str="${1#*${2}}"
-str="${str%%${3}*}"
-echo -n "$str"
-}
 
 ask.yn() {
 ((_ent_VERBOSE)) || return 0
@@ -588,6 +590,9 @@ isit=0
 ((echoit)) && echo "${isit}: STDOUT is attached to a redirection."
 fi
 
+if ((echoit)); then
+((isit)) && echo '1: is interactive' || echo '0: is not interactive'
+fi
 return $(( ! isit ))
 }
 declare -fx is.interactive
@@ -612,7 +617,9 @@ done
 unset _e
 fi
 shopt -s expand_aliases # Enables alias expansion.
-if ! check.dependencies basename dirname readlink mkdir ln cat systemd-cat stty; then
+if ! check.dependencies \
+basename dirname readlink mkdir ln cat \
+systemd-cat stty wget base64 seq tty find touch tree lynx; then
 msg.die 'Dependencies not found. Entities cannot run.'
 fi
 declare -xig __entities__=1

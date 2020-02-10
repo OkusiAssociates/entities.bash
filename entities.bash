@@ -3,7 +3,14 @@
 # shellcheck disable=SC2154
 # shellcheck disable=SC1090
 
-#X Intro    : entities.bash
+# Bash only
+
+#libfunc1() { ...; }
+#libfunc2() { ...; }
+#sourced() { [[ ${FUNCNAME[1]} = source ]]; }
+#sourced && return
+
+# process command line arguments, etc.#X Intro    : entities.bash
 #X Desc     : Entities Functions/Globals/Locals Declarations and Initialisations.
 #X          : entities.bash is a light-weight function library for productive
 #X          : programmers and administrators. - the soft machine
@@ -199,7 +206,7 @@ declare -fx verbose.set
 #X Function : color.set
 #X Desc     : turn on/off colorized output from msg.* functions.
 #X          : color is turned off if verbose() is also set to off.
-#X Synopsis : color.set [ON|1] | [OFF|0]
+#X Synopsis : color.set [ON|1 | OFF|0 | auto]
 #X          : curstatus=$(color.set)
 #X Example  : 
 #X          : oldstatus=$(color.set)
@@ -207,11 +214,19 @@ declare -fx verbose.set
 #X          : # do stuff... #
 #X          : color.set $oldstatus
 declare -ix _ent_COLOR=1
+color() { return $(( ! _ent_COLOR)); }
+declare -fx color
 color.set() {
-	if ((${#@})); then _ent_COLOR=$(onoff "${1}" "${_ent_COLOR}")
-								else echo -n "${_ent_COLOR}"
+	if ((${#@})); then 
+		if [[ $1 == 'auto' ]]; then
+			is.tty && status=1 || status=0
+		else
+			status=$1
+		fi
+		_ent_COLOR=$(onoff "${status}" "${_ent_COLOR}")
+	else 
+		echo -n "${_ent_COLOR}"
 	fi
-	return 0   
 }
 declare -fx color.set
 	alias colour.set='color.set'		# for the civilised world
@@ -822,24 +837,12 @@ exit_if_not_root() {
 }
 declare -fx exit_if_not_root
 
-
 is.root() {
-	[[ "$USER" == 'root' || $EUID == 0 ]] && return 0
+	[[ "$(whoami)" == 'root' || $EUID == 0 ]] && return 0
 	return 1
 }
 declare -fx is.root
 
-
-#X Function : str_str
-#X Desc     : return string that occurs between two strings
-#X Synopsis : str_str string beginstr endstr 
-#X Example  : param=$(str_str "this is a [[test]]] of str_str" '[[' ']]'
-str_str() {
-	local str
-	str="${1#*${2}}"
- 	str="${str%%${3}*}"
- 	echo -n "$str"
-}
 	
 #X Function : ask.yn
 #X Desc     : ask y/n question and return 0/1 
@@ -970,7 +973,9 @@ is.interactive() {
 	fi
 	
 	# echo the result
-	#((isit)) && echo 1 || echo 0
+	if ((echoit)); then
+		((isit)) && echo '1: is interactive' || echo '0: is not interactive'
+	fi
 
 	return $(( ! isit ))
 }

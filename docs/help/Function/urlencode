@@ -1,0 +1,5 @@
+#-Function--urlencode
+  Function: urlencode
+      Desc: URL-encode string
+  Synopsis: urlencode string
+#-Function--urlencode---------------------------------------------------------

@@ -1,0 +1,169 @@
+#!/bin/bash
+	source entities.bash new || { echo >&2 "Could not open entities.bash!"; exit 1; }
+	version.set "1.0"
+	strict.set off
+	verbose.set on
+	trap.set on
+	
+	[[ -z "$EDITOR" ]] && export EDITOR="$(which joe) -tab 2 --wordwrap --autoindent"
+	[[ -z "$EDITOR" ]] &&	export EDITOR=$(which nano)
+	[[ -z "$EDITOR" ]] &&	export EDITOR=$(which vi)
+	
+	tmpfile=/tmp/p-$RANDOM-$$
+	CH9=$'\t'
+
+main() {
+	local file='' ftype=''
+	local -i line=0 syntaxerr=0
+	local -i shellcheck=0 syntaxcheck=1 execute=0
+
+	local -a cmd=()
+	while (($#)); do
+		case "$1" in
+			-l|--line)				shift; line=$((${1:-1}));;
+			-s|--shellcheck)	shellcheck=1;;
+			-n|--nosyntax)		syntaxcheck=0;;
+			-x|--execute)			execute=1;;
+			-h|--help)				usage;;
+			*)								cmd+=("$1");;
+		esac
+		shift
+	done
+	(( ${#cmd[@]} != 1 )) && usage "Too many filenames specified [${cmd[*]}].";
+	file="$(readlink -f "${cmd[0]}")"
+
+	if [[ ! -f "${file}" ]]; then
+		if [[ -f "${file}.php" ]]; then
+			ftype='php'
+		elif [[ -f "${file}.sh" ]]; then
+			ftype='sh'
+		else
+			msg.die "File '$file' not found!"
+		fi
+		file="${file}.${ftype}"
+	else
+		ext="${file##*.}"
+		if 		[[ "$ext" == 'php' ]];	then 
+			ftype='php'
+		elif 	[[ "$ext" == 'sh'	|| "$ext" == 'bash' ]]; then 
+			ftype='sh'
+		else
+			hd=$(head -n1 "$file")
+			hd=${hd%% *}
+			if [[ $hd == "#!$(which bash)" || $hd == "#!$(which sh)" ]]; then 
+				ftype='sh' 
+			elif [[ $hd == "#!$(which php)" || "${hd:0:2}" == '<?' ]]; then 
+				ftype='php' 
+			else 
+				msg.die "$file is not a bash or php script!"
+			fi
+		fi
+	fi
+
+	$EDITOR $( ((line)) && echo "+${line}" ) "$file"
+
+	#--syntax check --------------
+	if ((syntaxcheck)); then
+		if [[ "${ftype}" == 'php' ]]; then
+			msg.info "$(php -l "${file}" 2>&1 | tee "$tmpfile")"
+			hd="$(head -n1 "$tmpfile")"
+			if [[ "${hd:0:9}" != 'No syntax' ]]; then
+				syntaxerr=1
+				l=$(trim "${hd##*on line }")
+				if [[ -z "$l" ]]; then line=0
+													else line=$(( l ))
+				fi
+			fi
+		else
+			msg.info "$(bash -n "${file}" 2>&1 | tee "$tmpfile")"
+			hd="$(head -n1 "$tmpfile")"
+			if [[ "${hd}" != '' ]]; then
+				syntaxerr=1
+				l="${hd##*: line }"
+				l=${l//${CH9}/ }
+				l=$(trim "${l%%:*}")
+				if [[ -z "$l" ]]; then line=0
+													else line=$l
+				fi
+			fi
+		fi
+
+		if ((syntaxerr)); then
+			if ask.yn "Re-edit $file [$line]?"; then
+				$PRGDIR/$PRG "$file" --line $line $( ((execute)) && echo '-x' )
+				exit
+			fi
+		fi
+	fi #^^ syntaxcheck -----------
+
+	#--shell check ---------------
+	if [[ $ftype == 'sh' ]] && ((shellcheck)); then
+		$(which shellcheck) $file
+	fi
+	#^^shell check ---------------
+
+	#--execute script ------------
+	if ((execute)) && ((! syntaxerr)); then
+		if ask.yn "Execute $file?"; then
+			if [[ $ftype == 'php' ]]; then
+				$(which php) "$file"
+			elif [[ $ftype == 'sh' ]]; then
+				$(which bash) "$file"
+			fi
+		fi
+	fi
+	#^^execute script ------------
+
+}
+
+
+cleanup() {
+	if [[ -z "${1:-}" ]]; then exitcode=$?
+										else exitcode=$((${1}))
+	fi
+	rm -f "$tmpfile"
+	exit $exitcode
+}
+
+printTitle() { echo "$PRG vs $(version.set)"; }
+usage() {
+	(($#)) && msg.err "$PRG: ${1}\n"
+	printTitle
+	msg ''
+	msg "Edit and syntax check text file, starting at rownum if specified."
+	msg "Scripts without .sh or .bash extentions are autodetected from header."
+	msg ''
+	msg "Synopsis: $PRG {filename} [--line {linenum}] [--shellcheck] [--nosyntaxcheck] [--execute]"
+	tab.set ++
+	msg 'Where {filename} is any text file.'
+	msg 'Syntax highlighting based on extension or header.'
+	msg 'Syntax checking for bash and php.'
+	msg 'Shellcheck for bash.'
+	msg ''
+	tab.set --
+	msg "Options:"
+	tab.set ++
+	msg "--line|-l {linenum}"
+	tab.set ++
+	msg "start editing at position {linenum}."
+	tab.set --
+	msg "--nosyntaxcheck|-n"
+	tab.set ++
+	msg "do not do syntax check after editing (bash/php only)."
+	tab.set --
+	msg "--shellcheck|-s"
+	tab.set ++
+	msg "execute shellcheck after editing and syntax checking (bash only)."
+	tab.set --
+	msg "--execute|-x"
+	tab.set ++
+	msg "execute script after editing or syntax check (asks first)."
+	tab.set 0
+	msg ''
+	msg "\$EDITOR=$EDITOR"
+	msg ''
+	exit 1
+}
+
+main "$@"
+#fin
