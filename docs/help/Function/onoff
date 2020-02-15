@@ -1,7 +1,7 @@
 #-Function--onoff
   Function: onoff
-      Desc: return 1 if 'on', 0 if 'off'
+      Desc: echo 1 if 'on', 0 if 'off'
   Synopsis: onoff [on|1] | [off|0]] [defaultval]
-          : for ambiguous value, return 'defaultval' if defined, otherwise return 0.
+          : for ambiguous value, echo 'defaultval' if defined, otherwise echo 0.
    Example: result=$(onoff off 1)
 #-Function--onoff-------------------------------------------------------------

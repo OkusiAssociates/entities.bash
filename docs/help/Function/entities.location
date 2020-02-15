@@ -1,0 +1,4 @@
+#-Function--entities.location
+  Function: entities.location
+      Desc: return with current setting for ENTITIES and PATH
+#-Function--entities.location-------------------------------------------------

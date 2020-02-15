@@ -65,7 +65,7 @@ main() {
 	((verbose))		|| gcmd+=("-s")
 
 	# report
-	((${#prefix})) && printf "$hashbang\n"
+	((${#prefix})) && printf '$s\n' "$hashbang"
 	msg "# $PRG $dir --hashbang '$hashbang'"
 	((${#search}))  && msg " --search '$search'"
 	((${#gcmd[@]})) && msg " --grep ${gcmd[*]}"
@@ -83,15 +83,16 @@ main() {
 		fi
 	done
 	((! ${#LF})) && msg '\n'
-	msg "# $ccc file$(((ccc!=1)) && echo s) found\n"
+	msg "# ${ccc} file$( ((ccc!=1)) && echo 's') found\n"
 }
 
 
 msg() {
 	((verbose)) && echo -en "${1:-}" 
+	return 0
 }
 
-printTitle() { echo "$(basename $0) vs $(version.set)" ; }
+printTitle() { echo "$(basename $0) vs $(version.set)" ; return 0; }
 usage() {
 	local PRG=$(basename "$0")
 	printTitle

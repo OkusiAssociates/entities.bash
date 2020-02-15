@@ -2,9 +2,9 @@
 # shellcheck disable=SC2035
 # shellcheck disable=SC2154
 # shellcheck disable=SC1090
+# shellcheck disable=SC2086
 
 # Bash only
-
 #libfunc1() { ...; }
 #libfunc2() { ...; }
 #sourced() { [[ ${FUNCNAME[1]} = source ]]; }
@@ -46,10 +46,10 @@ declare -x _ent_scriptstatus="\$0=$0|"
 	# is script is being run?
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
 		p_="$(/bin/readlink -f "${0}")"
-		_ent_scriptstatus+="script|\$p_=$p_|"
+		_ent_scriptstatus+="is.script|\$p_=$p_|"
 		# has entities.bash been executed?
 		if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
-			_ent_scriptstatus+='execute|'
+			_ent_scriptstatus+='is.execute|'
 			__entities__=0
 			while (($#)); do
 				# do options for execute
@@ -67,7 +67,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			done		
 			exit
 		fi
-		_ent_scriptstatus+="sourced-from-script|SHLVL=$SHLVL|"
+		_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
 		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
@@ -99,37 +99,36 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		case "${1,,}" in
 			# new load
 			new) 
-					__entities__=0
-					;;
+				__entities__=0
+				;;
 			# does the calling script wish to inherit the current Entities environment/functions?
 			# (inherit is the default)
 			''|inherit|preserve)						
-					# can only inherit if called from a script
-					__entities__=${__entities__:-}
-					;;
+				# can only inherit if called from a script
+				__entities__=${__entities__:-}
+				;;
 			# load entities into a new location (like a ram drive)
 			load) 
-					shift
-					_tmp="${1:-}"
-					mkdir -p "$_tmp"
-					if [[ ! -d "$_tmp" ]]; then
-						echo >&2 "Load directory $_tmp not found!"
-            ((SHLVL>1)) && exit 1
-						return 1
-					else
-						/usr/bin/rsync -qavl $ENTITIES/* "$_tmp/"
-						(( $? )) &&	{ echo >&2 "rsync error $ENTITIES > $_tmp"; return 0; } 
-						[[ -n ${ENTITIES:-} ]] && PATH="${PATH//${ENTITIES}/}:$_tmp"
-						export PATH=${PATH//::/:}
-						export ENTITIES=${_tmp}
-						unset _tmp
-						__entities__=0
-						source "$ENTITIES/entities.bash" new
-						((SHLVL>1)) && exit 
-						return
-					fi			
-					;;
-
+				shift
+				_tmp="${1:-}"
+				mkdir -p "$_tmp"
+				if [[ ! -d "$_tmp" ]]; then
+					echo >&2 "Load directory $_tmp not found!"
+           ((SHLVL>1)) && exit 1
+					return 1
+				else
+					/usr/bin/rsync -qavl $ENTITIES/* "$_tmp/"
+					(( $? )) &&	{ echo >&2 "rsync error $ENTITIES > $_tmp"; return 0; } 
+					[[ -n ${ENTITIES:-} ]] && PATH="${PATH//${ENTITIES}/}:$_tmp"
+					export PATH=${PATH//::/:}
+					export ENTITIES=${_tmp}
+					unset _tmp
+					__entities__=0
+					source "$ENTITIES/entities.bash" new
+					((SHLVL>1)) && exit 
+					return
+				fi			
+				;;
 			# all other passed parameters are ignored (probably script paramters, not for entities)
 			*)	break;;
 		esac
@@ -143,6 +142,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 ((__entities__)) && return 0;
 #echo 'reloading...'
 _ent_scriptstatus+="reloading|"
+
 
 # turn off strict! (strict is default)
 set +o errexit +o nounset +o pipefail
@@ -160,18 +160,16 @@ declare -nx OIFS="OLDIFS"
 
 
 #X Function : onoff 
-#X Desc     : return 1 if 'on', 0 if 'off'
+#X Desc     : echo 1 if 'on', 0 if 'off'
 #X Synopsis : onoff [on|1] | [off|0]] [defaultval]
-#X          : for ambiguous value, return 'defaultval' if defined, otherwise return 0.
+#X          : for ambiguous value, echo 'defaultval' if defined, otherwise echo 0.
 #X Example  : result=$(onoff off 1)
 onoff() {
-	local o="${1:-}"
+	local o="${1:-0}"
 	case "${o,,}" in
 		on|1)			o=1;;
 		off|0)		o=0;;
-		*)				if [[ ${2:-} ]]; 	then o=$(( ${2} ))
-																else o=0 # yes, i know. but what am i to do?
-							fi;;
+    *)        (( $# > 1 )) && o=$(( ${2} )) || o=0 
 	esac
 	echo -n $((o))
 	return 0
@@ -193,13 +191,15 @@ declare -fx onoff
 #X          : # do stuff... #
 #X          : verbose.set $oldverbose
 declare -ix _ent_VERBOSE=$( [[ -t 0 ]] && echo 1 || echo 0)
+verbose() { return $((! _ent_VERBOSE)); }
+declare -fx verbose
 verbose.set() {   
 	if ((${#@})); then
 		_ent_VERBOSE=$(onoff "${1}")
 	else
 		echo -n ${_ent_VERBOSE}
 	fi
-	return 0    	
+	return 0
 }
 declare -fx verbose.set
 
@@ -214,7 +214,7 @@ declare -fx verbose.set
 #X          : # do stuff... #
 #X          : color.set $oldstatus
 declare -ix _ent_COLOR=1
-color() { return $(( ! _ent_COLOR)); }
+color() { return $((! _ent_COLOR)); }
 declare -fx color
 color.set() {
 	if ((${#@})); then 
@@ -227,6 +227,7 @@ color.set() {
 	else 
 		echo -n "${_ent_COLOR}"
 	fi
+	return 0
 }
 declare -fx color.set
 	alias colour.set='color.set'		# for the civilised world
@@ -256,6 +257,8 @@ declare  -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 #X Example  : version.set '4.20 beta'
 #X          : ver=$(version.set)
 declare -x _ent_SCRIPT_VERSION='0.00 prealpha'
+version() { echo -n "$_ent_SCRIPT_VERSION"; return 0; }
+declare -fx version
 version.set() {
 	if ((${#@})); then _ent_SCRIPT_VERSION="$1"
 								else echo -n "${_ent_SCRIPT_VERSION}"
@@ -273,6 +276,8 @@ declare -fx version.set
 #X Example  : dryrun.set off
 #X          : ((dryrun.set)) || doit.sh
 declare -ix _ent_DRYRUN=0
+dryrun() { return $((! _ent_DRYRUN)); }
+declare -fx dryrun
 dryrun.set() {
 	if ((${#@})); then _ent_DRYRUN=$(("$1"))
 								else echo -n ${_ent_DRYRUN}
@@ -296,7 +301,7 @@ declare -fx dryrun.set
 #X         : debug && msg "my debug message"
 #X         : olddebug=$(debug.set)
 declare -ix _ent_DEBUG=0
-debug() {	return $(( ! _ent_DEBUG )); }
+debug() {	return $((! _ent_DEBUG)); }
 declare -fx debug
 debug.set() {
 	if ((${#@})); then 	_ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
@@ -305,115 +310,6 @@ debug.set() {
 	return 0
 }
 declare -fx debug.set
-
-
-# lockfile constants and functions
-declare -x  _ent_LOCKFILE=''
-declare -ax _ent_LOCKFILES=()
-declare -ix _ent_LOCKTIMEOUT=86400
-
-#X Function : lockfile
-#X Desc     : return name of current lock file in lockfiles() stack,
-#X          : and optionally add a new lockfile.
-#X          : default is one day. if you are using the .lockfile system,
-#X          : you may wish to set this very differently
-#X Synopsis : lockfile [newlockfile]
-#X Example  : lck=$(lockfile)
-lockfile() {
-	if ((${#@})); then lockfile.add "$1"
-								else echo -n "${_ent_LOCKFILE}"
-	fi
-	return 0
-}
-declare -fx lockfile
-#X Function : lockfiles
-#X Desc     : return array of locked files
-#X Synopsis : lockfiles
-#X Example  : files=$(lockfiles)
-lockfiles() {
-	echo -n "${_ent_LOCKFILES[@]}"
-	return 0
-}
-declare -fx lockfiles
-#X Function : lockfiles.add
-#X Desc     : add a lock file to lockfiles stack
-#X Synopsis : lockfiles.add [filename [timeout]] [filename timeout]...
-#X Example  : files=$(lockfiles.add)
-lockfiles.add() {
-	# validate
-	if (( ${#@} == 0 )); then
-		lockfiles.add "/run/lock/$PRG.$RANDOM" "${_ent_LOCKTIMEOUT}"
-		return 0
-	elif (( ${#@} % 2 )); then
-		lockfiles.add "$@" "${_ent_LOCKTIMEOUT}"
-		return 0
-	fi
-	# make new lock files
-	declare -a newlockfiles=($@)
-	local -i j i
-	local lk='' to=''
-	for ((i=0; i < ${#newlockfiles[@]}; i+=2)); do
-		j=$((i+1))
-		lk="${newlockfiles[$i]}"
-		to="${newlockfiles[$j]}"
-		ts=$(date +'%s')
-		to=$((ts+_ent_LOCKTIMEOUT))
-		mkdir -p $(dirname "${lk}")
-		cat > "$lk" <<-eot
-			declare _LockingScript="$0"
-			declare -i _LockCreated=${ts} # $(date +'%F %T' -d @${ts})
-			declare -i _LockExpire=${to}  # $(date +'%F %T' -d @${to})
-		eot
-		_ent_LOCKFILE="$lk"
-		_ent_LOCKFILES+=("${_ent_LOCKFILE}")
-	done
-	return 0
-}
-declare -fx lockfiles.add
-#X Function : lockfiles.delete
-#X Desc     : delete a lockfile. Whenever a lock is removed, lockfile() is assisgned to be 
-#X          : the last item in the lockfiles() stack
-#X Synopsis : lockfiles.delete [lockfile]
-#X Example  : lockfiles.delete
-lockfiles.delete() {
-	if ((${#@})); then
-		local lk lf
-		for lk in ${@}; do
-			rm -f "${lk}"
-			_ent_LOCKFILES=( ${_ent_LOCKFILES[@]/$lk} )
-			lf=${#_ent_LOCKFILES[@]}; ((lf+=-1))
-			if ((lf>=0)); then _ent_LOCKFILE="${_ent_LOCKFILES[$lf]}"
-										else _ent_LOCKFILE=''
-			fi
-		done
-	else
-		[[ ${_ent_LOCKFILE} ]] && lockfiles.delete "${_ent_LOCKFILE}"
-	fi
-	return 0
-}
-declare -fx lockfiles.delete
-#X Function : lockfiles.delete.all
-#X Desc     : delete all lock files in lockfiles() stack. usually done on script exit (see cleanup()).
-#X Synopsis : lockfiles.delete.all
-lockfiles.delete.all() {
-	((${#_ent_LOCKFILES[@]})) && lockfiles.delete "${_ent_LOCKFILES[@]}"
-	_ent_LOCKFILES=()
-	_ent_LOCKFILE=''
-	return 0
-}
-declare -fx lockfiles.delete.all
-#X Function: lockfiles.timeout
-lockfiles.timeout() {
-	if ((${#@})); then
-		source "$1" || msg.die log "log file $1 not found, or not a entities log file!"
-		return "$(( $(date +'%s') < _LockExpire ))"
-	else
-		lockfiles.timeout "${_ent_LOCKFILE}"
-	fi
-	return 0
-}
-declare -fx lockfiles.timeout
-#----------------
 
 
 #X Function : strict.set
@@ -426,6 +322,8 @@ declare -fx lockfiles.timeout
 #X Example  : strict.set on
 #X          : curstatus=$(strict.set)
 declare -ix _ent_STRICT=0
+strict() { return $((! _ent_STRICT)); }
+declare -fx strict
 strict.set() {
 	if ((${#@})); then
 	 	local opt='+'
@@ -445,18 +343,18 @@ declare -fx strict.set
 #X          : you should define your own cleanup function to delete temporary
 #X          : files and other detritus before terminating.
 #X          : if you are not using the exit_if_already_running function
-#X          : (in other words, you are allowing multiple instances of this
-#X          : script to run at the same time) then you can delete the deletion
-#X          : of the .lock file.
-#X Synopsis : cleanup [exitcode]
+#X Synopsis : cleanup [exitcode] [_LINENO_]
 #X Example  : cleanup
 #X See Also : trap.set trap.function, exit_if_already_running
 cleanup() {
-	if [[ "${1:-}" == '' ]];	then exitcode="$?"
-														else exitcode="$1"
+	local -i exitcode=$?
+	if (( exitcode )); then
+		msg.err "script=$PRG:exit=$exitcode:line=${2:-}:1=${1:-}"
+		if ((_ent_DEBUG)); then
+			msg.info "$(set | grep "^_ent_" | grep -v "^_ent_LOCK")"
+			msg.info "$(set | grep "^BASH"  | grep -v BASH_VERSINFO)"
+		fi
 	fi
-	#lockfiles.delete.all
-	((_ent_DEBUG)) && msg.info "$PRG exit with code $exitcode."
 	exit $exitcode
 }
 declare -fx cleanup
@@ -465,8 +363,8 @@ declare -fx cleanup
 #X Synopsis : trap.set [[on|1] | [off|0]]
 declare -ix _ent_EXITTRAP=0
 trap.set() {
-	if ((${#@})); then
-		_ent_EXITTRAP=$(onoff "${1}" $_ent_EXITTRAP)
+	if (($#)); then
+		_ent_EXITTRAP=$(onoff "${1}" ${_ent_EXITTRAP})
 		if ((_ent_EXITTRAP)); then
 			trap "$_ent_EXITTRAPFUNCTION" EXIT
 		else
@@ -481,10 +379,10 @@ declare -fx trap.set
 
 #X Function : trap.function
 #X Synopsis : trap.function [{ bash_exit_trap_function } ]
-declare -x _ent_EXITTRAPFUNCTION='{ cleanup "$?" "${LINENO:-}"; }'
+declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? 0${LINENO:-}; }'
 trap.function() {
-	if ((${#@})); then _ent_EXITTRAPFUNCTION="$1" 
-								else echo -n "$_ent_EXITTRAPFUNCTION"
+	if (($#));	then _ent_EXITTRAPFUNCTION="$1" 
+							else echo -n "$_ent_EXITTRAPFUNCTION"
 	fi
 	return 0
 }
@@ -509,7 +407,6 @@ synopsis() {
  
 	syn
 	((xt)) && exit $xt
-	return 0
 }
 declare -fx synopsis
 
@@ -517,9 +414,11 @@ declare -fx synopsis
 #X Function : msg
 #X Desc     : if verbose.set is enabled, send strings to output.
 #X          : embedded chars (\n \t etc) enabled by default.
-#X Synopsis : msg string [string ...]
+#X Synopsis : msg [-n] {str} [[-n] {str} ...]
+#X          : -n  suppress line feed, applied separately to each 
+#X          :     string argument
 #X Example  : msg "hello world!" "it's so nice to be back!"
-msg() { ((_ent_VERBOSE)) && _printmsg "$@"; return 0; }
+msg() { ((_ent_VERBOSE)) && _printmsg "$@"; }
 declare -fx msg
 
 #X Function : __msgx
@@ -556,7 +455,7 @@ msg.info() {
 	declare log="${1:-}"
 	[[ "${log}" == 'log' ]] && shift
 	[[ -z "$log" ]] && log=X
-	__msgx "$log" "info" "${_ent_VERBOSE}" "$@"
+	__msgx "$log" 'info' "${_ent_VERBOSE}" "$@"
 	return 0
 }
 declare -fx msg.info
@@ -588,9 +487,7 @@ declare -fx msg.sys
 #X Example : msg.warn log "Pardon me, Sir." "Is this supposed to happen?"
 msg.warn() {
 	declare log="${1:-}"
-	if [[ "${log}" == 'log' ]]; then shift
-															else log='X'
-	fi
+	[[ "${log}" == 'log' ]] && shift || log='X'
 	__msgx "$log" warning "${_ent_VERBOSE}" "$@"
 	return 0
 }
@@ -658,7 +555,7 @@ declare -fx msg.crit
 #X Synopsis : msg.line
 #X Example  : msg.line
 msg.line() {
-	((_ent_VERBOSE)) || return 0
+	((_ent_VERBOSE)) || return
 	local sx sz IFS=' '
 	sz=( $(stty size) )
 	if (( ${#sz[@]} > 0 )); then
@@ -692,7 +589,7 @@ tab.width() {
 	else
 		echo -n "${TABWIDTH}"
 	fi
-	return 0    	
+	return 0
 }
 declare -fx tab.width
 
@@ -719,10 +616,12 @@ tab.set() {
 declare -fx	tab.set
 
 _printmsg() {
-	local line IFS=$'\t\n'
+	local line IFS=$'\t\n' lf=''
 	for line in "$@"; do
+		[[ "${line}" == '-n' ]] && { lf='-n'; continue; }
 		((TABSET)) && printf '\t%.0s' $(seq 1 ${TABSET})
-		echo -e "${line}"
+		echo -e $lf "${line}"
+		lf=''
 	done
 	return 0
 }
@@ -738,95 +637,6 @@ trim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";v="${v%"${v##*[![:space:]]}
 ltrim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";echo -n "$v"; }
 rtrim() { local v="$*";v="${v%"${v##*[![:space:]]}"}";echo -n "$v"; }
 declare -fx trim rtrim ltrim
-
-#X Function : slog slog.file slog.prefix slog.prefix.eval slog.truncate
-#X Desc     : write strings to user log file
-#X Synopsis : slog string [...]
-#X Example  : source entities.bash new \\
-#X          : 		|| { echo &>2 "source entities.bash not found!"; exit 1; }
-#X          : main() {
-#X          : 	slog.file "mylog.log"
-#X          : 	echo 'my log: ' $(slog.file)
-#X          : 	slog.truncate
-#X          : 	slog.prefix --long
-#X          : 	echo 'log prefix: ' $(slog.prefix)
-#X          : 	for ((i=0; i<10; i++)); do
-#X          : 	slog "test $i $RANDOM"
-#X          : 	done
-#X          : 	cat "$(slog.file)"
-#X          : }
-#X          : main "$@"
-declare -ix _slog_count=0
-slog() {
-	for log in "${@}"; do
-		((++_slog_count))
-		echo "$(slog.prefix.eval) ${log}" >> $(slog.file)
-	done
-	return 0
-}
-declare -x _slog_file=''
-slog.file() {
-	if ((${#@})); then
-		_slog_file="$1"
-		_slog_count=0
-	else
-		[[ -z "$_slog_file" ]] && _slog_file="$PRGDIR/$PRG.log"
-		echo -n "$_slog_file"
-	fi
-	return 0
-}
-declare -x _slog_prefix=''
-slog.prefix() {
-	if ((${#@})); then
-		if [[ "$1" == '--long' ]]; then
-			_slog_prefix="$(date -Ins) $USER"
-		elif [[ "$1" == '--short' ]]; then
-			_slog_prefix='$(date +"%s.%N")'
-		else
-			_slog_prefix="$1"
-		fi
-	else
-		[[ -z "$_slog_prefix" ]] && _slog_prefix="$(date -Ins) $USER"
-		echo -n "$_slog_prefix"
-	fi
-	return 0
-}
-slog.prefix.eval() {
-	eval "echo -n $(slog.prefix)"
-	return 0
-}
-slog.truncate() {
-	_slog_count=0
-	> "$(slog.file)"
-	return 0
-}
-
-#X Function : exit_if_already_running
-#X Desc     : if there is an instance of the script already being run on the
-#X          : server, then throw an error message and exit 1 immediately.
-#X          : this function is mostly used at the very
-#X          : beginning of the script.
-#X Synopsis : exit_if_already_running [locktimeout]
-#X          : locktimeout optionally sets the _ent_LOCKTIMEOUT global. if the age of
-#X          : the lock file+_ent_LOCKTIMEOUT is < than current time, then the
-#X          : script is immediately exitted.
-#X Example  : exit_if_already_running 60
-exit_if_already_running() {
-	(($#)) && _ent_LOCKTIMEOUT="$1"
-	local lockfile="/run/lock/${PRG}.lock"
-	if [[ -f "$lockfile" ]]; then
-		if lockfiles.timeout $lockfile; then
-			trap.set off	# we don't want to exit through the cleanup() function or we will clobber the .lock file.
-			msg.die "$0 is currently running!" "Duplicate instances of this program are not permitted."
-		fi
-		msg.warn log "Lock file '$lockfile' is more than ${_ent_LOCKTIMEOUT} seconds old." "Relocking and Proceeding..."
-		touch $lockfile
-	else
-		lockfiles.add "${lockfile}" ${_ent_LOCKTIMEOUT}
-	fi
-	return 0
-}
-declare -fx exit_if_already_running
 
 #X Function : exit_if_not_root
 #X Desc     : exit script if not root user
@@ -854,7 +664,7 @@ declare -fx is.root
 ask.yn() {
 	((_ent_VERBOSE)) || return 0
 	is.tty || return 0
-	local question="${1:-}" yn
+	local question="${1:-}" yn=''
 	question=$(msg.warn "${question} (y/n)")
 	question="${question//$'\n'/ }"
 	while true; do
@@ -907,7 +717,7 @@ check.dependencies() {
   	fi
 	done
 	((missing && _ent_VERBOSE)) && \
-			msg.err "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
+			echo 2> "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
 	return $missing
 }
 declare -fx check.dependencies
@@ -990,38 +800,41 @@ trap.breakp() {
 	((${#prompt})) && prompt=" $prompt"
 	read -e -n1 -p "breakpoint${prompt}: continue? y/n " b
 	[[ "${b,,}" == 'y' ]] || exit 1
+	return 0
 }
 declare -fx trap.breakp
 	alias breakp='trap.breakp'
 
-
+#--_ent_MINIMAL if defined, then don't do this section
+if ((! ${_ent_MINIMAL:-0})); then
 #X File: IncludeModules 
 #X Desc: By default, all *.bash module files located in  
 #X     : ENTITIES/entities.d/ directory and sub-directories are 
 #X     : automatically included in the entities.bash source file. 
 #X     :
 if [[ -d "$ENTITIES/entities.d" ]]; then
+	declare _e
 	shopt -s globstar
 	for _e in $ENTITIES/entities.d/**/*.bash; do
-		if [[ -r "$_e" ]]; then
-			if [[ ! -L "$_e" ]] ; then
-				source "$_e" || msg.warn "**Source file [$_e] could not be included!" && true
-			fi
+		if [[ -r "$_e" ]] && [[ ! -L "$_e" ]] ; then
+			source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
 		fi
 	done
 	unset _e
 fi
 #-Function Declarations End --------------------------------------------------
 
-
-# expand all the aliases defined above.
-shopt -s expand_aliases # Enables alias expansion.
-
+#--check dependencies if not minimal
 if ! check.dependencies \
 		basename dirname readlink mkdir ln cat \
     systemd-cat stty wget base64 seq tty find touch tree lynx; then
-	msg.die 'Dependencies not found. Entities cannot run.'	
+	echo >&2 'Warning: Dependencies not found. Entities cannot run.'	
 fi 
+fi
+#^^_ent_MINIMAL
+
+# expand all the aliases defined above.
+shopt -s expand_aliases # Enables alias expansion.
 
 #X Global   : _entities_
 #X Desc     : Integer flag to announce that entities.bash has been loaded. 

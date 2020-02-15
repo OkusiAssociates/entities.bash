@@ -4,9 +4,9 @@ declare -- PRG PRGDIR
 declare -x _ent_scriptstatus="\$0=$0|"
 if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
 p_="$(/bin/readlink -f "${0}")"
-_ent_scriptstatus+="script|\$p_=$p_|"
+_ent_scriptstatus+="is.script|\$p_=$p_|"
 if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
-_ent_scriptstatus+='execute|'
+_ent_scriptstatus+='is.execute|'
 __entities__=0
 while (($#)); do
 case "${1,,}" in
@@ -21,7 +21,7 @@ shift
 done
 exit
 fi
-_ent_scriptstatus+="sourced-from-script|SHLVL=$SHLVL|"
+_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|"
 PRG="$(/usr/bin/basename "${p_}")"
 PRGDIR="$(/usr/bin/dirname "${p_}")"
 _ent_scriptstatus+="PRGDIR=$PRGDIR|"
@@ -83,19 +83,19 @@ set +o errexit +o nounset +o pipefail
 declare -x  LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n'
 declare -nx OIFS="OLDIFS"
 onoff() {
-local o="${1:-}"
+local o="${1:-0}"
 case "${o,,}" in
 on|1)			o=1;;
 off|0)		o=0;;
-*)				if [[ ${2:-} ]]; 	then o=$(( ${2} ))
-else o=0 # yes, i know. but what am i to do?
-fi;;
+*)        (( $# > 1 )) && o=$(( ${2} )) || o=0
 esac
 echo -n $((o))
 return 0
 }
 declare -fx onoff
 declare -ix _ent_VERBOSE=$( [[ -t 0 ]] && echo 1 || echo 0)
+verbose() { return $((! _ent_VERBOSE)); }
+declare -fx verbose
 verbose.set() {
 if ((${#@})); then
 _ent_VERBOSE=$(onoff "${1}")
@@ -106,7 +106,7 @@ return 0
 }
 declare -fx verbose.set
 declare -ix _ent_COLOR=1
-color() { return $(( ! _ent_COLOR)); }
+color() { return $((! _ent_COLOR)); }
 declare -fx color
 color.set() {
 if ((${#@})); then
@@ -119,6 +119,7 @@ _ent_COLOR=$(onoff "${status}" "${_ent_COLOR}")
 else
 echo -n "${_ent_COLOR}"
 fi
+return 0
 }
 declare -fx color.set
 alias colour.set='color.set'		# for the civilised world
@@ -133,6 +134,8 @@ declare  -x colorcrit="\x1b[1;31m"				; declare -nx colorcritical='colorcrit'
 declare  -x coloralert="\x1b[1;33;41m"
 declare  -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 declare -x _ent_SCRIPT_VERSION='0.00 prealpha'
+version() { echo -n "$_ent_SCRIPT_VERSION"; return 0; }
+declare -fx version
 version.set() {
 if ((${#@})); then _ent_SCRIPT_VERSION="$1"
 else echo -n "${_ent_SCRIPT_VERSION}"
@@ -141,6 +144,8 @@ return 0
 }
 declare -fx version.set
 declare -ix _ent_DRYRUN=0
+dryrun() { return $((! _ent_DRYRUN)); }
+declare -fx dryrun
 dryrun.set() {
 if ((${#@})); then _ent_DRYRUN=$(("$1"))
 else echo -n ${_ent_DRYRUN}
@@ -149,7 +154,7 @@ return 0
 }
 declare -fx dryrun.set
 declare -ix _ent_DEBUG=0
-debug() {	return $(( ! _ent_DEBUG )); }
+debug() {	return $((! _ent_DEBUG)); }
 declare -fx debug
 debug.set() {
 if ((${#@})); then 	_ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
@@ -158,85 +163,9 @@ fi
 return 0
 }
 declare -fx debug.set
-declare -x  _ent_LOCKFILE=''
-declare -ax _ent_LOCKFILES=()
-declare -ix _ent_LOCKTIMEOUT=86400
-lockfile() {
-if ((${#@})); then lockfile.add "$1"
-else echo -n "${_ent_LOCKFILE}"
-fi
-return 0
-}
-declare -fx lockfile
-lockfiles() {
-echo -n "${_ent_LOCKFILES[@]}"
-return 0
-}
-declare -fx lockfiles
-lockfiles.add() {
-if (( ${#@} == 0 )); then
-lockfiles.add "/run/lock/$PRG.$RANDOM" "${_ent_LOCKTIMEOUT}"
-return 0
-elif (( ${#@} % 2 )); then
-lockfiles.add "$@" "${_ent_LOCKTIMEOUT}"
-return 0
-fi
-declare -a newlockfiles=($@)
-local -i j i
-local lk='' to=''
-for ((i=0; i < ${#newlockfiles[@]}; i+=2)); do
-j=$((i+1))
-lk="${newlockfiles[$i]}"
-to="${newlockfiles[$j]}"
-ts=$(date +'%s')
-to=$((ts+_ent_LOCKTIMEOUT))
-mkdir -p $(dirname "${lk}")
-cat > "$lk" <<-eot
-declare _LockingScript="$0"
-declare -i _LockCreated=${ts} # $(date +'%F %T' -d @${ts})
-declare -i _LockExpire=${to}  # $(date +'%F %T' -d @${to})
-eot
-_ent_LOCKFILE="$lk"
-_ent_LOCKFILES+=("${_ent_LOCKFILE}")
-done
-return 0
-}
-declare -fx lockfiles.add
-lockfiles.delete() {
-if ((${#@})); then
-local lk lf
-for lk in ${@}; do
-rm -f "${lk}"
-_ent_LOCKFILES=( ${_ent_LOCKFILES[@]/$lk} )
-lf=${#_ent_LOCKFILES[@]}; ((lf+=-1))
-if ((lf>=0)); then _ent_LOCKFILE="${_ent_LOCKFILES[$lf]}"
-else _ent_LOCKFILE=''
-fi
-done
-else
-[[ ${_ent_LOCKFILE} ]] && lockfiles.delete "${_ent_LOCKFILE}"
-fi
-return 0
-}
-declare -fx lockfiles.delete
-lockfiles.delete.all() {
-((${#_ent_LOCKFILES[@]})) && lockfiles.delete "${_ent_LOCKFILES[@]}"
-_ent_LOCKFILES=()
-_ent_LOCKFILE=''
-return 0
-}
-declare -fx lockfiles.delete.all
-lockfiles.timeout() {
-if ((${#@})); then
-source "$1" || msg.die log "log file $1 not found, or not a entities log file!"
-return "$(( $(date +'%s') < _LockExpire ))"
-else
-lockfiles.timeout "${_ent_LOCKFILE}"
-fi
-return 0
-}
-declare -fx lockfiles.timeout
 declare -ix _ent_STRICT=0
+strict() { return $((! _ent_STRICT)); }
+declare -fx strict
 strict.set() {
 if ((${#@})); then
 local opt='+'
@@ -250,17 +179,21 @@ return 0
 }
 declare -fx strict.set
 cleanup() {
-if [[ "${1:-}" == '' ]];	then exitcode="$?"
-else exitcode="$1"
+local -i exitcode=$?
+if (( exitcode )); then
+msg.err "script=$PRG:exit=$exitcode:line=${2:-}:1=${1:-}"
+if ((_ent_DEBUG)); then
+msg.info "$(set | grep "^_ent_" | grep -v "^_ent_LOCK")"
+msg.info "$(set | grep "^BASH"  | grep -v BASH_VERSINFO)"
 fi
-((_ent_DEBUG)) && msg.info "$PRG exit with code $exitcode."
+fi
 exit $exitcode
 }
 declare -fx cleanup
 declare -ix _ent_EXITTRAP=0
 trap.set() {
-if ((${#@})); then
-_ent_EXITTRAP=$(onoff "${1}" $_ent_EXITTRAP)
+if (($#)); then
+_ent_EXITTRAP=$(onoff "${1}" ${_ent_EXITTRAP})
 if ((_ent_EXITTRAP)); then
 trap "$_ent_EXITTRAPFUNCTION" EXIT
 else
@@ -272,9 +205,9 @@ fi
 return 0
 }
 declare -fx trap.set
-declare -x _ent_EXITTRAPFUNCTION='{ cleanup "$?" "${LINENO:-}"; }'
+declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? 0${LINENO:-}; }'
 trap.function() {
-if ((${#@})); then _ent_EXITTRAPFUNCTION="$1"
+if (($#));	then _ent_EXITTRAPFUNCTION="$1"
 else echo -n "$_ent_EXITTRAPFUNCTION"
 fi
 return 0
@@ -294,7 +227,6 @@ Usage: $PRG
 
 syn
 ((xt)) && exit $xt
-return 0
 }
 declare -fx synopsis
 msg() { ((_ent_VERBOSE)) && _printmsg "$@"; }
@@ -317,7 +249,7 @@ msg.info() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift
 [[ -z "$log" ]] && log=X
-__msgx "$log" "info" "${_ent_VERBOSE}" "$@"
+__msgx "$log" 'info' "${_ent_VERBOSE}" "$@"
 return 0
 }
 declare -fx msg.info
@@ -334,9 +266,7 @@ alias msgsys='msg.sys' # legacy
 alias sysmsg='msg.sys' # legacy
 msg.warn() {
 declare log="${1:-}"
-if [[ "${log}" == 'log' ]]; then shift
-else log='X'
-fi
+[[ "${log}" == 'log' ]] && shift || log='X'
 __msgx "$log" warning "${_ent_VERBOSE}" "$@"
 return 0
 }
@@ -372,7 +302,7 @@ declare -fx msg.crit
 alias msgcrit='msg.crit' # legacy
 alias critmsg='msg.crit' # legacy
 msg.line() {
-((_ent_VERBOSE)) || return 0
+((_ent_VERBOSE)) || return
 local sx sz IFS=' '
 sz=( $(stty size) )
 if (( ${#sz[@]} > 0 )); then
@@ -425,72 +355,13 @@ for line in "$@"; do
 echo -e $lf "${line}"
 lf=''
 done
+return 0
 }
 declare -fx	_printmsg
 trim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";v="${v%"${v##*[![:space:]]}"}";echo -n "$v"; }
 ltrim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";echo -n "$v"; }
 rtrim() { local v="$*";v="${v%"${v##*[![:space:]]}"}";echo -n "$v"; }
 declare -fx trim rtrim ltrim
-declare -ix _slog_count=0
-slog() {
-for log in "${@}"; do
-((++_slog_count))
-echo "$(slog.prefix.eval) ${log}" >> $(slog.file)
-done
-return 0
-}
-declare -x _slog_file=''
-slog.file() {
-if ((${#@})); then
-_slog_file="$1"
-_slog_count=0
-else
-[[ -z "$_slog_file" ]] && _slog_file="$PRGDIR/$PRG.log"
-echo -n "$_slog_file"
-fi
-return 0
-}
-declare -x _slog_prefix=''
-slog.prefix() {
-if ((${#@})); then
-if [[ "$1" == '--long' ]]; then
-_slog_prefix="$(date -Ins) $USER"
-elif [[ "$1" == '--short' ]]; then
-_slog_prefix='$(date +"%s.%N")'
-else
-_slog_prefix="$1"
-fi
-else
-[[ -z "$_slog_prefix" ]] && _slog_prefix="$(date -Ins) $USER"
-echo -n "$_slog_prefix"
-fi
-return 0
-}
-slog.prefix.eval() {
-eval "echo -n $(slog.prefix)"
-return 0
-}
-slog.truncate() {
-_slog_count=0
-> "$(slog.file)"
-return 0
-}
-exit_if_already_running() {
-(($#)) && _ent_LOCKTIMEOUT="$1"
-local lockfile="/run/lock/${PRG}.lock"
-if [[ -f "$lockfile" ]]; then
-if lockfiles.timeout $lockfile; then
-trap.set off	# we don't want to exit through the cleanup() function or we will clobber the .lock file.
-msg.die "$0 is currently running!" "Duplicate instances of this program are not permitted."
-fi
-msg.warn log "Lock file '$lockfile' is more than ${_ent_LOCKTIMEOUT} seconds old." "Relocking and Proceeding..."
-touch $lockfile
-else
-lockfiles.add "${lockfile}" ${_ent_LOCKTIMEOUT}
-fi
-return 0
-}
-declare -fx exit_if_already_running
 exit_if_not_root() {
 is.root || msg.die "$PRG can only be executed by root user."
 return 0
@@ -505,7 +376,7 @@ declare -fx is.root
 ask.yn() {
 ((_ent_VERBOSE)) || return 0
 is.tty || return 0
-local question="${1:-}" yn
+local question="${1:-}" yn=''
 question=$(msg.warn "${question} (y/n)")
 question="${question//$'\n'/ }"
 while true; do
@@ -604,6 +475,7 @@ local b='' prompt=${1:-}
 ((${#prompt})) && prompt=" $prompt"
 read -e -n1 -p "breakpoint${prompt}: continue? y/n " b
 [[ "${b,,}" == 'y' ]] || exit 1
+return 0
 }
 declare -fx trap.breakp
 alias breakp='trap.breakp'
@@ -627,25 +499,179 @@ fi
 shopt -s expand_aliases # Enables alias expansion.
 declare -xig __entities__=1
 cleanbakfiles() {
-local dir=${1-}
+local dir="${1:-}"
 if ((${#dir})); then dir="$(readlink -f "$dir")"
-else dir=$(pwd)
+else dir="$(pwd)"
 fi
-if [[ -d $dir ]]; then
+if [[ -d "$dir" ]]; then
 echo "Cleaning ${dir}..."
 /usr/bin/find "$dir" -name "*~" 			-type f -exec rm {} \;
 /usr/bin/find "$dir" -name "DEADJOE" -type f -exec rm {} \;
 else
 echo >&2 "Directory $dir not found!"
 fi
+return 0
 }
+entities.change_location() {
+local newlocation="${1:-}" newpath IFS OLDIFS p
+if ((! $# )) || [[ -z $newlocation ]]; then
+newlocation="$ENTITIES"
+if [[ -z $newlocation ]] || [[ ! -f "$newlocation/entities.bash" ]]; then
+newlocation="$(dirname "$(which entities.bash)")"
+fi
+fi
+newlocation="$(readlink -e "$newlocation")"
+[[ -z "$newlocation" ]] && { echo "#?! Invalid entities location ${1:-}"; return 127; }
+[[ ! -f "${newlocation}/entities.bash" ]] && { echo "#?! Warning: No entities.bash script found at [$newlocation]"; return 127; }
+newpath=":${PATH}:"
+newpath="${newpath//\:${ENTITIES}\:/}"
+newpath="${newpath//\:${newlocation}\:/}"
+newpath="$newpath:${newlocation}"
+newpath="${newpath//::/:}";	[[ "${newpath:0:1}" == ':' ]] && newpath="${newpath:1}"
+OLDIFS="$IFS"; IFS=$':'; arr=( $newpath );	IFS="$OLDIFS"
+newpath=''
+for p in ${arr[@]}; do [[ -d $p ]] && newpath+="$p:"; done
+[[ "${newpath: -1}" == ':' ]] && newpath="${newpath:0:-1}"	#delete trailing :
+export PATH="$newpath"
+export ENTITIES=${newlocation}
+echo "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""
+return 0
+}
+entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -x _ent_VERSION='0.9.420.220.0'
+exit_if_already_running() {
+(($#)) && _ent_LOCKTIMEOUT="$1"
+local lockfile="/run/lock/${PRG}.lock"
+if [[ -f "$lockfile" ]]; then
+if lockfiles.timeout $lockfile; then
+trap.set off	# we don't want to exit through the cleanup() function or we will clobber the .lock file.
+msg.die "$0 is currently running!" "Duplicate instances of this program are not permitted."
+fi
+msg.warn log "Lock file '$lockfile' is more than ${_ent_LOCKTIMEOUT} seconds old." "Relocking and Proceeding..."
+touch $lockfile
+else
+lockfiles.add "${lockfile}" ${_ent_LOCKTIMEOUT}
+fi
+}
+declare -fx exit_if_already_running
+declare -x  _ent_LOCKFILE=''
+declare -ax _ent_LOCKFILES=()
+declare -ix _ent_LOCKTIMEOUT=86400
+lockfile() {
+if ((${#@})); then lockfile.add "$1"
+else echo -n "${_ent_LOCKFILE}"
+fi
+}
+declare -fx lockfile
+lockfiles() {
+echo -n "${_ent_LOCKFILES[@]}"
+}
+declare -fx lockfiles
+lockfiles.add() {
+if (( ${#@} == 0 )); then
+lockfiles.add "/run/lock/$PRG.$RANDOM" "${_ent_LOCKTIMEOUT}"
+return
+elif (( ${#@} % 2 )); then
+lockfiles.add "$@" "${_ent_LOCKTIMEOUT}"
+return
+fi
+declare -a newlockfiles=($@)
+local -i j i
+local lk='' to=''
+for ((i=0; i < ${#newlockfiles[@]}; i+=2)); do
+j=$((i+1))
+lk="${newlockfiles[$i]}"
+to="${newlockfiles[$j]}"
+ts=$(date +'%s')
+to=$((ts+_ent_LOCKTIMEOUT))
+mkdir -p $(dirname "${lk}")
+cat > "$lk" <<-eot
+declare _LockingScript="$0"
+declare -i _LockCreated=${ts} # $(date +'%F %T' -d @${ts})
+declare -i _LockExpire=${to}  # $(date +'%F %T' -d @${to})
+eot
+_ent_LOCKFILE="$lk"
+_ent_LOCKFILES+=("${_ent_LOCKFILE}")
+done
+return 0
+}
+declare -fx lockfiles.add
+lockfiles.delete() {
+if ((${#@})); then
+local lk lf
+for lk in ${@}; do
+rm -f "${lk}"
+_ent_LOCKFILES=( ${_ent_LOCKFILES[@]/$lk} )
+lf=${#_ent_LOCKFILES[@]}; ((lf+=-1))
+if ((lf>=0)); then _ent_LOCKFILE="${_ent_LOCKFILES[$lf]}"
+else _ent_LOCKFILE=''
+fi
+done
+else
+[[ ${_ent_LOCKFILE} ]] && lockfiles.delete "${_ent_LOCKFILE}"
+fi
+}
+declare -fx lockfiles.delete
+lockfiles.delete.all() {
+((${#_ent_LOCKFILES[@]})) && lockfiles.delete "${_ent_LOCKFILES[@]}"
+_ent_LOCKFILES=()
+_ent_LOCKFILE=''
+}
+declare -fx lockfiles.delete.all
+lockfiles.timeout() {
+if ((${#@})); then
+source "$1" || msg.die log "log file $1 not found, or not a entities log file!"
+return "$(( $(date +'%s') < _LockExpire ))"
+else
+lockfiles.timeout "${_ent_LOCKFILE}"
+fi
+}
+declare -fx lockfiles.timeout
 function mktempfile() {
 TmpDir="${TMPDIR:-/tmp}/entities"
 mkdir -p "${TmpDir}" || return 1
 TmpFile="$(mktemp "${TmpDir}/${PRG:-$(basename "$0")}_XXXX")"
 echo "$TmpFile"
 return 0
+}
+declare -ix _slog_count=0
+slog() {
+for log in "${@}"; do
+((++_slog_count))
+echo "$(slog.prefix.eval) ${log}" >> $(slog.file)
+done
+}
+declare -x _slog_file=''
+slog.file() {
+if ((${#@})); then
+_slog_file="$1"
+_slog_count=0
+else
+[[ -z "$_slog_file" ]] && _slog_file="$PRGDIR/$PRG.log"
+echo -n "$_slog_file"
+fi
+}
+declare -x _slog_prefix=''
+slog.prefix() {
+if ((${#@})); then
+if [[ "$1" == '--long' ]]; then
+_slog_prefix="$(date -Ins) $USER"
+elif [[ "$1" == '--short' ]]; then
+_slog_prefix='$(date +"%s.%N")'
+else
+_slog_prefix="$1"
+fi
+else
+[[ -z "$_slog_prefix" ]] && _slog_prefix="$(date -Ins) $USER"
+echo -n "$_slog_prefix"
+fi
+}
+slog.prefix.eval() {
+eval "echo -n $(slog.prefix)"
+}
+slog.truncate() {
+_slog_count=0
+> "$(slog.file)"
 }
 path-add() {
 local cmd=()
@@ -694,6 +720,7 @@ while [[ "$line" != "" ]]; do
 echo "$line" | sed "s/'/\\\\'/g; s/\"/\\\\\"/g;"
 read line
 done
+return 0
 }
 elipstr() {
 local str=${1:-} pd=''
@@ -702,11 +729,10 @@ local -i width=${2:-0}
 local -i strlen=${#str} sx=0
 ((width)) || width=$(( $(tput cols) - 1 ))
 ((width<6)) && width=78
-((strlen <= width)) && { echo $str; return 1; }
+((strlen <= width)) && { echo $str; return; }
 sx=$(((width-2) / 2))
 ((((sx*2)+2) < width)) && pd='.'
 echo "${str:0:$sx}${pd}..${str: -$sx}"
-return 1
 }
 str_str() {
 local str
@@ -714,22 +740,23 @@ str="${1#*${2}}"
 str="${str%%${3}*}"
 echo -n "$str"
 }
+pause() { read -n1 -p "${1:-*Pause*}"; echo; }
 declare -x perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"
 perrno() {
-(($#)) || exit
-local num=$1 OS=${2:-}
+(($#)) || return 0
+local OS=${2:-}
 [[ ! -f $perrnoListFile ]] && _perrno_gen_errors
-grep -i "$OS ${1:-}\:" $perrnoListFile
-return 1
+grep -i "$OS ${1}\:" "$perrnoListFile"
+return 0
 }
 _perrno_gen_errors() {
 (
 local -i i=0
 local t IFS=$'\n'
 if [[ ! -d $(dirname "$perrnoListFile") ]]; then
-mkdir -p $(dirname "$perrnoListFile")
+mkdir -p "$(dirname "$perrnoListFile")"
 fi
->$perrnoListFile
+> "$perrnoListFile"
 while ((i<500)); do
 t="$(perror $i)"
 t="${t// error code/}"
@@ -738,7 +765,7 @@ t="${t/  / }"
 ((i++))
 done
 ) &>/dev/null
-return 1
+return 0
 }
 urlencode() {
 local LC_ALL=C encoded='' c
@@ -754,26 +781,25 @@ echo -n "$encoded"
 }
 urlpayload_encode() {
 echo -n "$( urlencode "$(payload_encode "${1}")" )"
-return 1
+return 0
 }
 payload_encode() {
 echo -n "$( echo -n "${1:-}" | gzip 2>/dev/null | base64 -w0 2>/dev/null)"
-return 1
+return 0
 }
 payload_decode() {
-local str="${1}"
-local bstr='' gzipid="$(echo -e "\x1f\x8b")"
+local str="${1}" bstr='' gzipid="$(echo -e "\x1f\x8b")"
 [[ -z "$str" ]] && { echo -n ''; return 0; }
 bstr="$(echo "$str" | base64 -d -i 2> /dev/null | tr -d '\r\n\0')"
 if ((! ${#bstr})); then
 echo -n "$str"
-return 1
+return 0
 fi
-if [[ "${bstr:0:2}" == $gzipid ]]; then
-echo -n "$( echo "${str}" | base64 -d  2> /dev/null | /bin/gzip -d  2>/dev/null)"
+if [[ "${bstr:0:2}" == "$gzipid" ]]; then
+echo -n "$( echo -n "${str}" | base64 -d | gzip -d)"
 else
 echo -n "${bstr}"
 fi
 unset str bstr
-return 1
+return 0
 }

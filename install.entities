@@ -1,17 +1,20 @@
 #!/bin/bash
 useage() {
 	echo "$(basename $0)"
-	echo 'entities.bash installation script.'
+	echo 'Entities installation script'
 	[[ "${USER:-}" == 'root' || $EUID == 0 ]] \
 			|| { echo ''; echo "Requires root to install. Current user is [${USER:-}]."; }
 	echo ''
-	echo "Usage: $(basename $0) [-y|--auto] [--dev] [-n|--nouserprofiles]"
-	echo '           [-i|--install] [-h|--help]'
+	echo "Synopsis: $(basename $0) [--auto|-y] [--dev] [--nouserprofiles|-n]"
+	echo '                [--install|-i] [--help|-h]'
 	echo ''
-	exit 1
+	exit ${1:-0}
 }
+	# cries for help.
 	[[ "$@" == "" || "$@" == *"--help"* || "$@" == *"/?"* || "$@" == *-h* ]] && useage
-	[[ ${USER:-} == 'root' || ${EUID} == 0 ]] || useage
+
+	# not root say bye
+	[[ "${USER:-}" == 'root' || $EUID==0 ]] || useage
 
 	declare -i production=0
 	declare -i autoinstall=0
@@ -23,26 +26,28 @@ useage() {
 	# make an announcement
 	echo "This is the entities.bash installation script."
 	echo "You will be prompted before installation proceeds."
-	echo ''
 
 	# make absolutely certain we have identified the canonical entities.bash script
 	PRG="$(basename $(/bin/readlink -f "${0:-}"))"
 	PRGDIR="$(/usr/bin/dirname $(/bin/readlink -f "${0:-}"))"
 	if [[ -f "$PRGDIR/entities.bash" ]]; then	# located in the same directory as this script.
 		canonical="$PRGDIR/entities.bash"
+		echo "Reference entities is $canonical"
 	else
-		echo >&2 -e "Could not find entities.bash in the [$PRGDIR] directory.\nHas it been installed properly?"
+		echo >&2 "Could not find entities.bash in the [$PRGDIR] directory."
+		echo >&2 "Check that it has been installed properly."
 		exit 1
 	fi	
 	OPRG=$PRG; OPRGDIR=$PRGDIR
 	
 	OENTITIES=${ENTITIES:-}; ENTITIES=$PRGDIR 
-	source $canonical new || { echo >&2 "Could not open [$canonical]!"; exit 1; }
+	source "$canonical" new || { echo >&2 "Could not open [$canonical]!"; exit 1; }
 	ENTITIES=$OENTITIES;
 	PRG=$OPRG; PRGDIR=$OPRGDIR
 
 	# let's start
 	strict.set on
+	debug.set on
 	trap.set on
 	cd "$PRGDIR" || msg.die "Could not change into directory $PRGDIR!!"
 
@@ -55,9 +60,9 @@ useage() {
 	[[ $ENTITIES == $PRGDIR ]] &&	msg.die "Cannot install over installation directory!"		
 
 	# get rid of old symlinks (legacy; remove soon)
-	declare -a del=()
-	del=( $( /usr/bin/find $PRGDIR -type l | grep -v 'docs/' | grep -v "./entities$" | grep -v '/string.inc.php$' | grep -v '/entities.help' ) ) || del=()
-	for l in ${del[@]:-}; do msg.info "* removing $l"; rm "$l"; done
+#	declare -a del=()
+#	del=( $( /usr/bin/find $PRGDIR -type l | grep -v 'docs/' | grep -v "./entities$" | grep -v '/string.inc.php$' | grep -v '/entities.help' ) ) || del=()
+#	for l in ${del[@]:-}; do msg.info "* removing $l"; rm "$l"; done
 
 	declare env_entities
 	env_entities="$(cat <<-eot
@@ -86,7 +91,7 @@ main() {
 			--dev|-p|--production)	production=1;;
 			-y|--auto)							autoinstall=1;;
 			-n|--nouserprofiles)		userprofiles=0;;
-			-i|--install)						install=1;;
+			-i|--install)						install=1; color.set off;;
 			-v|--verbose)						verbose.set on;;
 			-q|--quiet)							verbose.set off;;
 			-h|--help)							useage;;
@@ -94,11 +99,9 @@ main() {
 		esac
 		shift
 	done
-	
-	((autoinstall)) && color.set off
 
 	msg.info "entities.bash shall be installed to $ENTITIES."
-	if [[ -f $ENTITIES/entities.bash ]]; then
+	if [[ -f "$ENTITIES/entities.bash" ]]; then
 		msg.warn "A version of entities is already installed at $ENTITIES."
 	fi
 	
@@ -109,7 +112,7 @@ main() {
 	fi
 
 	if ((production)); then
-		msg.sys "Production: Updating help files and creating entities.min.bash"
+		msg.sys "Production: Updating help files..."
 		tab.set ++
 		msg.sys "Updating entities help files..."
 		$PRGDIR/docs/entities.help.make --auto	|| msg.die "[PRGDIR=$PRGDIR] entities.help.make failed!"
@@ -121,9 +124,8 @@ main() {
 		#fi
 	fi
 	tab.set 1
-
-	msg.sys "Updating entities.min.bash..."
-	$PRGDIR/util/_make.minimal.bash --auto	|| msg.die "[PRGDIR=$PRGDIR] make entities.min.bash failed!"
+	msg.sys "Updating entities.bash.min ..."
+	$PRGDIR/entities.make.minimal --auto	|| msg.die "[PRGDIR=$PRGDIR] make entities.bash.min failed!"
 
 	makeprofile
 	((userprofiles)) && makeuserprofiles
@@ -279,7 +281,7 @@ install() {
 	mkdir -p "$ENTITIES" || exit 1	
 	[[ -d "$ENTITIES" ]] || exit 1
 	/usr/bin/rsync -av $excl entities.bash 			"$ENTITIES/" >/dev/null		|| exit 1
-	/usr/bin/rsync -av $excl entities.min.bash 	"$ENTITIES/" >/dev/null		|| exit 1
+	/usr/bin/rsync -av $excl entities.bash.min 	"$ENTITIES/" >/dev/null		|| exit 1
 
 	mkdir -p "$ENTITIES/entities.d"
 	/usr/bin/rsync -avl entities.d/*	"$ENTITIES/entities.d/" >/dev/null	|| exit 1
@@ -304,7 +306,8 @@ install() {
 	msg.info "Make symlinks in $ENTITIES directory..."
 	cd "$ENTITIES" 																|| exit 1
 	ln -fs php/string.inc.php	string.inc.php    	|| exit 1
-	ln  -s entities.bash entities						    	|| exit 1
+	ln  -fs entities.bash entities						    || exit 1
+	ln  -fs entities.bash.min entities.min		    || exit 1
 	
 	# touch420 all files in $ENTITIES directory
 	msg.info "Fix owner/perms, touch420 all files in $ENTITIES directory..."
@@ -331,7 +334,6 @@ testit() {
 		strict.set on
 		trap.set on
 }
-
 
 main "$@"
 #fin

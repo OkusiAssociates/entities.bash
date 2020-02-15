@@ -7,5 +7,6 @@ addslashes() {
 		echo "$line" | sed "s/'/\\\\'/g; s/\"/\\\\\"/g;"
 		read line
 	done
+	return 0
 }
 #fin

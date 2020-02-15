@@ -10,11 +10,10 @@ elipstr() {
 	local -i strlen=${#str} sx=0
 	((width)) || width=$(( $(tput cols) - 1 ))
 	((width<6)) && width=78
-	((strlen <= width)) && { echo $str; return 1; }
+	((strlen <= width)) && { echo $str; return; }
 	sx=$(((width-2) / 2))
 	((((sx*2)+2) < width)) && pd='.'
 	echo "${str:0:$sx}${pd}..${str: -$sx}"
-	return 1
 }
 #fin
 

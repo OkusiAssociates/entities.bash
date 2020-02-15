@@ -1,5 +1,4 @@
 #!/bin/bash
-
 ENTITIES=$OKROOT/entities
 export ENTITIES
 
@@ -7,8 +6,36 @@ source $ENTITIES/entities.bash new || { echo >&2 "Could not open entities.bash!"
 	strict.set off
 	trap.set on
 
+#     NAME
+#     DESCRIPTION
+#     SYNOPSIS
+#     OPTIONS
+#     _other_
+#     ENVIRONMENT
+#     FILES
+#     EXAMPLES
+#     AUTHOR
+#     REPORTING BUGS
+#     COPYRIGHT
+#     SEE ALSO
+	# NAME
 	declare -a hdrs=(Intro Global Local Function File)
-	declare -a subhdrs=(Synopsis Desc Defaults Depends Example See_Also Tags)
+	# 
+	declare -a subhdrs=(
+			Desc 
+			Synopsis 
+			Options
+			Defaults 
+			Env
+			Files
+			Depends 
+			Example 
+			Author
+			Bugs
+			Copyright	
+			See_Also 
+			Tags
+			)
 	declare -a Symlinks=()
 	declare Label='' Header='' Synopsis='' Desc='' Defaults='' \
 					Depends='' Example='' See_Also='' Tags=''
@@ -27,7 +54,7 @@ main() {
 	while (($#)); do
 		case "$1" in
 			-y|--auto)			auto=1; wipe=1;;
-			-h|--help)			usage exit;;
+			-h|--help)			usage;;
 			-v|--verbose)		verbose.set on;;
 			-q|--quiet)			verbose.set off=;;
 			*)							cmd+=( "$1" );;
@@ -136,25 +163,18 @@ done
 	cd "$DestDir" || msgdie "Could not cd into [$DestDir]"
 	for c in $(find -L . -mindepth 1 -type f); do 
 		target="${c:2}"
-		ln -fs "$target" "$(basename $target)" >/dev/null
+		ln -fs "$target" "$(basename "$target")" >/dev/null
 	done 
 
 	tab.set 0
 	msg "$PRG is complete." ""
+	return 0
 }
 
 	
 cleanup() {
 	[[ $1 == '' ]] && exitcode=$? || exitcode=$1
 	exit $exitcode
-}
-
-usage() {
-	cat <<-usage
-		Usage: $PRG [[-v|--verbose] [-q|--quiet]] [-h|--help]
-
-	usage
-	[[ $1 == 'exit' ]] && exit 1
 }
 
 printlines() {
@@ -168,5 +188,13 @@ printlines() {
 	done
 }
 
+usage() {
+	cat <<-usage
+		$PRG
+		Create entities help files.
+		Usage: $PRG [--auto|-y] [--verbose|-v || --quiet|-q] [--help|-h]
+	usage
+	exit 1
+}
 main "$@"
 #fin

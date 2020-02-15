@@ -2,6 +2,6 @@
 	PRG="$(basename "$0")"
 	PRGDIR=$(readlink -f "$(dirname "$0")")
 
-	source "$PRGDIR/$PRG.bash"
+	source "$PRGDIR/entities.d/$PRG.bash"
 
 	$PRG "$@"

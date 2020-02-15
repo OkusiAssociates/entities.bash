@@ -6,8 +6,8 @@
 	trap.set on
 	
 	[[ -z "$EDITOR" ]] && export EDITOR="$(which joe) -tab 2 --wordwrap --autoindent"
-	[[ -z "$EDITOR" ]] &&	export EDITOR=$(which nano)
-	[[ -z "$EDITOR" ]] &&	export EDITOR=$(which vi)
+	[[ -z "$EDITOR" ]] &&	export EDITOR="$(which nano)"
+	[[ -z "$EDITOR" ]] &&	export EDITOR="$(which vi)"
 	
 	tmpfile=/tmp/p-$RANDOM-$$
 	CH9=$'\t'
@@ -98,7 +98,7 @@ main() {
 
 	#--shell check ---------------
 	if [[ $ftype == 'sh' ]] && ((shellcheck)); then
-		$(which shellcheck) $file
+		$(which shellcheck) "$file"
 	fi
 	#^^shell check ---------------
 
@@ -125,7 +125,7 @@ cleanup() {
 	exit $exitcode
 }
 
-printTitle() { echo "$PRG vs $(version.set)"; }
+printTitle() { echo "$PRG vs $(version.set)"; return 0; }
 usage() {
 	(($#)) && msg.err "$PRG: ${1}\n"
 	printTitle

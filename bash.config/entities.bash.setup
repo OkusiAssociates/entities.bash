@@ -1,8 +1,9 @@
 #!/bin/bash
-source $ENTITIES/entities.bash new || exit 1
+source entities new || exit 1
 	version.set '0.4.420.0.0'
 	verbose.set on
 	strict.set off
+	trap.set on
 
 main() {
 	is.root || { msg.err "Require root access."; exit 1; }
@@ -11,8 +12,8 @@ main() {
 
 	while (($#)); do
 		case "$1" in
-			-V|--version)	msg "entities.bash $(version.set)"; exit 0;;
-			-h|--help)		usage exit;;
+			-V|--version)	printTitle; exit 0;;
+			-h|--help)		usage 0;;
 			-v|--verbose)	verbose.set on;;
 			-q|--quiet)		verbose.set off;;
 			-y|--auto)		auto=1; color.set off;;
@@ -21,6 +22,7 @@ main() {
 		shift
 	done
 
+	printTitle
 	intro
 
 	if ((auto==0)); then
@@ -30,7 +32,7 @@ main() {
 		if ! ask.yn "Continue?"; then
 			exit 1
 		fi
-		verbose.set $v
+		verbose.set "$v"
 	fi
 	
 	local IFS=$'\n'
@@ -61,9 +63,9 @@ main() {
 			touch "$ualiases"
 			chown "$user" "$ualiases"
 		fi
-		uowner=$(stat --printf='%U:%G' $ualiases)
+		uowner=$(stat --printf='%U:%G' "$ualiases")
 
-		arr=$( cat $ualiases | grep -v "^#" | sort -u -k2 )	
+		arr=$( grep -v "^#" "$ualiases" | sort -u -k2 )	
 		for a in ${arr[@]}; do
 			head=${a%%=*}; head=$(trim ${head#* })
 			[[ $head == '' ]] && continue
@@ -77,12 +79,15 @@ main() {
 		done
 
 		# echo out merged aliases
+		tmpfile="/tmp/$PRG-$$-$RANDOM"
 		(	echo "# $ualiases was modified by $PRG on $(date +'%F @%T')."
 			for a in ${aufull[@]}; do
 				echo "$a"
 			done | sort -u -k2
-		) > "$ualiases"
+		) > "$tmpfile"
 
+		cp -p "$ualiases" "$ualiases.old"
+		mv "$tmpfile" "$ualiases"
 		chown "$uowner" "$ualiases"
 		chmod 640 "$ualiases"
 	done
@@ -90,29 +95,25 @@ main() {
 
 }
 
-cleanup() {
-	if [[ "${1:-}" == '' ]];	then exitcode="$?"
-														else exitcode="$1"
-	fi
-	exit $exitcode
-}
+printTitle() { msg "$PRG vs $(version.set)"; }
 
 intro() {
-	tab.set 0
-	msg "$PRG vs $(version.set)" "Update .bash_aliases to standard for all users in /home." ""
-	tab.set ++
+	msg '' \
+			"Update .bash_aliases to standard for /root and all current users in /home/*." \
+			"Existing non-standard alias names are preserved." \
+			''
 }
+
 usage() {
+	printTitle
 	intro
-	cat <<-usage
-		Usage: $PRG [-y|--auto] [-v|--verbose] [-q|--quiet]  
-		            [-h|--help] [-V|--version]
-
-		See Also: $PRGDIR/std.bash_aliases # for definitions.
-
-	usage
-	[[ ${1:-} == 'exit' ]] && exit 1
-	return 0
+	msg "Synopsis: $PRG [--auto|-y] [--verbose|-v || --quiet|-q]" \
+			"              [--help|-h] [--version|-V]" \
+			'' \
+			"See Also: $PRGDIR/std.bash_aliases" \
+			"          for definitions of standard aliases." \
+			''
+	exit ${1:-0}
 }
 
 main "$@"
