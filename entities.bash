@@ -600,8 +600,10 @@ tab.set() {
 			'0'|reset) 		TABSET=0;;
 			'++'|forward)	TABSET=$((TABSET+1))			;;
 			'--'|back	 	)	TABSET=$((TABSET-1))			;;
-			 * 					)	if [[ "${1:0:1}" == '+' || "${1:0:1}" == '-' ]]; then
-											TABSET=$(( TABSET + ${1} ))
+			 * 					)	if [[ "${1:0:1}" == '+' ]]; then
+											TABSET=$(( TABSET + ${1:1} ))
+										elif [[ "${1:0:1}" == '-' ]]; then
+											TABSET=$(( TABSET - ${1:1} ))
 										else
 											TABSET=$(( ${1} ))						
 										fi

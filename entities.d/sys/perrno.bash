@@ -32,4 +32,7 @@ perrno() {
 		) &>/dev/null
 		return 0
 	}
+
+declare -fx perrno
+
 #fin

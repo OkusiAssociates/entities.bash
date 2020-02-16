@@ -15,5 +15,7 @@ elipstr() {
 	((((sx*2)+2) < width)) && pd='.'
 	echo "${str:0:$sx}${pd}..${str: -$sx}"
 }
+declare -fx elipstr
+
 #fin
 

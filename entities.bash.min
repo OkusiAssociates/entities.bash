@@ -333,8 +333,10 @@ case "${1}" in
 '0'|reset) 		TABSET=0;;
 '++'|forward)	TABSET=$((TABSET+1))			;;
 '--'|back	 	)	TABSET=$((TABSET-1))			;;
-* 					)	if [[ "${1:0:1}" == '+' || "${1:0:1}" == '-' ]]; then
-TABSET=$(( TABSET + ${1} ))
+* 					)	if [[ "${1:0:1}" == '+' ]]; then
+TABSET=$(( TABSET + ${1:1} ))
+elif [[ "${1:0:1}" == '-' ]]; then
+TABSET=$(( TABSET - ${1:1} ))
 else
 TABSET=$(( ${1} ))
 fi
@@ -512,6 +514,7 @@ echo >&2 "Directory $dir not found!"
 fi
 return 0
 }
+declare -fx cleanbakfiles
 entities.change_location() {
 local newlocation="${1:-}" newpath IFS OLDIFS p
 if ((! $# )) || [[ -z $newlocation ]]; then
@@ -537,7 +540,9 @@ export ENTITIES=${newlocation}
 echo "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""
 return 0
 }
+declare -fx entities.change_location
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
+declare -fx entities.location
 declare -x _ent_VERSION='0.9.420.220.0'
 exit_if_already_running() {
 (($#)) && _ent_LOCKTIMEOUT="$1"
@@ -627,52 +632,23 @@ lockfiles.timeout "${_ent_LOCKFILE}"
 fi
 }
 declare -fx lockfiles.timeout
-function mktempfile() {
-TmpDir="${TMPDIR:-/tmp}/entities"
-mkdir -p "${TmpDir}" || return 1
+mktempfile() {
+local TmpDir TmpFile
+TmpDir="${TMPDIR:-/tmp}/${1:-entities}"
+mkdir --mode=0770 -p "${TmpDir}" || { echo ''; return; }
 TmpFile="$(mktemp "${TmpDir}/${PRG:-$(basename "$0")}_XXXX")"
 echo "$TmpFile"
-return 0
 }
-declare -ix _slog_count=0
-slog() {
-for log in "${@}"; do
-((++_slog_count))
-echo "$(slog.prefix.eval) ${log}" >> $(slog.file)
-done
-}
-declare -x _slog_file=''
-slog.file() {
-if ((${#@})); then
-_slog_file="$1"
-_slog_count=0
-else
-[[ -z "$_slog_file" ]] && _slog_file="$PRGDIR/$PRG.log"
-echo -n "$_slog_file"
+declare -fx mktempfile
+declare -x TMPDIR="${TMPDIR:-/tmp}"
+tmpdir.set() {
+if (( $# )); then
+tmp="${1}"
+mkdir -p "$tmp" && cd "$tmp" && TMPDIR="$(pwd)"
 fi
+echo "$TMPDIR:-/tmp"
 }
-declare -x _slog_prefix=''
-slog.prefix() {
-if ((${#@})); then
-if [[ "$1" == '--long' ]]; then
-_slog_prefix="$(date -Ins) $USER"
-elif [[ "$1" == '--short' ]]; then
-_slog_prefix='$(date +"%s.%N")'
-else
-_slog_prefix="$1"
-fi
-else
-[[ -z "$_slog_prefix" ]] && _slog_prefix="$(date -Ins) $USER"
-echo -n "$_slog_prefix"
-fi
-}
-slog.prefix.eval() {
-eval "echo -n $(slog.prefix)"
-}
-slog.truncate() {
-_slog_count=0
-> "$(slog.file)"
-}
+declare -fx tmpdir.set
 path-add() {
 local cmd=()
 local -i prepend=0 export_path=1 test_dir=1
@@ -714,6 +690,45 @@ PATH="$newpath"
 return 0
 }
 declare -fx path-delete
+declare -ix _slog_count=0
+slog() {
+for log in "${@}"; do
+((++_slog_count))
+echo "$(slog.prefix.eval) ${log}" >> $(slog.file)
+done
+}
+declare -x _slog_file=''
+slog.file() {
+if ((${#@})); then
+_slog_file="$1"
+_slog_count=0
+else
+[[ -z "$_slog_file" ]] && _slog_file="$PRGDIR/$PRG.log"
+echo -n "$_slog_file"
+fi
+}
+declare -x _slog_prefix=''
+slog.prefix() {
+if ((${#@})); then
+if [[ "$1" == '--long' ]]; then
+_slog_prefix="$(date -Ins) $USER"
+elif [[ "$1" == '--short' ]]; then
+_slog_prefix='$(date +"%s.%N")'
+else
+_slog_prefix="$1"
+fi
+else
+[[ -z "$_slog_prefix" ]] && _slog_prefix="$(date -Ins) $USER"
+echo -n "$_slog_prefix"
+fi
+}
+slog.prefix.eval() {
+eval "echo -n $(slog.prefix)"
+}
+slog.truncate() {
+_slog_count=0
+> "$(slog.file)"
+}
 addslashes() {
 read line;
 while [[ "$line" != "" ]]; do
@@ -722,6 +737,7 @@ read line
 done
 return 0
 }
+declare -fx addslashes
 elipstr() {
 local str=${1:-} pd=''
 str=$(echo $str | head -n1)
@@ -734,13 +750,16 @@ sx=$(((width-2) / 2))
 ((((sx*2)+2) < width)) && pd='.'
 echo "${str:0:$sx}${pd}..${str: -$sx}"
 }
+declare -fx elipstr
 str_str() {
 local str
 str="${1#*${2}}"
 str="${str%%${3}*}"
 echo -n "$str"
 }
+declare -fx str_str
 pause() { read -n1 -p "${1:-*Pause*}"; echo; }
+declare -fx pause
 declare -x perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"
 perrno() {
 (($#)) || return 0
@@ -767,6 +786,7 @@ done
 ) &>/dev/null
 return 0
 }
+declare -fx perrno
 urlencode() {
 local LC_ALL=C encoded='' c
 local -i i strlen=${#1}
@@ -779,6 +799,7 @@ esac
 done
 echo -n "$encoded"
 }
+declare -fx urlencode
 urlpayload_encode() {
 echo -n "$( urlencode "$(payload_encode "${1}")" )"
 return 0
@@ -803,3 +824,6 @@ fi
 unset str bstr
 return 0
 }
+declare -fx urlpayload_encode
+declare -fx payload_encode
+declare -fx payload_decode

@@ -1,3 +1,5 @@
 #-Function--mktempfile
   Function: mktempfile
+  Synopsis: mktempfile [base_subdir]
+          : return value of '' means failure.
 #-Function--mktempfile--------------------------------------------------------

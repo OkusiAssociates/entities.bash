@@ -36,6 +36,6 @@ entities.change_location() {
 	echo "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""
 	return 0
 }
-
+declare -fx entities.change_location
 
 #fin

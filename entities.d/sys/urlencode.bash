@@ -14,4 +14,6 @@ urlencode() {
 	done
 	echo -n "$encoded"
 }
+declare -fx urlencode
+
 #fin

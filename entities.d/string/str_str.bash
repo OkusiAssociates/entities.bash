@@ -9,4 +9,6 @@ str_str() {
  	str="${str%%${3}*}"
  	echo -n "$str"
 }
+declare -fx str_str
+
 #fin

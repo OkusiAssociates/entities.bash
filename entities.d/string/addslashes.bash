@@ -9,4 +9,6 @@ addslashes() {
 	done
 	return 0
 }
+declare -fx addslashes
+
 #fin

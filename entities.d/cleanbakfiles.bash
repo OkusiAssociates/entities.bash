@@ -17,4 +17,6 @@ cleanbakfiles() {
 	fi
 	return 0
 }
+declare -fx cleanbakfiles
+
 #fin
