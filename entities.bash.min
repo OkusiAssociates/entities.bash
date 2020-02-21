@@ -360,9 +360,22 @@ done
 return 0
 }
 declare -fx	_printmsg
-trim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";v="${v%"${v##*[![:space:]]}"}";echo -n "$v"; }
-ltrim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";echo -n "$v"; }
-rtrim() { local v="$*";v="${v%"${v##*[![:space:]]}"}";echo -n "$v"; }
+trim()  {
+local v="$*"
+v="${v#"${v%%[![:space:]]*}"}"
+v="${v%"${v##*[![:space:]]}"}"
+echo -n "$v"
+}
+ltrim() {
+local v="$*"
+v="${v#"${v%%[![:space:]]*}"}"
+echo -n "$v"
+}
+rtrim() {
+local v="$*"
+v="${v%"${v##*[![:space:]]}"}"
+echo -n "$v"
+}
 declare -fx trim rtrim ltrim
 exit_if_not_root() {
 is.root || msg.die "$PRG can only be executed by root user."
@@ -544,6 +557,51 @@ declare -fx entities.change_location
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -x _ent_VERSION='0.9.420.220.0'
+cdd() {
+(( $# )) || return 0
+local dirspec="${1}" pwd=''
+
+if [[ -d $dirspec ]]; then
+cd "$dirspec"; pwd="$(pwd)"
+elif [[ -d "../../../$dirspec" ]]; then
+cd "../../../$dirspec"; pwd="$(pwd)"
+elif [[ -d "../../$dirspec" ]]; then
+cd "../../$dirspec"; pwd="$(pwd)"
+elif [[ -d "../$dirspec" ]]; then
+cd "../$dirspec"; pwd="$(pwd)"
+elif [[ -d "/$dirspec" ]]; then
+cd "/$dirspec"; pwd="$(pwd)"
+else
+msg "Searching PATH"
+local -a apath=( "${PATH//:/$'\n'}" )
+local path='' base=''
+for path in ${apath[@]}; do
+base="$(basename "$path")"
+if [[ $base == $dirspec ]]; then
+if [[ -d "$path" ]]; then
+cd "$path"; pwd="$(pwd)"
+break
+fi
+fi
+done
+if [[ $pwd == '' ]]; then
+msg "Finding"
+declare -a find=( $( find ../.. -name "${dirspec}*" -type d ) )
+(( ${#find[@]} == 0 )) && find=( $( find ../../.. -name "${dirspec}*" -type d ) )
+if (( ${#find[@]} == 1)); then
+cd "${find[0]}"
+pwd="$(pwd)"
+else
+select d in ${find[@]}; do
+cd "$d"
+pwd="$(pwd)"
+done
+((${#pwd})) || msg.err "$dirspec not found"
+fi
+fi
+fi
+[[ $pwd ]] && msg "$pwd"
+}
 exit_if_already_running() {
 (($#)) && _ent_LOCKTIMEOUT="$1"
 local lockfile="/run/lock/${PRG}.lock"
@@ -751,6 +809,12 @@ sx=$(((width-2) / 2))
 echo "${str:0:$sx}${pd}..${str: -$sx}"
 }
 declare -fx elipstr
+is.number() {
+[[ ${1:-} =~ ^[-+]?[0-9]+$ ]] && return 0 || return 1
+}
+declare -fx is.number
+s() {	(( ${1} == 1 )) || echo -n 's'; }
+declare -fx s
 str_str() {
 local str
 str="${1#*${2}}"

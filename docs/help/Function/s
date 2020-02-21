@@ -1,0 +1,5 @@
+#-Function--s
+  Function: s
+      Desc: print 's' if {numarg} not 1
+  Synopsis: s {numarg}
+#-Function--s-----------------------------------------------------------------

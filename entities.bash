@@ -635,9 +635,22 @@ declare -fx	_printmsg
 #X          : rtrim  strip string of trailing space chars
 #X Synopsis : trim string
 #X Example  : str=" 123 "; str=$(trim "$str")
-trim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";v="${v%"${v##*[![:space:]]}"}";echo -n "$v"; }
-ltrim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";echo -n "$v"; }
-rtrim() { local v="$*";v="${v%"${v##*[![:space:]]}"}";echo -n "$v"; }
+trim()  { 
+	local v="$*"
+	v="${v#"${v%%[![:space:]]*}"}"
+	v="${v%"${v##*[![:space:]]}"}"
+	echo -n "$v"
+}
+ltrim() {
+	local v="$*"
+	v="${v#"${v%%[![:space:]]*}"}"
+	echo -n "$v"
+}
+rtrim() {
+	local v="$*"
+	v="${v%"${v##*[![:space:]]}"}"
+	echo -n "$v"
+}
 declare -fx trim rtrim ltrim
 
 #X Function : exit_if_not_root

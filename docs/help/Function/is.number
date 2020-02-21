@@ -1,0 +1,4 @@
+#-Function--is.number
+  Function: is.number "$1" && echo "$1 is number"
+   Example: is.number "$1" && echo "$1 is number"
+#-Function--is.number---------------------------------------------------------
