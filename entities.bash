@@ -147,6 +147,9 @@ _ent_scriptstatus+="reloading|"
 # turn off strict! (strict is default)
 set +o errexit +o nounset +o pipefail
 
+# why not? ...
+shopt -s extglob
+
 
 #X Global   : GlobalCharVars CH9 LF CR OLDIFS IFS
 #X Desc     : Constant global char values 
@@ -279,8 +282,8 @@ declare -ix _ent_DRYRUN=0
 dryrun() { return $((! _ent_DRYRUN)); }
 declare -fx dryrun
 dryrun.set() {
-	if ((${#@})); then _ent_DRYRUN=$(("$1"))
-								else echo -n ${_ent_DRYRUN}
+	if (($#)); then _ent_DRYRUN=$(onoff "${1}" ${_ent_DRYRUN})
+									else echo -n ${_ent_DRYRUN}
 	fi
 	return 0
 }
@@ -304,8 +307,8 @@ declare -ix _ent_DEBUG=0
 debug() {	return $((! _ent_DEBUG)); }
 declare -fx debug
 debug.set() {
-	if ((${#@})); then 	_ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
-	else								echo ${_ent_DEBUG}
+	if (($#)); then 	_ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
+	else							echo ${_ent_DEBUG}
 	fi
 	return 0
 }
@@ -325,7 +328,7 @@ declare -ix _ent_STRICT=0
 strict() { return $((! _ent_STRICT)); }
 declare -fx strict
 strict.set() {
-	if ((${#@})); then
+	if (($#)); then
 	 	local opt='+'
 		_ent_STRICT=$(onoff "${1}" ${_ent_STRICT})
 		((_ent_STRICT)) && opt='-'
@@ -420,6 +423,16 @@ declare -fx synopsis
 #X Example  : msg "hello world!" "it's so nice to be back!"
 msg() { ((_ent_VERBOSE)) && _printmsg "$@"; }
 declare -fx msg
+
+msg.debug() {
+	((_ent_DEBUG)) || return 0
+	declare log="${1:-}"
+	[[ "${log,,}" == 'log' ]] && shift
+	[[ -z "$log" ]] && log=X
+	__msgx "$log" 'debug' "${_ent_VERBOSE}" "$@"
+	return 0
+}
+declare -fx msg.debug
 
 #X Function : __msgx
 #X Desc     : output string to terminal with color.

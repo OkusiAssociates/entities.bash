@@ -305,10 +305,14 @@ install() {
 	# make symlinks in $ENTITIES directory
 	msg.info "Make symlinks in $ENTITIES directory..."
 	cd "$ENTITIES" 																|| exit 1
+	# execute permissions on entities	
+	chmod 775 entities.bash entities.bash.min			|| exit 1
 	ln -fs php/string.inc.php	string.inc.php    	|| exit 1
-	ln  -fs entities.bash entities						    || exit 1
+	# in production, entities points to the min version
+	ln  -fs entities.bash.min entities				    || exit 1
 	ln  -fs entities.bash.min entities.min		    || exit 1
 	
+
 	# touch420 all files in $ENTITIES directory
 	msg.info "Fix owner/perms, touch420 all files in $ENTITIES directory..."
 	cd "$ENTITIES" || exit 1

@@ -80,6 +80,7 @@ done
 ((__entities__)) && return 0;
 _ent_scriptstatus+="reloading|"
 set +o errexit +o nounset +o pipefail
+shopt -s extglob
 declare -x  LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n'
 declare -nx OIFS="OLDIFS"
 onoff() {
@@ -147,7 +148,7 @@ declare -ix _ent_DRYRUN=0
 dryrun() { return $((! _ent_DRYRUN)); }
 declare -fx dryrun
 dryrun.set() {
-if ((${#@})); then _ent_DRYRUN=$(("$1"))
+if (($#)); then _ent_DRYRUN=$(onoff "${1}" ${_ent_DRYRUN})
 else echo -n ${_ent_DRYRUN}
 fi
 return 0
@@ -157,8 +158,8 @@ declare -ix _ent_DEBUG=0
 debug() {	return $((! _ent_DEBUG)); }
 declare -fx debug
 debug.set() {
-if ((${#@})); then 	_ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
-else								echo ${_ent_DEBUG}
+if (($#)); then 	_ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
+else							echo ${_ent_DEBUG}
 fi
 return 0
 }
@@ -167,7 +168,7 @@ declare -ix _ent_STRICT=0
 strict() { return $((! _ent_STRICT)); }
 declare -fx strict
 strict.set() {
-if ((${#@})); then
+if (($#)); then
 local opt='+'
 _ent_STRICT=$(onoff "${1}" ${_ent_STRICT})
 ((_ent_STRICT)) && opt='-'
@@ -231,6 +232,15 @@ syn
 declare -fx synopsis
 msg() { ((_ent_VERBOSE)) && _printmsg "$@"; }
 declare -fx msg
+msg.debug() {
+((_ent_DEBUG)) || return 0
+declare log="${1:-}"
+[[ "${log,,}" == 'log' ]] && shift
+[[ -z "$log" ]] && log=X
+__msgx "$log" 'debug' "${_ent_VERBOSE}" "$@"
+return 0
+}
+declare -fx msg.debug
 __msgx() {
 local log="$1" msglevel="$2" verbose="$3"
 shift 3
@@ -813,6 +823,19 @@ is.number() {
 [[ ${1:-} =~ ^[-+]?[0-9]+$ ]] && return 0 || return 1
 }
 declare -fx is.number
+shopt -s extglob
+post_slug() {
+local str="${1:-}" repl="${2:-_}"
+str="$(echo "${str,,}" | iconv -f UTF-8 -t ASCII//TRANSLIT )"
+str="${str//[^[:alnum:]]/${repl}}"
+str="${str//+([${repl}])/${repl}}"
+[[ ${str:0:1} == $repl ]] && str="${str:1}"
+[[ ${str: -1} == $repl ]] && str="${str:0: -1}"
+echo -n "$str"
+}
+remove_accents() {
+echo -n "${1:-}" | iconv -f UTF-8 -t ASCII//TRANSLIT
+}
 s() {	(( ${1} == 1 )) || echo -n 's'; }
 declare -fx s
 str_str() {
