@@ -1,8 +1,8 @@
 <?php
-//echo post_slug('sfd=*345&*_-00');
+//echo post_slug('sfd=(*345&*_-00)');
 function post_slug($str) {
 	return strtolower(
-			preg_replace(	[ '/[^a-zA-Z0-9 -()]/', '/[ -()]+/', '/^-|-$/' ],
+			preg_replace(	[ '/[^a-zA-Z0-9 -\/\(\)]/', '/[ -\(\)\/]+/', '/^-|-$/' ],
 											[ '', 								'-', 				 '' ], 
 											remove_accents($str)
 										)
