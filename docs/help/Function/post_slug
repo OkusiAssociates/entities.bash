@@ -2,13 +2,13 @@
   Function: post_slug
       Desc: produce a url-friendly slug string
           : string is lowercased, and non-ascii letters replaced with ascii-equivalent
-          : all non-alnum characters are replaced with string {replstr} (default '_')
+          : all non-alnum characters are replaced with string {replstr} (default '-')
           : multiple occurances of {replstr} are reduced to one, and
           : leading and trailing {replstr} chars removed.
   Synopsis: {newstr}=$(post_slug {str} [{replstr}])
           : {replstr} is optional, defaults to _
-   Example: post_slug '\nA title, with  sTrange  cHaracters like *&#^"@:'
-          : returns "a-title-with-strange-characters-like"
-          : post_slug ' A title, with  sTrange  cHaracters like *&#^@: Å Æ Ç È É Ê Ë "
-          : a_title_with_strange_characters_like_a_ae_c_e_e_e_e
+   Example: post_slug 'A title, with  Ŝŧřãņġę  cHaracters ()'
+          : returns "a-title-with-strange-characters"
+          : post_slug ' A title, with  Ŝŧřãņġę  cHaracters ()" '_'
+          : returns: "a_title_with_strange_characters"
 #-Function--post_slug---------------------------------------------------------
