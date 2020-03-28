@@ -11,9 +11,9 @@
 #sourced && return
 
 # process command line arguments, etc.#X Intro    : entities.bash
-#X Desc     : Entities Functions/Globals/Locals Declarations and Initialisations.
-#X          : entities.bash is a light-weight function library for productive
-#X          : programmers and administrators. - the soft machine
+#X Desc     : Entities Functions/Globals/Local Declarations and Initialisations.
+#X          : entities.bash is a light-weight Bash function library for systems
+#X          : programmers and administrators.
 #X          : PRG=basename of current script. 
 #X          : PRGDIR=directory location of current script, with softlinks 
 #X          : resolved to actual location.
@@ -129,7 +129,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 					return
 				fi			
 				;;
-			# all other passed parameters are ignored (probably script paramters, not for entities)
+			# all other passed parameters are ignored (probably script parameters, not for entities)
 			*)	break;;
 		esac
 		shift
