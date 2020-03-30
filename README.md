@@ -1,17 +1,19 @@
 # Entities Function Library
 
-Beta -- not production ready
-
 Entities is a lightweight Bash scripting library for systems and network administrators.
 
-To invoke Entities, just [source entitites.bash], at the top of your script, or at the command line.
+The basic philosophy is to be simple, unobtrusive and as flexible as possible, with minimal dependencies.
 
-If [entities.bash] is already loaded at the time a script is run, it is not loaded again, greatly speeding up load and execution time.
+To invoke Entities, just put [source entitites] at the top of your script, or invoke it at the command line.
 
-Some of the important functions and globals include:
+Once loaded into the environment [entities] can be invoked without reloading the entire library.
 
-  *  PRG		fq basename of current script name.
-  *  PRGDIR	fq path for current script directory.
+If [entities] is already loaded at the time a script is run, it is not loaded again, greatly speeding up load and execution time for downstream scripts that also use entities library functions.
+
+Here is a some of the functions and globals that I use in my scripts:
+
+  *  PRG		local var, fq basename of current script name.
+  *  PRGDIR	local var, fq path for current script directory.
   
   * msg{.info|.err|.warn|.crit|.die} [log] message
   * ask.yn [prompt]
@@ -19,14 +21,14 @@ Some of the important functions and globals include:
   * tab.width [numval]
   * verbose.set [[on|1] | [off|0]]
   * color.set [[on|1] | [off|0]]
-  * strict.set [[on|1] | [off|0*]]
-  * trap.set [[on|1] | [off|0*]]
+  * strict.set [[on|1] | [off|0]]
+  * trap.set [[on|1] | [off|0]]
   * trap.function [function_name]
-  * trim strval
-  * rtrim strval
-  * ltrim strval
-  * exit_if_not_root
-  * check.dependencies [program ...]
-  * is_interactive
+  * trim {strval}
+  * rtrim {strval}
+  * ltrim {strval}
 
- Run [entities.help] for full documentation
+[entities] can be easily extended with new functions.
+
+Run [entities.help] for full documentation
+
