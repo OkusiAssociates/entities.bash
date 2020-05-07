@@ -1,30 +1,50 @@
 #!/bin/bash
-source entities.bash || exit 1
-	version.set '0.1.420.0.0'
+#X Function|Global|Local|Script: 
+#X Desc    : 
+#X Synopsis: 
+#X Options :
+#X Example : 
+#X Depends :
+#X See Also:
+source entities || exit 1
+	version.set '0.1'
 	verbose.set on
+	trap.set on
 	strict.set on
 
 main() {
-	is.root || { msg.err "Require root access."; exit 1; }
-	
+	declare -i i=0
+	declare -a cmd=()
+	while (($#)); do
+		case "$1" in
+			--help|-h)			usage exit;;
+			--version|-V)		msg "$PRG $(version.set)"; exit 0;;
+			--verbose|-v)		verbose.set on;;
+			--quiet|-q)			verbose.set off;;
+			-*|--*)					msg.die "$PRG: Error: Invalid option: '$1'";;
+			*)							cmd+=( "$1" );;
+											#msg.die log "$PRG: Error: Bad command line argument '$1'!";;
+		esac
+		shift
+	done
+	msg.sys ${cmd[@]}
 	
 	
 }
 
+
 cleanup() {
-	if [[ "${1:-}" == '' ]];	then exitcode="$?"
-														else exitcode="$1"
-	fi
-	exit "$exitcode"
+	[[ "${1:-}" == '' ]] && exit $?
+	exit $1
 }
 
 usage() {
 	cat <<-usage
-		Usage: $PRG 
+		Usage: $PRG [[--verbose|-v] [--quiet|-q]] 
+		       $PRG [--help|-h]
 		
 	usage
-	[[ ${1:-} == 'exit' ]] && exit 1
-	return 0
+	exit 1
 }
 
 main "$@"
