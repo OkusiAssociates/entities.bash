@@ -580,6 +580,7 @@ msg.line() {
 	msg $(printf '_%.0s' $(seq 1 $sx) )
 	return 0
 }
+declare -fx msg.line
 	alias msgline='msg.line'
 
 #X Function : tab.set tab.width

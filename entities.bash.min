@@ -324,6 +324,7 @@ IFS=$' \t\n'
 msg $(printf '_%.0s' $(seq 1 $sx) )
 return 0
 }
+declare -fx msg.line
 alias msgline='msg.line'
 declare -ix TABWIDTH=4
 tab.width() {
@@ -878,6 +879,8 @@ done
 return 0
 }
 declare -fx perrno
+urldecode() { echo -e "$(sed 's/+/ /g;s/%\(..\)/\\x\1/g;')"; }
+declare -fx urldecode
 urlencode() {
 local LC_ALL=C encoded='' c
 local -i i strlen=${#1}
