@@ -124,7 +124,7 @@ main() {
 		#fi
 	fi
 	tab.set 1
-	msg.sys "Updating entities.bash.min ..."
+	msg.sys "Updating entities.bash.min"
 	$PRGDIR/entities.make.minimal --auto	|| msg.die "[PRGDIR=$PRGDIR] make entities.bash.min failed!"
 
 	makeprofile
@@ -298,6 +298,7 @@ install() {
 	mkdir -p "$ENTITIES/util"
 	/usr/bin/rsync -avl $excl util/*			"$ENTITIES/util/" >/dev/null				|| exit 1
 
+	/usr/bin/rsync -av $excl entities.rc 	"$ENTITIES/" >/dev/null		|| exit 1
 #	if [[ ! -L "$ENTITIES/entities-user.inc.sh" ]]; then
 #		ln -s ~/entities-user.inc.sh "$ENTITIES/entities-user.inc.sh"
 #	fi

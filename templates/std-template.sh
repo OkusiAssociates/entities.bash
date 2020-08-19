@@ -7,27 +7,29 @@
 #X Depends :
 #X See Also:
 source entities || exit 1
+
 	version.set '0.1'
-	verbose.set on
+	verbose.set "$([ -t 0 ] && echo 1 || echo 0)"
 	trap.set on
 	strict.set on
 
 main() {
 	declare -i i=0
-	declare -a cmd=()
+	declare -a arg=()
 	while (($#)); do
 		case "$1" in
-			--help|-h)			usage exit;;
+			--help|-h)			usage; exit 0;;
 			--version|-V)		msg "$PRG $(version.set)"; exit 0;;
 			--verbose|-v)		verbose.set on;;
 			--quiet|-q)			verbose.set off;;
-			-*|--*)					msg.die "$PRG: Error: Invalid option: '$1'";;
-			*)							cmd+=( "$1" );;
-											#msg.die log "$PRG: Error: Bad command line argument '$1'!";;
+			-*|--*)					msg.die "$PRG.error Invalid option [$1]";;
+			*)							arg+=( "$1" );;
+											#msg.die "$PRG.error Bad argument [$1]";;
 		esac
 		shift
 	done
-	msg.sys ${cmd[@]}
+	msg.sys ${arg[@]}
+	
 	
 	
 }

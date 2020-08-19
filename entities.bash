@@ -571,7 +571,7 @@ msg.line() {
 	((_ent_VERBOSE)) || return
 	local sx sz IFS=' '
 	sz=( $(stty size) )
-	if (( ${#sz[@]} > 0 )); then
+	if (( ${#sz[@]} )); then
 		sx=$(( (sz[1] - (TABSET * TABWIDTH)) - 1 ))
 	else
 		sx=$(( (COLUMNS - (TABSET * TABWIDTH)) - 1))

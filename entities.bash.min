@@ -315,7 +315,7 @@ msg.line() {
 ((_ent_VERBOSE)) || return
 local sx sz IFS=' '
 sz=( $(stty size) )
-if (( ${#sz[@]} > 0 )); then
+if (( ${#sz[@]} )); then
 sx=$(( (sz[1] - (TABSET * TABWIDTH)) - 1 ))
 else
 sx=$(( (COLUMNS - (TABSET * TABWIDTH)) - 1))
@@ -525,17 +525,31 @@ fi
 shopt -s expand_aliases # Enables alias expansion.
 declare -xig __entities__=1
 cleanbakfiles() {
-local dir="${1:-}"
-if ((${#dir})); then dir="$(readlink -f "$dir")"
-else dir="$(pwd)"
-fi
+usage() {
+echo "cleanbackfiles [-m|--maxdepth depth] [-q|--quiet] [dir]..."
+}
+local -i maxdepth=16 verbose=1
+local -a adir
+while (($#)); do
+case $1 in
+-h|--help)			usage; return ;;
+-m|--maxdepth)	shift; maxdepth=${1:-1} ;;
+-q|--quiet)			verbose=0 ;;
+*)							adir+=( "$1" ) ;;
+esac
+shift
+done
+((${#adir[@]})) || adir=( "$(pwd)" )
+for dir in "${adir[@]}"; do
+dir="$(readlink -f "$dir")"
 if [[ -d "$dir" ]]; then
-echo "Cleaning ${dir}..."
-/usr/bin/find "$dir" -name "*~" 			-type f -exec rm {} \;
-/usr/bin/find "$dir" -name "DEADJOE" -type f -exec rm {} \;
+((verbose)) && echo "Cleaning ${dir}..."
+/usr/bin/find "$dir" -maxdepth $maxdepth -name "*~"	-type f -exec rm {} \;
+/usr/bin/find "$dir" -maxdepth $maxdepth -name "DEADJOE" -type f -exec rm {} \;
 else
 echo >&2 "Directory $dir not found!"
 fi
+done
 return 0
 }
 declare -fx cleanbakfiles
@@ -850,6 +864,20 @@ str="${str%%${3}*}"
 echo -n "$str"
 }
 declare -fx str_str
+hrsize2int() {
+declare -Ai Hh=( [b]=1 [k]=1024 [m]=1024000 [g]=1024000000 [t]=1024000000000 [p]=1024000000000000 \
+[B]=1 [K]=1000 [M]=1000000 [G]=1000000000 [T]=1000000000000 [P]=1000000000000000 )
+declare num=${1:-0}
+declare h=${num: -1}
+if [[ 'bBkKmMgGtTpP' == *"$h"* ]]; then
+echo $(( ${Hh[$h]} * ${num:0:-1})) || return 1
+else
+echo $(( num )) || return 1
+fi
+return 0
+}
+
+
 pause() { read -n1 -p "${1:-*Pause*}"; echo; }
 declare -fx pause
 declare -x perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"

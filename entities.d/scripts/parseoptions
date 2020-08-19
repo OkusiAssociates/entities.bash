@@ -1,0 +1,23 @@
+#!/bin/bash
+	i=0
+	for opt in "$@"; do ((i++)); echo "$i=$opt"; done
+	echo '------------'
+
+
+	# parse combined single options into separate options
+	declare -i i
+	declare -a arr=()
+	while (($#)); do
+		if [[ ${1:0:2} == '--' ]]; then arr+=( "$1" )
+		elif [[ ${1:0:1} == '-' ]]; then
+			for((i=1;i<${#1};i++)); do arr+=( "-${1:$i:1}" ); done
+		else arr+=( "${1}" )
+		fi
+		shift
+	done
+	set -- "${arr[@]}"
+	unset arr
+
+	i=0
+	for opt in "$@"; do ((i++)); echo "$i='$opt'"; done
+

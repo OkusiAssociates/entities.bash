@@ -1,0 +1,8 @@
+#-Function--hrsize2int
+  Function: hrsize2int
+      Desc: return integer from human-readable number text
+  Synopsis: hrsize2int number[bkmgtp]
+   Example: hrsize2int 34M
+          : hrsize2int 34m
+          : hrsize2int 34000000
+#-Function--hrsize2int--------------------------------------------------------
