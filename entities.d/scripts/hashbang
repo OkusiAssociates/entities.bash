@@ -91,7 +91,15 @@ msg() {
 	((verbose)) && echo -en "${1:-}" 
 	return 0
 }
-
+version.set () 
+{ 
+    if ((${#@})); then
+        _ent_SCRIPT_VERSION="$1";
+    else
+        echo -n "${_ent_SCRIPT_VERSION}";
+    fi;
+    return 0
+}
 printTitle() { echo "$(basename $0) vs $(version.set)" ; return 0; }
 usage() {
 	local PRG=$(basename "$0")

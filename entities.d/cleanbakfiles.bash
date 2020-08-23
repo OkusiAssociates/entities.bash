@@ -5,14 +5,16 @@
 #X Desc    : Remove all *~ files recursively from current directory.
 cleanbakfiles() {
 	usage() {
-		echo "cleanbackfiles [-m|--maxdepth depth] [-q|--quiet] [dir]..."
+		echo "${PRG:-cleanbackfiles}: remove all temporary files *~ and DEADJOE"
+		echo 'Default maxdepth is 5'
+		echo "${PRG:-cleanbackfiles} [-m|--maxdepth depth] [-q|--quiet] [dir]..."
 	}
-	local -i maxdepth=16 verbose=1
+	local -i maxdepth=5 verbose=1
 	local -a adir
 	while (($#)); do
 		case $1 in
 			-h|--help)			usage; return ;;
-			-m|--maxdepth)	shift; maxdepth=${1:-1} ;;
+			-m|--maxdepth)	shift; maxdepth=${1:-5} ;;
 			-q|--quiet)			verbose=0 ;;
 			*)							adir+=( "$1" ) ;;
 		esac

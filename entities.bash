@@ -10,10 +10,12 @@
 #sourced() { [[ ${FUNCNAME[1]} = source ]]; }
 #sourced && return
 
-# process command line arguments, etc.#X Intro    : entities.bash
+# process command line arguments, etc.
+#X Intro    : entities.bash
 #X Desc     : Entities Functions/Globals/Local Declarations and Initialisations.
 #X          : entities.bash is a light-weight Bash function library for systems
 #X          : programmers and administrators.
+#X          : __entities__=is set if entities has been successfully loaded.
 #X          : PRG=basename of current script. 
 #X          : PRGDIR=directory location of current script, with softlinks 
 #X          : resolved to actual location.
@@ -39,51 +41,47 @@
 #X          : source entities.bash load-to newdir
 #X          :       # ^ load into new dir (eg, /run/entities) and
 #X          :       # set ENTITIES globalvar to new position. 
-
 declare -- PRG PRGDIR 
 declare -x _ent_scriptstatus="\$0=$0|"
 
 	# is script is being run?
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
 		p_="$(/bin/readlink -f "${0}")"
-		_ent_scriptstatus+="is.script|\$p_=$p_|"
+		_ent_scriptstatus+="is.script|\$p_=$p_|\n"
 		# has entities.bash been executed?
 		if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
-			_ent_scriptstatus+='is.execute|'
+			_ent_scriptstatus+='is.execute|\n'
 			__entities__=0
 			while (($#)); do
 				# do options for execute
 		    case "${1,,}" in
-					help|-h|--help)
-							echo 'tbd: entities execute help'
-							break
-						;;
-
+					help|-h|--help)	entities.help
+													echo 'tbd: entities execute help'
+													break ;;
 					# all other passed parameters are ignored.
-					-*)	echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
-					*)	echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
+					-*)							echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
+					*)							echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
 				esac
 				shift
 			done		
 			exit
 		fi
-		_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|"
+		_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|\n"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
-		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
+		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
 		unset _p
 	  # entities is already loaded, and no other parameters have been given, so do not reload.
 		if (( ! $# )); then
 			(( ${__entities__:-} )) && return 0
 		fi
-
 	# source entities has been executed at the shell command prompt
 	else
-		_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|"
+		_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|\n"
 		p_="$(/bin/readlink -f "${BASH_SOURCE[0]}")"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
-		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
+		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
 		unset _p
 		if [[ -n "${ENTITIES:-}" ]]; then
 			PATH="${PATH//\:${ENTITIES}/}"
@@ -98,37 +96,13 @@ declare -x _ent_scriptstatus="\$0=$0|"
 	while (($#)); do
 		case "${1,,}" in
 			# new load
-			new) 
-				__entities__=0
-				;;
+			new) 									__entities__=0 ;;
+
 			# does the calling script wish to inherit the current Entities environment/functions?
 			# (inherit is the default)
-			''|inherit|preserve)						
 				# can only inherit if called from a script
-				__entities__=${__entities__:-}
-				;;
-			# load entities into a new location (like a ram drive)
-			load) 
-				shift
-				_tmp="${1:-}"
-				mkdir -p "$_tmp"
-				if [[ ! -d "$_tmp" ]]; then
-					echo >&2 "Load directory $_tmp not found!"
-           ((SHLVL>1)) && exit 1
-					return 1
-				else
-					/usr/bin/rsync -qavl $ENTITIES/* "$_tmp/"
-					(( $? )) &&	{ echo >&2 "rsync error $ENTITIES > $_tmp"; return 0; } 
-					[[ -n ${ENTITIES:-} ]] && PATH="${PATH//${ENTITIES}/}:$_tmp"
-					export PATH=${PATH//::/:}
-					export ENTITIES=${_tmp}
-					unset _tmp
-					__entities__=0
-					source "$ENTITIES/entities.bash" new
-					((SHLVL>1)) && exit 
-					return
-				fi			
-				;;
+			''|inherit|preserve)	__entities__=${__entities__:-0} ;;
+
 			# all other passed parameters are ignored (probably script parameters, not for entities)
 			*)	break;;
 		esac
@@ -141,7 +115,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 #X Example  : (("${__entities__:-}")) || { echo >&2 'entities.bash not loaded!'; exit; }
 ((__entities__)) && return 0;
 #echo 'reloading...'
-_ent_scriptstatus+="reloading|"
+_ent_scriptstatus+="reloading|\n"
 
 
 # turn off strict! (strict is default)
@@ -668,7 +642,7 @@ rtrim() {
 declare -fx trim rtrim ltrim
 
 #X Function : exit_if_not_root
-#X Desc     : exit script if not root user
+#X Desc     : If not root user, print failure message and exit script.
 #X Synopsis : exit_if_not_root
 exit_if_not_root() {
 	is.root || msg.die "$PRG can only be executed by root user."
@@ -684,7 +658,7 @@ declare -fx is.root
 
 	
 #X Function : ask.yn
-#X Desc     : ask y/n question and return 0/1 
+#X Desc     : Ask y/n question,d return 0/1 
 #X          : NOTE: if verbose() is disabled, or there is no tty, ask.yn will 
 #X					: *always* return 0, without printing the string or waiting for a 
 #X					: response.
@@ -841,24 +815,25 @@ if ((! ${_ent_MINIMAL:-0})); then
 #X     : ENTITIES/entities.d/ directory and sub-directories are 
 #X     : automatically included in the entities.bash source file. 
 #X     :
-if [[ -d "$ENTITIES/entities.d" ]]; then
-	declare _e
-	shopt -s globstar
-	for _e in $ENTITIES/entities.d/**/*.bash; do
-		if [[ -r "$_e" ]] && [[ ! -L "$_e" ]] ; then
-			source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
-		fi
-	done
-	unset _e
-fi
-#-Function Declarations End --------------------------------------------------
+	if [[ -d "$ENTITIES/entities.d" ]]; then
+		declare _e
+		shopt -s globstar
+		for _e in $ENTITIES/entities.d/**/*.bash; do
+			if [[ -r "$_e" ]] && [[ ! -L "$_e" ]] ; then
+				source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
+			fi
+		done
+		unset _e
+	fi
+	
+	#-Function Declarations End --------------------------------------------------
 
-#--check dependencies if not minimal
-if ! check.dependencies \
-		basename dirname readlink mkdir ln cat \
-    systemd-cat stty wget base64 seq tty find touch tree lynx; then
-	echo >&2 'Warning: Dependencies not found. Entities cannot run.'	
-fi 
+	#--check dependencies if not minimal
+	if ! check.dependencies \
+			basename dirname readlink mkdir ln cat \
+    	systemd-cat stty wget base64 seq tty find touch tree lynx; then
+		echo >&2 'Warning: Dependencies not found. Entities cannot run.'	
+	fi 
 fi
 #^^_ent_MINIMAL
 
@@ -869,7 +844,7 @@ shopt -s expand_aliases # Enables alias expansion.
 #X Desc     : Integer flag to announce that entities.bash has been loaded. 
 #X Defaults : 0
 declare -xig __entities__=1
-
+_ent_scriptstatus+="entities loaded|\n"
 
 # handing over to user.
 #X File: entities-user.inc.php

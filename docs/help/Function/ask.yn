@@ -1,6 +1,6 @@
 #-Function--ask.yn
   Function: ask.yn
-      Desc: ask y/n question and return 0/1
+      Desc: Ask y/n question,d return 0/1
           : NOTE: if verbose() is disabled, or there is no tty, ask.yn will
           : *always* return 0, without printing the string or waiting for a
           : response.
