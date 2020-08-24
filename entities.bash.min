@@ -28,6 +28,7 @@ unset _p
 if (( ! $# )); then
 (( ${__entities__:-} )) && return 0
 fi
+
 else
 _ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|\n"
 p_="$(/bin/readlink -f "${BASH_SOURCE[0]}")"

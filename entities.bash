@@ -75,6 +75,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		if (( ! $# )); then
 			(( ${__entities__:-} )) && return 0
 		fi
+	
 	# source entities has been executed at the shell command prompt
 	else
 		_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|\n"
