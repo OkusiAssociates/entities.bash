@@ -1,7 +1,7 @@
 #-----File--IncludeModules
       File: IncludeModules
       Desc: By default, all *.bash module files located in
-          : ENTITIES/entities.d/ directory and sub-directories are
+          : $ENTITIES/entities.d/** are
           : automatically included in the entities.bash source file.
           : #X     :
 #-----File--IncludeModules----------------------------------------------------

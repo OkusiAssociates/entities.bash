@@ -1,6 +1,8 @@
 #---Global--GlobalCharVars
     Global: GlobalCharVars CH9 LF CR OLDIFS IFS
-      Desc: Constant global char values
+      Desc: Constant global char values.
+          : NOTE: IFS is 'normalised' on every full execution of entities.
+          :       OLDIFS retains the existing IFS
   Synopsis: LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n'
   Defaults: OLDIFS=$IFS     # captures existing IFS before assigning 'standard' IFS
           : IFS=$' \\t\\n'  # 'standard' IFS

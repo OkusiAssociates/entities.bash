@@ -55,12 +55,12 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			while (($#)); do
 				# do options for execute
 		    case "${1,,}" in
-					help|-h|--help)	entities.help
-													echo 'tbd: entities execute help'
-													break ;;
+					-h|--help)	entities.help "#@"
+											echo 'tbd: entities execute help'
+											break ;;
 					# all other passed parameters are ignored.
-					-*)							echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
-					*)							echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
+					-*)					echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
+					*)					echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
 				esac
 				shift
 			done		
@@ -127,7 +127,9 @@ shopt -s extglob
 
 
 #X Global   : GlobalCharVars CH9 LF CR OLDIFS IFS
-#X Desc     : Constant global char values 
+#X Desc     : Constant global char values.
+#X          : NOTE: IFS is 'normalised' on every full execution of entities.
+#X          :       OLDIFS retains the existing IFS
 #X Synopsis : LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n' 
 #X Defaults : OLDIFS=$IFS     # captures existing IFS before assigning 'standard' IFS
 #X          : IFS=$' \\t\\n'  # 'standard' IFS
@@ -139,7 +141,7 @@ declare -nx OIFS="OLDIFS"
 
 #X Function : onoff 
 #X Desc     : echo 1 if 'on', 0 if 'off'
-#X Synopsis : onoff [on|1] | [off|0]] [defaultval]
+#X Synopsis : onoff on|1 || off|0 [defaultval]
 #X          : for ambiguous value, echo 'defaultval' if defined, otherwise echo 0.
 #X Example  : result=$(onoff off 1)
 onoff() {
@@ -147,7 +149,7 @@ onoff() {
 	case "${o,,}" in
 		on|1)			o=1;;
 		off|0)		o=0;;
-    *)        (( $# > 1 )) && o=$(( ${2} )) || o=0 
+    *)        o=0; (( $# > 1 )) && o=$(( ${2} ));; 
 	esac
 	echo -n $((o))
 	return 0
@@ -168,18 +170,21 @@ declare -fx onoff
 #X          : verbose.set on
 #X          : # do stuff... #
 #X          : verbose.set $oldverbose
-declare -ix _ent_VERBOSE=$( [[ -t 0 ]] && echo 1 || echo 0)
+#declare -ix _ent_VERBOSE=$( [[ -n "${PS1}" ]] && echo 1 || echo 0)
+declare -ix _ent_VERBOSE=1
 verbose() { return $((! _ent_VERBOSE)); }
 declare -fx verbose
 verbose.set() {   
 	if ((${#@})); then
 		_ent_VERBOSE=$(onoff "${1}")
 	else
+		#-- SC2086: Double quote to prevent globbing and word splitting.
+		# shellcheck disable=SC2086
 		echo -n ${_ent_VERBOSE}
 	fi
 	return 0
 }
-declare -fx verbose.set
+declare -fx 'verbose.set'
 
 #X Function : color.set
 #X Desc     : turn on/off colorized output from msg.* functions.
@@ -207,7 +212,7 @@ color.set() {
 	fi
 	return 0
 }
-declare -fx color.set
+declare -fx 'color.set'
 	alias colour.set='color.set'		# for the civilised world
 
 
@@ -243,7 +248,7 @@ version.set() {
 	fi
 	return 0
 }
-declare -fx version.set
+declare -fx 'version.set'
 
 
 #X Function : dryrun.set
@@ -257,12 +262,16 @@ declare -ix _ent_DRYRUN=0
 dryrun() { return $((! _ent_DRYRUN)); }
 declare -fx dryrun
 dryrun.set() {
-	if (($#)); then _ent_DRYRUN=$(onoff "${1}" ${_ent_DRYRUN})
-									else echo -n ${_ent_DRYRUN}
+	if (($#)); then 
+		_ent_DRYRUN=$(onoff "${1}" "${_ent_DRYRUN}")
+	else 
+		#	-- SC2086: Double quote to prevent globbing and word splitting.
+		# shellcheck disable=SC2086
+		echo -n ${_ent_DRYRUN}
 	fi
 	return 0
 }
-declare -fx dryrun.set
+declare -fx 'dryrun.set'
 
 #X Function: debug debug.set
 #X Desc    : general purpose global setting for debugging. 
@@ -287,7 +296,7 @@ debug.set() {
 	fi
 	return 0
 }
-declare -fx debug.set
+declare -fx 'debug.set'
 
 
 #X Function : strict.set
@@ -313,7 +322,38 @@ strict.set() {
 	fi
 	return 0
 }
-declare -fx strict.set
+declare -fx 'strict.set'
+
+#X Function : trap.function
+#X Synopsis : trap.function [{ bash_exit_trap_function } ]
+declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? ${LINENO:-0}; }'
+trap.function() {
+	if (($#));	then _ent_EXITTRAPFUNCTION="$1" 
+							else echo -n "$_ent_EXITTRAPFUNCTION"
+	fi
+	return 0
+}
+declare -fx 'trap.function'
+
+#X Function : trap.set
+#X Synopsis : trap.set [[on|1] | [off|0]]
+declare -ix _ent_EXITTRAP=0
+trap.set() {
+	if (($#)); then
+		_ent_EXITTRAP=$(onoff "${1}" ${_ent_EXITTRAP})
+		if ((_ent_EXITTRAP)); then
+	    #-- SC2064: Use single quotes, otherwise this expands now rather than when signalled.
+			# shellcheck disable=SC2064
+			trap "$_ent_EXITTRAPFUNCTION" EXIT
+		else
+			trap -- EXIT
+		fi
+	else
+		echo -n $_ent_EXITTRAP
+	fi
+	return 0
+}
+declare -fx 'trap.set'
 
 #X Function : cleanup
 #X Desc     : a call to this function is made in the trap EXIT command.
@@ -327,7 +367,7 @@ declare -fx strict.set
 cleanup() {
 	local -i exitcode=$?
 	if (( exitcode )); then
-		msg.err "script=$PRG:exit=$exitcode:line=${2:-}:1=${1:-}"
+		msg.err "script=$PRG:exit=$exitcode:line=${2:-}:1=${1:-}:f=${FUNCNAME[@]}:ln=${BASH_LINENO[@]}:s=${BASH_SOURCE[@]}}"
 		if ((_ent_DEBUG)); then
 			msg.info "$(set | grep "^_ent_" | grep -v "^_ent_LOCK")"
 			msg.info "$(set | grep "^BASH"  | grep -v BASH_VERSINFO)"
@@ -337,34 +377,6 @@ cleanup() {
 }
 declare -fx cleanup
 
-#X Function : trap.set
-#X Synopsis : trap.set [[on|1] | [off|0]]
-declare -ix _ent_EXITTRAP=0
-trap.set() {
-	if (($#)); then
-		_ent_EXITTRAP=$(onoff "${1}" ${_ent_EXITTRAP})
-		if ((_ent_EXITTRAP)); then
-			trap "$_ent_EXITTRAPFUNCTION" EXIT
-		else
-			trap -- EXIT
-		fi
-	else
-		echo -n ${_ent_EXITTRAP}
-	fi
-	return 0
-}
-declare -fx trap.set
-
-#X Function : trap.function
-#X Synopsis : trap.function [{ bash_exit_trap_function } ]
-declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? 0${LINENO:-}; }'
-trap.function() {
-	if (($#));	then _ent_EXITTRAPFUNCTION="$1" 
-							else echo -n "$_ent_EXITTRAPFUNCTION"
-	fi
-	return 0
-}
-declare -fx trap.function
 
 #X Function : synopsis
 #X Desc     : display usage information for the script. optionally exit.
@@ -407,7 +419,7 @@ msg.debug() {
 	__msgx "$log" 'debug' "${_ent_VERBOSE}" "$@"
 	return 0
 }
-declare -fx msg.debug
+declare -fx 'msg.debug'
 
 #X Function : __msgx
 #X Desc     : output string to terminal with color.
@@ -446,9 +458,9 @@ msg.info() {
 	__msgx "$log" 'info' "${_ent_VERBOSE}" "$@"
 	return 0
 }
-declare -fx msg.info
-	alias msginfo='msg.info' # legacy
-	alias infomsg='msg.info' # legacy
+declare -fx 'msg.info'
+	alias msginfo='msg.info' #X legacy X#
+	alias infomsg='msg.info' #X legacy X#
 
 #X Function : msg.sys
 #X Desc     : output an informational message, with option to write to systemd journal.
@@ -462,9 +474,9 @@ msg.sys() {
 	__msgx "$log" "notice" "${_ent_VERBOSE}" "$@"
 	return 0
 }
-declare -fx msg.sys
-	alias msgsys='msg.sys' # legacy
-	alias sysmsg='msg.sys' # legacy
+declare -fx 'msg.sys'
+	alias msgsys='msg.sys' #X legacy X#
+	alias sysmsg='msg.sys' #X legacy X#
 
 #X Function : msg.warn
 #X Desc     : output a warning message, with option to write to systemd journal.
@@ -479,9 +491,9 @@ msg.warn() {
 	__msgx "$log" warning "${_ent_VERBOSE}" "$@"
 	return 0
 }
-declare -fx msg.warn
-	alias msgwarn='msg.warn'	# legacy
-	alias warnmsg='msg.warn'	# legacy
+declare -fx 'msg.warn'
+	alias msgwarn='msg.warn'	#X legacy X#
+	alias warnmsg='msg.warn'	#X legacy X#
 
 #X Function : msg.err
 #X Desc     : output an error message, with option to write to systemd journal.
@@ -496,9 +508,9 @@ msg.err() {
 	__msgx >&2 "$log" "err" "1" "$@"
 	return 0
 }
-declare -fx msg.err
-	alias msgerr='msg.err' # make canonical
-	alias errmsg='msg.err'	# legacy
+declare -fx 'msg.err'
+	alias msgerr='msg.err'	#X lecacy X#
+	alias errmsg='msg.err'	#X legacy X#
 
 #X Function : msg.die
 #X Desc     : output an error message, with option to write to systemd journal.
@@ -514,10 +526,10 @@ msg.die() {
 	__msgx >&2 "$log" "crit" "1" "$@" 'Aborting.'
 	exit 1
 }
-declare -fx msg.die
-	alias msgdie='msg.die' # legacy
-	alias diemsg='msg.die' # legacy
-	alias msgdir='msg.die' # for butter fingers.
+declare -fx 'msg.die'
+	alias msgdie='msg.die' #X legacy X#
+	alias diemsg='msg.die' #X legacy X#
+	alias msgdir='msg.die' #X for butter fingers #X
 
 #X Function : msg.crit
 #X Desc     : output a critical error message, with option to write to systemd journal.
@@ -534,9 +546,9 @@ msg.crit() {
 	#mail --to sysadmin@megacorp.dev -s "hello Sir, how are you? are you sitting down?" <<< "Sir, a funny thing just happened."
 	exit 1
 }
-declare -fx msg.crit
-	alias msgcrit='msg.crit' # legacy
-	alias critmsg='msg.crit' # legacy
+declare -fx 'msg.crit'
+	alias msgcrit='msg.crit' #X legacy X#
+	alias critmsg='msg.crit' #X legacy X#
 
 #X Function : msg.line 
 #X Desc     : print an underline from current cursor position to end of screen
@@ -552,10 +564,10 @@ msg.line() {
 		sx=$(( (COLUMNS - (TABSET * TABWIDTH)) - 1))
 	fi
 	IFS=$' \t\n'
-	msg $(printf '_%.0s' $(seq 1 $sx) )
+	msg "$(printf '_%.0s' $(seq 1 "${sx:-1}") )"
 	return 0
 }
-declare -fx msg.line
+declare -fx 'msg.line'
 	alias msgline='msg.line'
 
 #X Function : tab.set tab.width
@@ -580,7 +592,7 @@ tab.width() {
 	fi
 	return 0
 }
-declare -fx tab.width
+declare -fx 'tab.width'
 
 declare -ix TABSET=0
 tab.set() {
@@ -604,7 +616,7 @@ tab.set() {
 	fi
 	return 0
 }
-declare -fx	tab.set
+declare -fx	'tab.set'
 
 _printmsg() {
 	local line IFS=$'\t\n' lf=''
@@ -655,7 +667,7 @@ is.root() {
 	[[ "$(whoami)" == 'root' || $EUID == 0 ]] && return 0
 	return 1
 }
-declare -fx is.root
+declare -fx 'is.root'
 
 	
 #X Function : ask.yn
@@ -680,18 +692,18 @@ ask.yn() {
 		esac
 	done
 }
-declare -fx ask.yn
-	alias askyn='ask.yn' # legacy
+declare -fx 'ask.yn'
+	alias askyn='ask.yn' #X legacy X#
 
 #X Function : entities.help 
 #X Desc     : display help info about Entities functions and variables.
 #X Synopsis : entities.help [function|globalvar|localvar|file] | [-s|--search searchstring] [-h|--help]
 #X Example  : entities.help ask.yn msg.info
 entities.help() {
-	$ENTITIES/docs/entities.help "$@"
+	"$ENTITIES/docs/entities.help" "$@"
 	return 0
 }
-declare -fx entities.help
+declare -fx 'entities.help'
 
 #X Function : check.dependencies
 #X Desc     : check for script dependencies (programs, scripts, or functions).
@@ -724,7 +736,7 @@ check.dependencies() {
 			echo 2> "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
 	return $missing
 }
-declare -fx check.dependencies
+declare -fx 'check.dependencies'
 
 
 #X Function : is.tty 
@@ -735,7 +747,7 @@ is.tty() {
 	tty --quiet	# [[ -t 0 ]] is this the same??
 	return $?
 }
-declare -fx is.tty
+declare -fx 'is.tty'
 	alias is_tty='is.tty'
 	
 
@@ -793,7 +805,7 @@ is.interactive() {
 
 	return $(( ! isit ))
 }
-declare -fx is.interactive
+declare -fx 'is.interactive'
 	alias is_interactive='is.interactive'
 
 #X Function: trap.breakp
@@ -806,14 +818,14 @@ trap.breakp() {
 	[[ "${b,,}" == 'y' ]] || exit 1
 	return 0
 }
-declare -fx trap.breakp
+declare -fx 'trap.breakp'
 	alias breakp='trap.breakp'
 
 #--_ent_MINIMAL if defined, then don't do this section
 if ((! ${_ent_MINIMAL:-0})); then
 #X File: IncludeModules 
 #X Desc: By default, all *.bash module files located in  
-#X     : ENTITIES/entities.d/ directory and sub-directories are 
+#X     : $ENTITIES/entities.d/** are 
 #X     : automatically included in the entities.bash source file. 
 #X     :
 	if [[ -d "$ENTITIES/entities.d" ]]; then
@@ -827,8 +839,6 @@ if ((! ${_ent_MINIMAL:-0})); then
 		unset _e
 	fi
 	
-	#-Function Declarations End --------------------------------------------------
-
 	#--check dependencies if not minimal
 	if ! check.dependencies \
 			basename dirname readlink mkdir ln cat \
@@ -860,6 +870,8 @@ _ent_scriptstatus+="entities loaded|\n"
 #X     : without having to change code in the core Entities script.
 #declare -x _ent_userfile="$PRGDIR/entities-user.inc.sh"
 #[[ -r "${_ent_userfile}" ]] && source "${_ent_userfile}"
+
+#-Function Declarations End --------------------------------------------------
 
 
 #return 0

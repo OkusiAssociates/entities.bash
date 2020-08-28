@@ -46,6 +46,7 @@ useage() {
 	PRG=$OPRG; PRGDIR=$OPRGDIR
 
 	# let's start
+	verbose.set on
 	strict.set on
 	debug.set on
 	trap.set on

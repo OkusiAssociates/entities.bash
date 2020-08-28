@@ -10,11 +10,11 @@ _ent_scriptstatus+='is.execute|\n'
 __entities__=0
 while (($#)); do
 case "${1,,}" in
-help|-h|--help)	entities.help
+-h|--help)	entities.help "#@"
 echo 'tbd: entities execute help'
 break ;;
--*)							echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
-*)							echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
+-*)					echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
+*)					echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
 esac
 shift
 done
@@ -63,13 +63,13 @@ local o="${1:-0}"
 case "${o,,}" in
 on|1)			o=1;;
 off|0)		o=0;;
-*)        (( $# > 1 )) && o=$(( ${2} )) || o=0
+*)        o=0; (( $# > 1 )) && o=$(( ${2} ));;
 esac
 echo -n $((o))
 return 0
 }
 declare -fx onoff
-declare -ix _ent_VERBOSE=$( [[ -t 0 ]] && echo 1 || echo 0)
+declare -ix _ent_VERBOSE=1
 verbose() { return $((! _ent_VERBOSE)); }
 declare -fx verbose
 verbose.set() {
@@ -80,7 +80,7 @@ echo -n ${_ent_VERBOSE}
 fi
 return 0
 }
-declare -fx verbose.set
+declare -fx 'verbose.set'
 declare -ix _ent_COLOR=1
 color() { return $((! _ent_COLOR)); }
 declare -fx color
@@ -97,7 +97,7 @@ echo -n "${_ent_COLOR}"
 fi
 return 0
 }
-declare -fx color.set
+declare -fx 'color.set'
 alias colour.set='color.set'		# for the civilised world
 declare  -x colorreset="\x1b[0;39;49m"
 declare  -x color0="\x1b[0;39;49m"
@@ -118,17 +118,19 @@ else echo -n "${_ent_SCRIPT_VERSION}"
 fi
 return 0
 }
-declare -fx version.set
+declare -fx 'version.set'
 declare -ix _ent_DRYRUN=0
 dryrun() { return $((! _ent_DRYRUN)); }
 declare -fx dryrun
 dryrun.set() {
-if (($#)); then _ent_DRYRUN=$(onoff "${1}" ${_ent_DRYRUN})
-else echo -n ${_ent_DRYRUN}
+if (($#)); then
+_ent_DRYRUN=$(onoff "${1}" "${_ent_DRYRUN}")
+else
+echo -n ${_ent_DRYRUN}
 fi
 return 0
 }
-declare -fx dryrun.set
+declare -fx 'dryrun.set'
 declare -ix _ent_DEBUG=0
 debug() {	return $((! _ent_DEBUG)); }
 declare -fx debug
@@ -138,7 +140,7 @@ else							echo ${_ent_DEBUG}
 fi
 return 0
 }
-declare -fx debug.set
+declare -fx 'debug.set'
 declare -ix _ent_STRICT=0
 strict() { return $((! _ent_STRICT)); }
 declare -fx strict
@@ -153,19 +155,15 @@ echo -n ${_ent_STRICT}
 fi
 return 0
 }
-declare -fx strict.set
-cleanup() {
-local -i exitcode=$?
-if (( exitcode )); then
-msg.err "script=$PRG:exit=$exitcode:line=${2:-}:1=${1:-}"
-if ((_ent_DEBUG)); then
-msg.info "$(set | grep "^_ent_" | grep -v "^_ent_LOCK")"
-msg.info "$(set | grep "^BASH"  | grep -v BASH_VERSINFO)"
+declare -fx 'strict.set'
+declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? ${LINENO:-0}; }'
+trap.function() {
+if (($#));	then _ent_EXITTRAPFUNCTION="$1"
+else echo -n "$_ent_EXITTRAPFUNCTION"
 fi
-fi
-exit $exitcode
+return 0
 }
-declare -fx cleanup
+declare -fx 'trap.function'
 declare -ix _ent_EXITTRAP=0
 trap.set() {
 if (($#)); then
@@ -176,19 +174,23 @@ else
 trap -- EXIT
 fi
 else
-echo -n ${_ent_EXITTRAP}
+echo -n $_ent_EXITTRAP
 fi
 return 0
 }
-declare -fx trap.set
-declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? 0${LINENO:-}; }'
-trap.function() {
-if (($#));	then _ent_EXITTRAPFUNCTION="$1"
-else echo -n "$_ent_EXITTRAPFUNCTION"
+declare -fx 'trap.set'
+cleanup() {
+local -i exitcode=$?
+if (( exitcode )); then
+msg.err "script=$PRG:exit=$exitcode:line=${2:-}:1=${1:-}:f=${FUNCNAME[@]}:ln=${BASH_LINENO[@]}:s=${BASH_SOURCE[@]}}"
+if ((_ent_DEBUG)); then
+msg.info "$(set | grep "^_ent_" | grep -v "^_ent_LOCK")"
+msg.info "$(set | grep "^BASH"  | grep -v BASH_VERSINFO)"
 fi
-return 0
+fi
+exit $exitcode
 }
-declare -fx trap.function
+declare -fx cleanup
 synopsis() {
 local -i xt=0
 while (($#)); do
@@ -215,7 +217,7 @@ declare log="${1:-}"
 __msgx "$log" 'debug' "${_ent_VERBOSE}" "$@"
 return 0
 }
-declare -fx msg.debug
+declare -fx 'msg.debug'
 __msgx() {
 local log="$1" msglevel="$2" verbose="$3"
 shift 3
@@ -237,55 +239,55 @@ declare log="${1:-}"
 __msgx "$log" 'info' "${_ent_VERBOSE}" "$@"
 return 0
 }
-declare -fx msg.info
-alias msginfo='msg.info' # legacy
-alias infomsg='msg.info' # legacy
+declare -fx 'msg.info'
+alias msginfo='msg.info' #X legacy X#
+alias infomsg='msg.info' #X legacy X#
 msg.sys() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift
 __msgx "$log" "notice" "${_ent_VERBOSE}" "$@"
 return 0
 }
-declare -fx msg.sys
-alias msgsys='msg.sys' # legacy
-alias sysmsg='msg.sys' # legacy
+declare -fx 'msg.sys'
+alias msgsys='msg.sys' #X legacy X#
+alias sysmsg='msg.sys' #X legacy X#
 msg.warn() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift || log='X'
 __msgx "$log" warning "${_ent_VERBOSE}" "$@"
 return 0
 }
-declare -fx msg.warn
-alias msgwarn='msg.warn'	# legacy
-alias warnmsg='msg.warn'	# legacy
+declare -fx 'msg.warn'
+alias msgwarn='msg.warn'	#X legacy X#
+alias warnmsg='msg.warn'	#X legacy X#
 msg.err() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift
 __msgx >&2 "$log" "err" "1" "$@"
 return 0
 }
-declare -fx msg.err
-alias msgerr='msg.err' # make canonical
-alias errmsg='msg.err'	# legacy
+declare -fx 'msg.err'
+alias msgerr='msg.err'	#X lecacy X#
+alias errmsg='msg.err'	#X legacy X#
 msg.die() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift
 __msgx >&2 "$log" "crit" "1" "$@" 'Aborting.'
 exit 1
 }
-declare -fx msg.die
-alias msgdie='msg.die' # legacy
-alias diemsg='msg.die' # legacy
-alias msgdir='msg.die' # for butter fingers.
+declare -fx 'msg.die'
+alias msgdie='msg.die' #X legacy X#
+alias diemsg='msg.die' #X legacy X#
+alias msgdir='msg.die' #X for butter fingers #X
 msg.crit() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift
 __msgx >&2 "$log" "emerg" "1" "$@" 'Call Sysadmin immediately.'
 exit 1
 }
-declare -fx msg.crit
-alias msgcrit='msg.crit' # legacy
-alias critmsg='msg.crit' # legacy
+declare -fx 'msg.crit'
+alias msgcrit='msg.crit' #X legacy X#
+alias critmsg='msg.crit' #X legacy X#
 msg.line() {
 ((_ent_VERBOSE)) || return
 local sx sz IFS=' '
@@ -296,10 +298,10 @@ else
 sx=$(( (COLUMNS - (TABSET * TABWIDTH)) - 1))
 fi
 IFS=$' \t\n'
-msg $(printf '_%.0s' $(seq 1 $sx) )
+msg "$(printf '_%.0s' $(seq 1 "${sx:-1}") )"
 return 0
 }
-declare -fx msg.line
+declare -fx 'msg.line'
 alias msgline='msg.line'
 declare -ix TABWIDTH=4
 tab.width() {
@@ -311,7 +313,7 @@ echo -n "${TABWIDTH}"
 fi
 return 0
 }
-declare -fx tab.width
+declare -fx 'tab.width'
 declare -ix TABSET=0
 tab.set() {
 if ((${#@})); then
@@ -334,7 +336,7 @@ echo -n "${TABSET}"
 fi
 return 0
 }
-declare -fx	tab.set
+declare -fx	'tab.set'
 _printmsg() {
 local line IFS=$'\t\n' lf=''
 for line in "$@"; do
@@ -372,7 +374,7 @@ is.root() {
 [[ "$(whoami)" == 'root' || $EUID == 0 ]] && return 0
 return 1
 }
-declare -fx is.root
+declare -fx 'is.root'
 
 ask.yn() {
 ((_ent_VERBOSE)) || return 0
@@ -389,13 +391,13 @@ case "${yn,,}" in
 esac
 done
 }
-declare -fx ask.yn
-alias askyn='ask.yn' # legacy
+declare -fx 'ask.yn'
+alias askyn='ask.yn' #X legacy X#
 entities.help() {
-$ENTITIES/docs/entities.help "$@"
+"$ENTITIES/docs/entities.help" "$@"
 return 0
 }
-declare -fx entities.help
+declare -fx 'entities.help'
 check.dependencies() {
 ((${#@})) || return 0
 local needed_dep=''
@@ -421,12 +423,12 @@ done
 echo 2> "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
 return $missing
 }
-declare -fx check.dependencies
+declare -fx 'check.dependencies'
 is.tty() {
 tty --quiet	# [[ -t 0 ]] is this the same??
 return $?
 }
-declare -fx is.tty
+declare -fx 'is.tty'
 alias is_tty='is.tty'
 
 is.interactive() {
@@ -469,7 +471,7 @@ if ((echoit)); then
 fi
 return $(( ! isit ))
 }
-declare -fx is.interactive
+declare -fx 'is.interactive'
 alias is_interactive='is.interactive'
 trap.breakp() {
 local b='' prompt=${1:-}
@@ -478,7 +480,7 @@ read -e -n1 -p "breakpoint${prompt}: continue? y/n " b
 [[ "${b,,}" == 'y' ]] || exit 1
 return 0
 }
-declare -fx trap.breakp
+declare -fx 'trap.breakp'
 alias breakp='trap.breakp'
 if ((! ${_ent_MINIMAL:-0})); then
 if [[ -d "$ENTITIES/entities.d" ]]; then
@@ -502,33 +504,43 @@ shopt -s expand_aliases # Enables alias expansion.
 declare -xig __entities__=1
 _ent_scriptstatus+="entities loaded|\n"
 cleanbakfiles() {
+local PRG=cleanbakfiles
 usage() {
 echo "${PRG:-cleanbackfiles}: remove all temporary files *~ and DEADJOE"
-echo 'Default maxdepth is 5'
-echo "${PRG:-cleanbackfiles} [-m|--maxdepth depth] [-q|--quiet] [dir]..."
+echo 'Default maxdepth is 5, verbose enabled, dryrun disabled'
+echo "${PRG:-cleanbackfiles} [--maxdepth|-m depth] [--dryrun|-n] [--quiet|-q || --verbose|-v] [dir]..."
 }
-local -i maxdepth=5 verbose=1
+local -i maxdepth=5 verbose=1 dryrun=1
 local -a adir
 while (($#)); do
 case $1 in
 -h|--help)			usage; return ;;
--m|--maxdepth)	shift; maxdepth=${1:-5} ;;
+-n|--dryrun)		dryrun=1 ;;
+-N|--notdryrun)	dryrun=0 ;;
+-m|--maxdepth)	shift; maxdepth=${1:- 1} ;;
+-v|--verbose)		verbose=1 ;;
 -q|--quiet)			verbose=0 ;;
 *)							adir+=( "$1" ) ;;
 esac
 shift
 done
 ((${#adir[@]})) || adir=( "$(pwd)" )
+((dryrun+verbose >= 2)) && echo "$PRG DRY RUN start"
 for dir in "${adir[@]}"; do
 dir="$(readlink -f "$dir")"
 if [[ -d "$dir" ]]; then
-((verbose)) && echo "Cleaning ${dir}..."
-/usr/bin/find "$dir" -maxdepth $maxdepth -name "*~"	-type f -exec rm {} \;
-/usr/bin/find "$dir" -maxdepth $maxdepth -name "DEADJOE" -type f -exec rm {} \;
+((verbose)) && echo "$PRG ${dir}..."
+/usr/bin/find "$dir" -maxdepth ${maxdepth:- 1} -type f \
+| egrep '(.*~|*~|^DEADJOE)' \
+| while read -r line; do
+((verbose)) && echo "  rm $line"
+((dryrun)) || rm "$line"
+done
 else
 echo >&2 "Directory $dir not found!"
 fi
 done
+((dryrun+verbose >= 2)) && echo "$PRG DRY RUN finished"
 return 0
 }
 declare -fx cleanbakfiles
@@ -843,6 +855,7 @@ str="${str%%${3}*}"
 echo -n "$str"
 }
 declare -fx str_str
+calcfp() { echo "$*" | bc -l; }
 declare -Aix HRint=( [b]=1 [k]=1024 [m]=1024000 [g]=1024000000 [t]=1024000000000 [p]=1024000000000000 \
 [B]=1 [K]=1000 [M]=1000000 [G]=1000000000 [T]=1000000000000 [P]=1000000000000000 )
 hr2int() {
@@ -905,6 +918,7 @@ done
 return 0
 }
 declare -fx perrno
+rtfm() { help $@ || man $@ || ${BROWSER:-$(which w3m || which lynx)} "http://www.google.com/search?q=$@" || return 0; }
 urldecode() { echo -e "$(sed 's/+/ /g;s/%\(..\)/\\x\1/g;')"; }
 declare -fx urldecode
 urlencode() {

@@ -2,54 +2,39 @@
 x="$(readlink -f "$0")"
 PRGDIR=$(dirname $x)
 PRG=$(basename "$x")
-version.set() { echo '1.0'; }
+
+# hbpattern='#!*bash'
+# f=../cleanakfiles.bash
+# hd="$(head -n1 $f 2>/dev/null)"
+# [[ "$hd" == $hbpattern ]] && echo 1
 
 declare -i verbose=1
 
 main() {
+	version.set '0.9'
 	local dir='' search='' hashbang="#!$(which bash)" prefix='' suffix='' LF=$'\n'
 	local -a gcmd=()
 	local -i ccc=0
 	while (($#)); do
 		if [[ "${1:0:1}" == '-' ]]; then
 			case "$1" in
-				-h|--help)	
-					usage
-					;;
-				-v|--verbose)	
-					verbose=1
-					;;
-				-q|--quiet)	
-					verbose=0
-					;;
-				-s|--search)
-					shift
-					search="${1:-}"
-					;;
-				-p|--prefix)
-					shift
-					prefix="${1:-} "
-					;;
-				-x|--suffix)
-					shift
-					suffix="${1:-}"
-					;;
-				-l|--nolf)
-					LF=''
-					;;
-				-b|--hashbang)
-					shift
-					hashbang="$(which "${1:-junkfilex}")"
-					if [[ -z "$hashbang" ]]; then
-						hashbang="${1:-}"
-						msg "# **Program [${1:-}] was not found. Using [${1:-}] as head search."
-					else
-						hashbang="#!${hashbang}"
-					fi
-					;;
-				*)
-					gcmd+=("$1")
-					;;
+				-h|--help)			usage	;;
+				-v|--verbose)		verbose=1 ;;
+				-q|--quiet)			verbose=0 ;;
+				-s|--search)		shift; search="${1:-}" ;;
+				-p|--prefix)		shift; prefix="${1:-} " ;;
+				-x|--suffix)		shift; suffix="${1:-}" ;;
+				-l|--nolf)			LF='' ;;
+				-b|--hashbang)	shift
+												hashbang="$(which "${1:-junkfilex}")"
+												if [[ -z "$hashbang" ]]; then
+													hashbang="${1:-}"
+													msg "# **Program [${1:-}] was not found. Using [${1:-}] as head search."
+												else
+													hashbang="#!${hashbang}"
+												fi
+												;;
+				*)							gcmd+=("$1") ;;
 			esac
 		else
 			if (( ! ${#dir} )); then
@@ -67,11 +52,11 @@ main() {
 	# report
 	((${#prefix})) && printf '$s\n' "$hashbang"
 	msg "# $PRG $dir --hashbang '$hashbang'"
-	((${#search}))  && msg " --search '$search'"
-	((${#gcmd[@]})) && msg " --grep ${gcmd[*]}"
-	((${#prefix})) 	&& msg " --prefix '${prefix}'"
-	((${#suffix})) 	&& msg " --suffix '${suffix}'"
-	((! ${#LF})) 		&& msg " --nolf"
+	((${#search}))	&& msg " --search '$search'"
+	((${#gcmd[@]}))	&& msg " --grep ${gcmd[*]}"
+	((${#prefix}))	&& msg " --prefix '${prefix}'"
+	((${#suffix}))	&& msg " --suffix '${suffix}'"
+	((! ${#LF}))		&& msg " --nolf"
 	msg '\n'
 
 	# execute
@@ -86,29 +71,33 @@ main() {
 	msg "# ${ccc} file$( ((ccc!=1)) && echo 's') found\n"
 }
 
-
 msg() {
 	((verbose)) && echo -en "${1:-}" 
 	return 0
 }
-version.set () 
-{ 
-    if ((${#@})); then
-        _ent_SCRIPT_VERSION="$1";
-    else
-        echo -n "${_ent_SCRIPT_VERSION}";
-    fi;
-    return 0
+
+declare -x _ent_SCRIPT_VERSION=''
+version.set () { 
+		if (($#)); then
+			_ent_SCRIPT_VERSION="$1";
+		else
+			echo -n "${_ent_SCRIPT_VERSION}";
+		fi;
+		return 0
 }
+
 printTitle() { echo "$(basename $0) vs $(version.set)" ; return 0; }
 usage() {
 	local PRG=$(basename "$0")
 	printTitle
 	echo "Desc    : search directory recursively for files with \$!/bin/bash header."
 	echo "Synopsis: $PRG dir [--search 'str'] [--hashbang bash|php|*]"
+	echo "        :     [--verbose|-v] [--quiet|-q]"
+	echo "        :     [--nolf|-l] [--quiet|-q]"
+	echo "        :     [--prefix|-p outputprefix] [--suffix|-x outputsuffix]"
 	echo "Examples: $PRG                    # print bash filename"
-	echo "          $PRG . -s '^verbose'    # print matching bash file"
-	echo "          $PRG . -s '^verbose' -H # print matching bash file with context"
+	echo "        : $PRG . -s '^verbose'    # print matching bash file"
+	echo "        : $PRG . -s '^verbose' -H # print matching bash file with context"
 	exit 1
 }
 
