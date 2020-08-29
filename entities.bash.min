@@ -69,8 +69,9 @@ echo -n $((o))
 return 0
 }
 declare -fx onoff
-declare -ix _ent_VERBOSE=1
-verbose() { return $((! _ent_VERBOSE)); }
+declare -ix _ent_VERBOSE
+[ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
+verbose() { return $(( ! _ent_VERBOSE )); }
 declare -fx verbose
 verbose.set() {
 if ((${#@})); then
@@ -82,7 +83,8 @@ return 0
 }
 declare -fx 'verbose.set'
 declare -ix _ent_COLOR=1
-color() { return $((! _ent_COLOR)); }
+[ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
+color() { return $(( ! _ent_COLOR )); }
 declare -fx color
 color.set() {
 if ((${#@})); then
@@ -506,9 +508,10 @@ _ent_scriptstatus+="entities loaded|\n"
 cleanbakfiles() {
 local PRG=cleanbakfiles
 usage() {
-echo "${PRG:-cleanbackfiles}: remove all temporary files *~ and DEADJOE"
-echo 'Default maxdepth is 5, verbose enabled, dryrun disabled'
-echo "${PRG:-cleanbackfiles} [--maxdepth|-m depth] [--dryrun|-n] [--quiet|-q || --verbose|-v] [dir]..."
+echo "Usage: ${PRG:-cleanbackfiles} [--maxdepth|-m depth] [--dryrun|-n] [--quiet|-q || --verbose|-v] [dir]..."
+echo "Desc: Remove all temporary files: .~*|~*|.*~|*~|.#*|DEADJOE"
+echo '    : Defaults: maxdepth 5, verbose enabled, dryrun enabled, dir $PWD'
+echo '    : More than one dir can be specified.'
 }
 local -i maxdepth=5 verbose=1 dryrun=1
 local -a adir
@@ -525,13 +528,13 @@ esac
 shift
 done
 ((${#adir[@]})) || adir=( "$(pwd)" )
-((dryrun+verbose >= 2)) && echo "$PRG DRY RUN start"
+((verbose)) && echo "$PRG start $( ((dryrun)) && echo 'DRY RUN')"
 for dir in "${adir[@]}"; do
 dir="$(readlink -f "$dir")"
 if [[ -d "$dir" ]]; then
 ((verbose)) && echo "$PRG ${dir}..."
 /usr/bin/find "$dir" -maxdepth ${maxdepth:- 1} -type f \
-| egrep '(.*~|*~|^DEADJOE)' \
+| egrep '(.*~|*~|DEADJOE)' \
 | while read -r line; do
 ((verbose)) && echo "  rm $line"
 ((dryrun)) || rm "$line"
@@ -540,7 +543,7 @@ else
 echo >&2 "Directory $dir not found!"
 fi
 done
-((dryrun+verbose >= 2)) && echo "$PRG DRY RUN finished"
+((verbose)) && echo "$PRG finish $( ((dryrun)) && echo 'DRY RUN')"
 return 0
 }
 declare -fx cleanbakfiles
@@ -918,7 +921,16 @@ done
 return 0
 }
 declare -fx perrno
-rtfm() { help $@ || man $@ || ${BROWSER:-$(which w3m || which lynx)} "http://www.google.com/search?q=$@" || return 0; }
+rtfm() {
+if [[ -z ${1:-} ]]; then
+echo "read the fucking manual, searches command in help, man, then google."
+return 1
+fi
+help "$@" 2>/dev/null && return 0
+
+man "$@"  2>/dev/null && return 0
+${BROWSER:-$(which w3m || which lynx)} "http://www.google.com/search?q=linux+bash+$@" && return 0
+}
 urldecode() { echo -e "$(sed 's/+/ /g;s/%\(..\)/\\x\1/g;')"; }
 declare -fx urldecode
 urlencode() {

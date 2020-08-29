@@ -170,9 +170,9 @@ declare -fx onoff
 #X          : verbose.set on
 #X          : # do stuff... #
 #X          : verbose.set $oldverbose
-#declare -ix _ent_VERBOSE=$( [[ -n "${PS1}" ]] && echo 1 || echo 0)
-declare -ix _ent_VERBOSE=1
-verbose() { return $((! _ent_VERBOSE)); }
+declare -ix _ent_VERBOSE
+[ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
+verbose() { return $(( ! _ent_VERBOSE )); }
 declare -fx verbose
 verbose.set() {   
 	if ((${#@})); then
@@ -197,7 +197,8 @@ declare -fx 'verbose.set'
 #X          : # do stuff... #
 #X          : color.set $oldstatus
 declare -ix _ent_COLOR=1
-color() { return $((! _ent_COLOR)); }
+[ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
+color() { return $(( ! _ent_COLOR )); }
 declare -fx color
 color.set() {
 	if ((${#@})); then 

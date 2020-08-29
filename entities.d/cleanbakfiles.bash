@@ -6,9 +6,10 @@
 cleanbakfiles() {
 	local PRG=cleanbakfiles
 	usage() {
-		echo "${PRG:-cleanbackfiles}: remove all temporary files *~ and DEADJOE"
-		echo 'Default maxdepth is 5, verbose enabled, dryrun disabled'
-		echo "${PRG:-cleanbackfiles} [--maxdepth|-m depth] [--dryrun|-n] [--quiet|-q || --verbose|-v] [dir]..."
+		echo "Usage: ${PRG:-cleanbackfiles} [--maxdepth|-m depth] [--dryrun|-n] [--quiet|-q || --verbose|-v] [dir]..."
+		echo "Desc: Remove all temporary files: .~*|~*|.*~|*~|.#*|DEADJOE"
+		echo '    : Defaults: maxdepth 5, verbose enabled, dryrun enabled, dir $PWD'
+		echo '    : More than one dir can be specified.'
 	}
 	local -i maxdepth=5 verbose=1 dryrun=1
 	local -a adir
@@ -26,13 +27,13 @@ cleanbakfiles() {
 	done
 	((${#adir[@]})) || adir=( "$(pwd)" ) 
 
-	((dryrun+verbose >= 2)) && echo "$PRG DRY RUN start"
+	((verbose)) && echo "$PRG start $( ((dryrun)) && echo 'DRY RUN')"
 	for dir in "${adir[@]}"; do
 		dir="$(readlink -f "$dir")"
 		if [[ -d "$dir" ]]; then 
 			((verbose)) && echo "$PRG ${dir}..."
 			/usr/bin/find "$dir" -maxdepth ${maxdepth:- 1} -type f \
-				| egrep '(.*~|*~|^DEADJOE)' \
+				| egrep '(.*~|*~|DEADJOE)' \
 					| while read -r line; do 
 							((verbose)) && echo "  rm $line"
 							((dryrun)) || rm "$line"
@@ -41,7 +42,7 @@ cleanbakfiles() {
 			echo >&2 "Directory $dir not found!"
 		fi
 	done	
-	((dryrun+verbose >= 2)) && echo "$PRG DRY RUN finished"
+	((verbose)) && echo "$PRG finish $( ((dryrun)) && echo 'DRY RUN')"
 	return 0
 }
 declare -fx cleanbakfiles
