@@ -1,5 +1,0 @@
-#-Function--cleanbakfiles
-  Function: cleanbakfiles cln
-      Desc: Remove all *~ files recursively from current directory.
-          : CLNTEMPFILES array defines temporary files, default:( '*~' '~*' '.~*' )
-#-Function--cleanbakfiles-----------------------------------------------------

@@ -1,7 +1,7 @@
 #!/bin/bash
 # set entities location to this.script directory
 ENTITIES="$(dirname "$(readlink -f "$0")")"
-source $ENTITIES/entities.bash || exit 127
+source "$ENTITIES/entities.bash" || exit 127
 strict.set on
 
 declare entities_file="$ENTITIES/entities.bash"
@@ -13,7 +13,7 @@ declare -i auto=0
 main() {
 	while (($#)); do
 		case "$1" in
-			--minfile|-m)	minfile="$1";;
+			--minfile|-m)	minfile="${2:-}";;
 			--auto|-y)		auto=1; color.set off;;
 			--verbose|-v)	verbose.set on;;
 			--quiet|-q)		verbose.set off;;
@@ -26,7 +26,7 @@ main() {
 	[[ "$entities_file" == "$entities_min" ]] && msg.die log "Cannot clobber ${entities_file}!"
 	cd "$ENTITIES" || msg.die log "Could not cd into '$ENTITIES'!"
 
-	tab=$(tab.set)
+	local tab=$(tab.set)
 	printTitle
 	tab.set ++
 	if ((!auto)); then
@@ -36,50 +36,54 @@ main() {
 		msg ''
 	fi
 
-	[[ -z "$ENTITIES" ]] 	&& msg.die log "\$ENTITIES not defined!"
-	cd "$ENTITIES" 				|| msg.die log "Could not cd into '$ENTITIES'!"
+	[[ -z "$ENTITIES" ]] 	&& msg.die log "Envvar \$ENTITIES not defined!"
+	cd "$ENTITIES" 				|| msg.die log "Could not cd into [$ENTITIES]!"
 
 	# set up header for entities.min
 	echo '#!/bin/bash' > "$entities_min_tmp"
 	echo "_ent_MINIMAL=1" >> $entities_min_tmp
 	# assemble all .bash files; define entities.bash as start point
-	templates=( "$ENTITIES/entities.bash" )
+	local -a templates=( "$ENTITIES/entities.bash" )
 	# get all .bash files in entities.d/
-	[[ ! -d "$ENTITIES/entities.d" ]] && msg.die log "$ENTITIES/entities.d not found!"
+	[[ ! -d "$ENTITIES/entities.d" ]] && msg.die log "[$ENTITIES/entities.d] not found!"
 	local _e
 	shopt -s globstar
 	for _e in $ENTITIES/entities.d/**/*.bash; do
-		if [[ -r "$_e" ]] && [[ ! -L "$_e" ]]; then
+		if [[ -r "$_e" ]]; then
 			templates+=( "$_e" )
 		fi
 	done
 	unset _e
 
 	# merge all bash files into one minimal file
+	local template tx
 	for template in ${templates[@]}; do
-		[[ ! -f "${template}" ]] && msg.die log "${template} not found!"
-		# remove #comment lines that begin with [space*]#
+		[[ ! -f "${template}" ]] && msg.err log "${template} not found!"
+		# remove blank lines, and #comment lines that begin with space*#
 		tx=$(grep -v '^$' "$template" | grep -v '^[[:space:]]*#')
 		# make the minimal version of entities.bash
 		(	local IFS=$'\n'
-			for ln in $tx; do
-				echo "$(trim "$ln")" >> $entities_min_tmp
-			done
-		)
+			for ln in $tx; do	trim "$ln";	echo;	done
+		) >> "$entities_min_tmp"
 	done
+	unset template templates tx
 
 	# rename entities_min_tmp.$$ to entities.bash.min, backup any old version
-	[[ -f "$entities_min" ]] && mv "$entities_min" "$entities_min.old"
+	[[ -f "$entities_min" ]] \
+			&& mv "$entities_min" "$entities_min.old"
 	# rename the temp file as minimal file
-	mv "$entities_min_tmp" "$entities_min" || msg.die log "Could not rename '$entities_min_tmp' '$entities_min'."
+	mv "$entities_min_tmp" "$entities_min" \
+			|| msg.die log "Could not rename '$entities_min_tmp' '$entities_min'."
 
 	# make timestamps the same for *.bash and *.bash.min
-	/usr/bin/touch -r "$entities_file" "$entities_min" || msg.die log "File touch $entities_min failed!"
+	/usr/bin/touch -r "$entities_file" "$entities_min" \
+			|| msg.die log "File touch $entities_min failed!"
 
 	# check permissions
-	chmod 644 "$entities_min"	|| msg.die log "Could not chmod $entities_min!"
+	chmod 644 "$entities_min"	\
+			|| msg.die log "Could not chmod $entities_min!"
 
-	msg.sys log "$entities_min created."
+	msg.info log "$entities_min created."
 	tab.set $tab
 }
 
@@ -88,17 +92,15 @@ main() {
 printTitle() { msg "$PRG vs $(version.set)"; }
 
 printDesc() {
-	msg "Make Optimised Minimal Versions of Entities source file."
+	msg "Make optimised minimal version of entities.bash source file."
+	msg "All comments and blank lines are removed."
+	msg "Output is to [$entities_min]"
 	msg ''
-	msg "Create minimal version Entities file"
-	msg "with all comments and blank lines removed."
-	msg "Default is [$entities_min]"
+	msg "File [$(basename "$entities_file")] is always included first, "
+	msg "then all .bash files found in [$ENTITIES/entities.d/]"
 	msg ''
-	msg "File [$(basename $entities_file)] is always included first, then all .bash "
-	msg "files found in [$ENTITIES/entities.d/]"
-	msg ''
-	msg "Within user scripts, [$(basename $entities_min)] can be used instead"
-	msg "of [$(basename $entities_file)]"
+	msg "Within user scripts, [source $(basename "$entities_min")] can be used instead"
+	msg "of [source $(basename "$entities_file")]"
 }
 
 usage() {
@@ -113,5 +115,5 @@ usage() {
 	exit 1
 }
 
-main $@
+main "$@"
 #fin

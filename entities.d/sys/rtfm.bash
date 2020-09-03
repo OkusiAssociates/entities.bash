@@ -7,7 +7,7 @@ rtfm() {
 		return 1
 	fi
 
-	help "$@" 2>/dev/null && return 0
+	help -m "$@" 2>/dev/null && return 0
 	
 	man "$@"  2>/dev/null && return 0
 

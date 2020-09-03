@@ -48,7 +48,7 @@ main() {
 	((${#dir}))		|| dir='.'
 	((${#gcmd}))	|| gcmd+=("-l")
 	((verbose))		|| gcmd+=("-s")
-
+	
 	# report
 	((${#prefix})) && printf '$s\n' "$hashbang"
 	msg "# $PRG $dir --hashbang '$hashbang'"
@@ -58,7 +58,7 @@ main() {
 	((${#suffix}))	&& msg " --suffix '${suffix}'"
 	((! ${#LF}))		&& msg " --nolf"
 	msg '\n'
-
+	
 	# execute
 	files=( $(find "${dir}" -type f) )
 	for f in ${files[@]}; do
@@ -78,12 +78,12 @@ msg() {
 
 declare -x _ent_SCRIPT_VERSION=''
 version.set () { 
-		if (($#)); then
-			_ent_SCRIPT_VERSION="$1";
-		else
-			echo -n "${_ent_SCRIPT_VERSION}";
-		fi;
-		return 0
+	if (($#)); then
+		_ent_SCRIPT_VERSION="$1";
+	else
+		echo -n "${_ent_SCRIPT_VERSION}";
+	fi;
+	return 0
 }
 
 printTitle() { echo "$(basename $0) vs $(version.set)" ; return 0; }

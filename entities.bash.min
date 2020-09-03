@@ -422,7 +422,7 @@ fi
 fi
 done
 ((missing && _ent_VERBOSE)) && \
-echo 2> "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
+>&2 echo "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
 return $missing
 }
 declare -fx 'check.dependencies'
@@ -505,20 +505,21 @@ fi
 shopt -s expand_aliases # Enables alias expansion.
 declare -xig __entities__=1
 _ent_scriptstatus+="entities loaded|\n"
-declare -ax CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' )
-cleanbakfiles() {
-local PRG=cleanbakfiles
+declare -ax CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
+clntempfiles() {
+(( ${#CLNTEMPFILES[@]} )) || CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
+local PRG=cln
 usage() {
-echo "Usage: ${PRG:-cleanbakfiles} [--maxdepth|-m depth] [--dryrun|-n || --notdryrun|-N] [--quiet|-q || --verbose|-v] [dir]..."
-echo "Desc : Recursively remove all temporary files ( ${CLNTEMPFILES[@]:- *~ ~* .~*} )"
+echo "Usage: ${PRG} [--maxdepth|-m depth] [--dryrun|-n||--notdryrun|-N] [--quiet|-q||--verbose|-v] [dirspec]..."
+echo "Desc : Recursively remove all temporary files defined in CLNTEMPFILES[] ( ${CLNTEMPFILES[@]} )"
 echo '     : Defaults: maxdepth 2, verbose enabled, dryrun enabled'
-echo '     : More than one directory can be specified. Default is current directory.'
-echo "     : if defined, CLNTEMPFILES envar sets temporary files to search for. Default is ( '*~' '~*' '.~*' )"
+echo '     : More than one dirspec can be specified. Default is current directory.'
+echo "     : Envvar CLNTEMPFILES[] defines temporary files, default is ( '*~' '~*' '.~*' )"
+echo "     : If not defined, CLNTEMPFILES[] defaults to ( '*~' '~*' '.~*' )"
 }
-local -i maxdepth=2 verbose=1 dryrun=1
-declare -ix filecount=0
-local tmpfc="/tmp/fc-$RANDOM"
-local -a adir
+local -i maxdepth=2 verbose=1 dryrun=1 filecount=0
+local tmpfc="$( [[ -w /run ]] && echo '/run' || echo '/tmp' )/${PRG}-${RANDOM}"
+local -a aDir
 while (($#)); do
 case $1 in
 -h|--help)			usage; return ;;
@@ -527,66 +528,54 @@ case $1 in
 -m|--maxdepth)	shift; maxdepth=${1:- 2} ;;
 -v|--verbose)		verbose=1 ;;
 -q|--quiet)			verbose=0 ;;
-*)							adir+=( "$1" ) ;;
+*)							aDir+=( "$1" ) ;;
 esac
 shift
 done
-((${#adir[@]})) || adir=( "$(pwd)" )
+((${#aDir[@]})) || aDir=( $(readlink -f "$(pwd)") )
 maxdepth=$((maxdepth)) || return $?
-((maxdepth<1)) && maxdepth=1
-[[ -z "${CLNTEMPFILES[@]}" ]] && CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' )
+((maxdepth < 1)) && maxdepth=1
 local TempExpr=''
 for r in "${CLNTEMPFILES[@]}"; do
 TempExpr+="$( [[ -z $TempExpr ]] || echo '-o ')-name '$r' -type f "
 done
-((verbose && dryrun)) && echo "$PRG: start DRY RUN"
-echo -n '0' > $tmpfc
-for dir in "${adir[@]}"; do
-dir="$(readlink -f "$dir")"
+local dir
+echo -n '0' > $tmpfc # zero file-filecounter
+for dir in "${aDir[@]}"; do
+dir="$(/bin/readlink -f "$dir")"
 if [[ -d "$dir" ]]; then
-((verbose)) && echo "$PRG: searching directory ${dir} maxdepth $maxdepth"
+((verbose)) && echo "$PRG: Searching directory [${dir}], maxdepth=$maxdepth"
 eval "/usr/bin/find "$dir" -maxdepth ${maxdepth:- 1} $TempExpr" \
 | while read -r line; do
-((verbose)) && echo "$PRG:   $( ((dryrun)) && echo 'would remove' || echo 'removing') $line"
+((verbose)) && echo "$PRG:   $( ((dryrun)) && echo '- would remove' || echo '- removing') $line"
 ((dryrun)) || rm "$line"
-echo -n $(( $(cat $tmpfc) + 1 )) > $tmpfc
+(( $? )) || echo -n $(( $(cat $tmpfc) + 1 )) > $tmpfc; # increment file-filecounter
 done
 else
-echo >&2 "$PRG: Directory $dir not found!"
+echo >&2 "$PRG: Directory [${dir}] not found!"
 fi
 done
-filecount=$(cat $tmpfc); rm $tmpfc
-((verbose)) && echo "$PRG: $filecount file$( ((filecount==1)) || echo 's' ) found"
-((verbose && dryrun)) && echo "$PRG: finish DRY RUN$( ((filecount)) && echo ' (-N to remove files)')"
-return 0
-}
-declare -fx cleanbakfiles
-entities.change_location() {
-local newlocation="${1:-}" newpath IFS OLDIFS p
-if ((! $# )) || [[ -z $newlocation ]]; then
-newlocation="$ENTITIES"
-if [[ -z $newlocation ]] || [[ ! -f "$newlocation/entities.bash" ]]; then
-newlocation="$(dirname "$(which entities.bash)")"
+filecount=$(cat $tmpfc); rm $tmpfc # file-filecounter no longer needed
+if ((verbose)); then
+if ((filecount)); then
+echo "$PRG: $filecount file$( ((filecount==1)) || echo 's' ) $( ((dryrun)) && echo 'would be ')deleted"
+else
+echo "$PRG: No temporary files found."
 fi
 fi
-newlocation="$(readlink -e "$newlocation")"
-[[ -z "$newlocation" ]] && { echo "#?! Invalid entities location ${1:-}"; return 127; }
-[[ ! -f "${newlocation}/entities.bash" ]] && { echo "#?! Warning: No entities.bash script found at [$newlocation]"; return 127; }
-newpath=":${PATH}:"
-newpath="${newpath//\:${ENTITIES}\:/}"
-newpath="${newpath//\:${newlocation}\:/}"
-newpath="$newpath:${newlocation}"
-newpath="${newpath//::/:}";	[[ "${newpath:0:1}" == ':' ]] && newpath="${newpath:1}"
-OLDIFS="$IFS"; IFS=$':'; arr=( $newpath );	IFS="$OLDIFS"
-newpath=''
-for p in ${arr[@]}; do [[ -d $p ]] && newpath+="$p:"; done
-[[ "${newpath: -1}" == ':' ]] && newpath="${newpath:0:-1}"	#delete trailing :
-export PATH="$newpath"
-export ENTITIES=${newlocation}
-echo "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""
+if ((verbose && dryrun && filecount > 0)) && [ -t 0 ]; then
+read -t 0.2 -n 1024 # clear typeahead buffer
+read -n1 -p "$PRG: Delete all these files? (y/N) " line
+echo ''
+if [[ ${line,,} == 'y' ]]; then
+clntempfiles  --notdryrun --maxdepth ${maxdepth} $( ((verbose)) && echo '--verbose' || echo '--quiet' ) "${aDir[@]}"
+return $?
+fi
+fi
+
 return 0
 }
-declare -fx entities.change_location
+declare -fx clntempfiles
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -x _ent_VERSION='0.9.420.220.0'
@@ -940,7 +929,7 @@ if [[ -z ${1:-} ]]; then
 echo "read the fucking manual, searches command in help, man, then google."
 return 1
 fi
-help "$@" 2>/dev/null && return 0
+help -m "$@" 2>/dev/null && return 0
 
 man "$@"  2>/dev/null && return 0
 ${BROWSER:-$(which w3m || which lynx)} "http://www.google.com/search?q=linux+bash+$@" && return 0

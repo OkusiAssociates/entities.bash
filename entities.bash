@@ -734,7 +734,7 @@ check.dependencies() {
   	fi
 	done
 	((missing && _ent_VERBOSE)) && \
-			echo 2> "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
+			>&2 echo "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
 	return $missing
 }
 declare -fx 'check.dependencies'

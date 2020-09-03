@@ -84,7 +84,7 @@ useage() {
 		eot
 		)"
 
-	declare -a exclude=( t tt *~ *.bak *.old gudang/ .gudang/ *.zip mkdistzip _* dev/ )
+	declare -a exclude=( t tt "*~" "*.bak" "*.old" gudang/ .gudang/ "*.zip" mkdistzip "_*" dev/ )
 
 main() {
 	while (($#)); do
@@ -299,7 +299,6 @@ install() {
 	mkdir -p "$ENTITIES/util"
 	/usr/bin/rsync -avl $excl util/*			"$ENTITIES/util/" >/dev/null				|| exit 1
 
-	/usr/bin/rsync -av $excl entities.rc 	"$ENTITIES/" >/dev/null		|| exit 1
 #	if [[ ! -L "$ENTITIES/entities-user.inc.sh" ]]; then
 #		ln -s ~/entities-user.inc.sh "$ENTITIES/entities-user.inc.sh"
 #	fi

@@ -1,1 +1,9 @@
-cleanbakfiles
+#-Function--cln
+  Function: cln
+      Desc: Remove all *~ files recursively from current directory.
+          : CLNTEMPFILES array defines temporary files, default is ( '*~' '~*' '.~*' )
+          : Recursively remove all temporary files ( ${CLNTEMPFILES[@]} )"
+          : Defaults: maxdepth 2, verbose enabled, dryrun enabled'
+          : More than one dirspec can be specified. Default is current directory.'
+          : if defined, CLNTEMPFILES envar sets temporary files to search for. Default is ( '*~' '~*' '.~*' )"
+#-Function--cln---------------------------------------------------------------

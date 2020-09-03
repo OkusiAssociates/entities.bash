@@ -43,7 +43,8 @@ main() {
 		#X          :       daybuild is an incremental counter 
 		#X          :       of how many builds have been made on day0
 		declare -x _ent_VERSION='${build}'
-	
+		#fin
+		
 	eot
 	
 	chown sysadmin:sysadmin "$entversionfile"; chmod 644 "$entversionfile"

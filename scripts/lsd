@@ -1,0 +1,76 @@
+#!/bin/bash 
+#--norc --rcfile /usr/lib/entities/entities.rc
+source "${ENTITIES:-/lib/include/entities}/entities.bash.min" || exit 1
+	trap.set on
+	strict.set off
+	version.set 0.95
+#	[ "$PS1" ] && color.set on || color.set off
+	verbose.set on
+	tab.width 4
+	tab.set 0
+
+main() {
+	local -i Level=1
+	local ls='' timeformat='%F %T'
+	declare -a cmd=()
+	while (($#)); do
+		case "$1" in
+			--ls|-ls)							ls="-pugsD --timefmt=%y-%M-%dT%R";;
+			-L|--levels|--level)	shift; Level=${1:-255};;
+			--nocolor|-n)					color.set off; cmd+=('-n');;
+			--color|-C)						color.set on;	cmd+=('-C');;
+			--manpage)						manpage=1; usage;;
+			-h|--help)						usage;;
+			-V|--version)					printTitle; exit 0;;
+			*)										cmd+=( "$1" ) ;;
+		esac
+		shift
+	done
+
+	while [ ! -x "$(which tree)" ]; do
+		askyn "The 'tree' program has not been installed. Install now?" \
+				|| msgdie "tree is not installed."
+		msginfo "Installing tree program..." ""
+		apt-get install tree || msgdie "Could not install tree."
+	done
+	
+	/usr/bin/tree -d -L $Level $ls "${cmd[@]}"
+	return 0
+}
+
+printTitle() { echo "$PRG vs $(version.set)"; }
+
+usage() {
+	printTitle
+	cat <<-eot
+	Display directory tree starting at {pathspec}.
+
+	Synopsis: $PRG [-ls] [--levels {num}] [-{treeopts...}] [{pathspec} ...] 
+	
+	If not specified, {pathspec} defaults to current directory.
+	
+	Options:
+	  --levels|-L {num} Traverse maximum {num} levels. Default 1, 0==255.
+	  --ls              Output file with ls type listing
+	  --nocolor|-n      Don't use color.
+	  --color|-C        Use color. (Default if terminal.)
+	  --version|-V      Print version information.
+	  --help|-h         Help.
+	  -{treeopts}       All other arguments/options are passed to the tree program.
+	                    See tree --help for additional options.
+
+	eot
+	if (( ${manpage:-} )); then cat <<-mp
+	
+	SEE ALSO
+	  entities.bash
+
+	AUTHOR: thesysadmin@garydean.id
+	mp
+	fi
+
+	exit 0
+}
+
+main "$@"
+#fin
