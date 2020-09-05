@@ -1,0 +1,86 @@
+#!/bin/bash
+#declare -x p_Default_Editor='/usr/bin/joe -tab 2 -indentc 9 -autoindent --wordwrap'
+. /etc/entities/pp.conf
+declare -x EDITOR="$p_Default_Editor"
+	
+p_open_file() {
+	local file="${1}"
+	local ftype=()
+	local syntaxarg=''
+	ftype=( $(get_filetype "$file" "$EDITOR") )
+#	echo "0:${ftype[0]}"
+#	echo "1:${ftype[1]}"
+#	echo "2:${ftype[2]}"
+#	echo "3:${ftype[3]:-}"
+	[[ ${ftype[1]} == '-' ]] && ftype[1]='sh'
+	# syntax argument
+	case "$(basename "$(which "$EDITOR")")" in
+		joe) syntaxarg="-syntax ${ftype[1]}";;
+		nano) syntaxarg="--syntax=${ftype[1]}";;
+		*)		syntaxarg=''
+	esac
+	echo "$EDITOR $syntaxarg ${ftype[0]}"
+}
+
+get_filetype() {
+	local file="$(readlink -f "${1}")"
+	local editor="${2:-}"; editor=${editor%% *};#remove parameters
+	local fileext="${file##*.}"
+	local syntax='sh'
+	local -i fileexist=$([[ -f "$file" ]] && echo 1 || echo 0)
+
+	# see if a syntax file can be found
+	syntax="$(lookup_syntax_definition "$editor" "$fileext")"
+	[[ -n $syntax ]] && { echo "$file" "$syntax" $fileexist 'lookup'; return 0; }
+
+	# determine ftype by file extension
+	case "$fileext" in
+		bash|sh)			echo "$file" 'sh'		$fileexist 'ext'; return 0;;
+		php|html|htm)	echo "$file" 'php'	$fileexist 'ext'; return 0;;
+	esac
+
+	# if file not found then cycle through possible file extensions
+	if ((! fileexist)); then
+		for ex in php htm html; do
+			[[ -f "$file.$ex" ]] && { echo "$file.$ex" 'php' $fileexist 'nf-ext'; return 0; }
+		done
+		for ex in bash sh conf cfg; do
+			[[ -f "$file.$ex" ]] && { echo "$file.$ex" 'sh' $fileexist 'nf-ext'; return 0; }
+		done
+		# file was not found
+		echo "$file" '-' $fileexist 'nf-ext'
+		return 1
+	fi
+
+	# head examination
+	hd=$(head -n1 "$file")
+	hd=${hd%% *}; hd=${hd,,}	# grab everything up to first space, then lowercase
+	if [[ "$hd" == "#!$(which bash)" ]] || [[ "$hd" == "#!$(which sh)" ]] || [[ "$hd" == "#!$(which env)" ]]; then
+		echo "$file" 'sh' $fileexist 'head'; return 0
+	elif [[ "$hd" == "#!$(which php)" ]] || [[ "${hd:0:2}" == '<?' ]]; then
+		echo "$file" 'php' $fileexist 'head'; return 0
+	elif [[ "${hd:0:9}" == '<!doctype' ]] || [[ "${hd:0:5}" == '<html' ]]; then
+		echo "$file" 'php' $fileexist 'head'; return 0
+	fi
+
+	# file was not identified as php or sh
+	echo "$file" '-' $fileexist 'noidea'
+	return 1
+}
+
+# look in syntax files for matching ext
+lookup_syntax_definition() {
+	local editor="$1" fileext="$2"
+	[[ -z "$fileext" ]] && { echo ''; return; }
+	editor="$(basename "$(which $editor)")"
+	case "$editor" in
+		joe)
+			[[ -f /usr/share/joe/syntax/$fileext.jsf ]]	&& echo "$fileext";;
+		nano)
+			[[ -f /usr/share/nano/$fileext.nanorc ]]		&& echo "$fileext";;
+		*)	echo '';;
+	esac
+	return 0
+}
+
+p_open_file "$@"

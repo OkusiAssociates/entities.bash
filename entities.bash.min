@@ -56,7 +56,8 @@ done
 _ent_scriptstatus+="reloading|\n"
 set +o errexit +o nounset +o pipefail
 shopt -s extglob
-declare -x  LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n'
+declare -x  LF=$'\n' CR=$'\r' CH9=$'\t'
+declare -x  OLDIFS="$IFS" IFS=$' \t\n'
 declare -nx OIFS="OLDIFS"
 onoff() {
 local o="${1:-0}"
@@ -256,7 +257,7 @@ alias sysmsg='msg.sys' #X legacy X#
 msg.warn() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift || log='X'
-__msgx "$log" warning "${_ent_VERBOSE}" "$@"
+__msgx "$log" 'warning' "${_ent_VERBOSE:-0}" "$@"
 return 0
 }
 declare -fx 'msg.warn'
@@ -265,7 +266,7 @@ alias warnmsg='msg.warn'	#X legacy X#
 msg.err() {
 declare log="${1:-}"
 [[ "${log}" == 'log' ]] && shift
-__msgx >&2 "$log" "err" "1" "$@"
+__msgx >&2 "$log" 'err' '1' "$@"
 return 0
 }
 declare -fx 'msg.err'
@@ -502,8 +503,9 @@ systemd-cat stty wget base64 seq tty find touch tree lynx; then
 echo >&2 'Warning: Dependencies not found. Entities cannot run.'
 fi
 fi
-shopt -s expand_aliases # Enables alias expansion.
 declare -xig __entities__=1
+declare -xng _ent_LOADED='__entities__'
+shopt -s expand_aliases # Enables alias expansion.
 _ent_scriptstatus+="entities loaded|\n"
 declare -ax CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
 clntempfiles() {
@@ -639,6 +641,96 @@ lockfiles.add "${lockfile}" ${_ent_LOCKTIMEOUT}
 fi
 }
 declare -fx exit_if_already_running
+export EDITOR='/usr/bin/joe -tab 2 -autoindent --wordwrap'
+editorsyntaxstring() {
+local FileName="${1:-}"
+local FileType="${2:-}"
+local editor
+editor="${3:-${EDITOR}}"
+local opt=''
+editor="$(basename "${editor%% *}")"
+
+case "$FileType" in
+html)		FileType=php;;
+bash)		FileType=sh;;
+esac
+case "$editor" in
+joe) 	if [[ ! -f "/usr/share/joe/syntax/$FileType.jsf" ]]; then
+FileType=text
+opt=''
+else
+opt="-syntax $FileType"
+fi
+;;
+nano)
+opt-"--syntax=$FileType"
+;;
+*)
+msg.err "Editor [$editor] not found."
+;;
+esac
+echo $EDITOR $opt $FileName
+}
+declare -fx editorsyntaxstring
+declare -Ax TextFileTypes=(
+['ASCII text']='text'
+['Bourne-Again shell script']='bash'
+['XML 1.0 document']='xml'
+['HTML document']='html'
+['POSIX shell script']='sh'
+['PHP script']='php'
+['C source']='c'
+['SMTP mail']='smtp'
+['exported SGML document']='sgml'
+['Windows WIN.INI']='ini'
+['TeX document']='tex'
+['Python script']='python'
+['Non-ISO extended-ASCII text']='text'
+['Perl5 module source']='perl'
+['BSD makefile script']='bsdmake'
+)
+textfiletype() {
+local testfile
+local File FileType
+
+while (($#)); do
+testfile="${1:-}"
+[[ -d "$testfile" ]] 		&& { shift; continue; }
+[[ ! -f "$testfile" ]]	&& { shift; continue; }
+
+File=$(trim "$(file "$testfile" | grep 'ASCII text' | cut -d':' -f2)")
+[[ -z $File ]] && { shift; continue; }
+File=${File%%,*}
+[[ -z $File ]] && File='text'
+if [[ "${!TextFileTypes[@]}" == *"$File"* ]]; then
+FileType="${TextFileTypes[$File]}"
+[[ -z $FileType ]] && FileType='text'
+else
+h=$(head -n1 "$testfile")
+if 	 [[ $h =~ ^\#\!.*\/bash.* ]];	then	FileType='bash'
+elif [[ $h =~ ^\#\!.*\/sh.*   ]];	then	FileType='sh'
+elif [[ $h =~ ^\#\!.*\/php.*  ]];	then	FileType='php'
+fi
+fi
+if [[ $FileType == '' || $FileType == 'text' ]]; then
+ext=${testfile##*\.}
+case $ext in
+php)				FileType=php;;
+htm|html)		FileType=html;;
+sh)					FileType=sh;;
+bash|conf)	FileType=bash;;
+c|h)				FileType=c;;
+xml)				FileType=xml;;
+*)					FileType=text;;
+esac
+fi
+
+echo -e "$testfile\t${FileType}\t"
+
+shift
+done
+}
+declare -fx textfiletype
 declare -x  _ent_LOCKFILE=''
 declare -ax _ent_LOCKFILES=()
 declare -ix _ent_LOCKTIMEOUT=86400

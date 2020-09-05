@@ -1,5 +1,0 @@
-#-Function--entities.change_location
-  Function: entities.change_location
-      Desc: change base directory of ENTITIES envvar and add to PATH.
-  Synopsis: entities.change_location [{dir_location}]
-#-Function--entities.change_location------------------------------------------

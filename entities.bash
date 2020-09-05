@@ -135,7 +135,8 @@ shopt -s extglob
 #X          : IFS=$' \\t\\n'  # 'standard' IFS
 #X Example  : str = "${LF}${CH9}This is a wrapping string.${LF}{$CH9}This is another sentence."
 #X          : echo -e "$str"
-declare -x  LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n'
+declare -x  LF=$'\n' CR=$'\r' CH9=$'\t'
+declare -x  OLDIFS="$IFS" IFS=$' \t\n'
 declare -nx OIFS="OLDIFS"
 
 
@@ -489,7 +490,7 @@ declare -fx 'msg.sys'
 msg.warn() {
 	declare log="${1:-}"
 	[[ "${log}" == 'log' ]] && shift || log='X'
-	__msgx "$log" warning "${_ent_VERBOSE}" "$@"
+	__msgx "$log" 'warning' "${_ent_VERBOSE:-0}" "$@"
 	return 0
 }
 declare -fx 'msg.warn'
@@ -506,7 +507,7 @@ declare -fx 'msg.warn'
 msg.err() {
 	declare log="${1:-}"
 	[[ "${log}" == 'log' ]] && shift
-	__msgx >&2 "$log" "err" "1" "$@"
+	__msgx >&2 "$log" 'err' '1' "$@"
 	return 0
 }
 declare -fx 'msg.err'
@@ -849,31 +850,15 @@ if ((! ${_ent_MINIMAL:-0})); then
 fi
 #^^_ent_MINIMAL
 
-# expand all the aliases defined above.
-shopt -s expand_aliases # Enables alias expansion.
-
 #X Global   : _entities_
 #X Desc     : Integer flag to announce that entities.bash has been loaded. 
 #X Defaults : 0
 declare -xig __entities__=1
+declare -xng _ent_LOADED='__entities__'
+
+# expand all the aliases defined above.
+shopt -s expand_aliases # Enables alias expansion.
+
 _ent_scriptstatus+="entities loaded|\n"
-
-# handing over to user.
-#X File: entities-user.inc.php
-#X Desc: If a file with the name of entities-user.inc.sh exists in the
-#X     : Entities directory, is is automatically included at the
-#X     : end of the Entities script.
-#X     : By default, entities-user.inc.sh is symlinked to /dev/null.
-#X     : User should change this to point at their own bash script.
-#X     : User should not store their include script in the Entities directory.
-#X     : This file can be used to over-ride Entities defaults and set to
-#X     : User's commonly used defaults for global variables and functions,
-#X     : without having to change code in the core Entities script.
-#declare -x _ent_userfile="$PRGDIR/entities-user.inc.sh"
-#[[ -r "${_ent_userfile}" ]] && source "${_ent_userfile}"
-
 #-Function Declarations End --------------------------------------------------
-
-
-#return 0
 #fin

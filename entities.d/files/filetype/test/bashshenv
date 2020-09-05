@@ -1,0 +1,16 @@
+ Shell
+[sh]
+*
++#![ 	]*[^\n 	]*/sh\>
++#![ 	]*[^\n 	]*/bash\>
+*.sh
+*profile
+*.bash
+*.bashrc
+*.bash_login
+*.bash_logout
+-autoindent
+-syntax sh
+-highlighter_context
+-pound_comment
+-text_delimiters do=done:if=elif=else=fi:case=esac

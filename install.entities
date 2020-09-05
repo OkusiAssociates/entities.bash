@@ -84,8 +84,13 @@ useage() {
 		eot
 		)"
 
-	declare -a exclude=( t tt "*~" "*.bak" "*.old" gudang/ .gudang/ "*.zip" mkdistzip "_*" dev/ )
-
+	# Exclusions for rsync
+	declare -a exclude=( 't' 'tt' '*~' '*.bak' '*.old' 'gudang/' '.gudang/' '*.zip' 'mkdistzip' '_*' 'dev/' 'test/' 'tmp/' 'temp/' )
+	declare SyncExclude="/tmp/$PRG-exclusions-$RANDOM"
+	>$SyncExclude
+	declare _l; for _l in "${exclude[@]}"; do	echo "${_l}"; done >>"$SyncExclude"; unset _l
+	cat $SyncExclude > ttt
+			
 main() {
 	while (($#)); do
 		case "$1" in
@@ -146,6 +151,7 @@ main() {
 			'' \
 			'  $ source entities new' \
 			''
+	rm "$SyncExclude"
 }
 
 makeprofile() {
@@ -257,10 +263,10 @@ infotext() {
 install() {
 	msg.info "Installing Entities into ${ENTITIES}..."
 
-	cd "$PRGDIR" || exit 1
+	cd "$PRGDIR" || exit 2
 	
-	declare excl=''
-	for e in "${exclude[@]}"; do excl+=" --exclude $e"; done
+#	declare excl=''
+#	for e in "${exclude[@]}"; do excl+=" --exclude $e"; done
 
 	# do backup of existing $ENTITIES directory
 	msg.info "Doing backup of existing $ENTITIES directory..."
@@ -279,25 +285,29 @@ install() {
 
 	# start creating $ENTITIES
 	msg.info "Start creating $ENTITIES"
-	mkdir -p "$ENTITIES" || exit 1	
-	[[ -d "$ENTITIES" ]] || exit 1
-	/usr/bin/rsync -av $excl entities.bash 			"$ENTITIES/" >/dev/null		|| exit 1
-	/usr/bin/rsync -av $excl entities.bash.min 	"$ENTITIES/" >/dev/null		|| exit 1
+	mkdir -p "$ENTITIES" || exit $?
+	[[ -d "$ENTITIES" ]] || exit $?
+
+	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.bash 		"$ENTITIES/" >/dev/null || exit 1
+	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.bash.min "$ENTITIES/" >/dev/null || exit 1
 
 	mkdir -p "$ENTITIES/entities.d"
-	/usr/bin/rsync -avl entities.d/*	"$ENTITIES/entities.d/" >/dev/null	|| exit 1
+	/usr/bin/rsync -avl --exclude-from "$SyncExclude" entities.d/*			"$ENTITIES/entities.d/" >/dev/null || exit 1
+
+	mkdir -p "$ENTITIES/scripts"
+	/usr/bin/rsync -avl --exclude-from "$SyncExclude" scripts/*					"$ENTITIES/scripts/" >/dev/null || exit 1
 
 	mkdir -p "$ENTITIES/php"
-	/usr/bin/rsync -avl $excl php/*				"$ENTITIES/php/" >/dev/null					|| exit 1
+	/usr/bin/rsync -avl --exclude-from "$SyncExclude" php/*							"$ENTITIES/php/" >/dev/null || exit 1
 
 	mkdir -p "$ENTITIES/docs/help"
-	/usr/bin/rsync -avl $excl docs/*				"$ENTITIES/docs/" >/dev/null				|| exit 1
+	/usr/bin/rsync -avl --exclude-from "$SyncExclude" docs/*						"$ENTITIES/docs/" >/dev/null || exit 1
 
 	mkdir -p "$ENTITIES/templates"
-	/usr/bin/rsync -avl $excl templates/*	"$ENTITIES/templates/" >/dev/null	|| exit 1
+	/usr/bin/rsync -avl --exclude-from "$SyncExclude" templates/*				"$ENTITIES/templates/" >/dev/null || exit 1
 
 	mkdir -p "$ENTITIES/util"
-	/usr/bin/rsync -avl $excl util/*			"$ENTITIES/util/" >/dev/null				|| exit 1
+	/usr/bin/rsync -avl --exclude-from "$SyncExclude" util/*						"$ENTITIES/util/" >/dev/null || exit 1
 
 #	if [[ ! -L "$ENTITIES/entities-user.inc.sh" ]]; then
 #		ln -s ~/entities-user.inc.sh "$ENTITIES/entities-user.inc.sh"
@@ -305,19 +315,19 @@ install() {
 
 	# make symlinks in $ENTITIES directory
 	msg.info "Make symlinks in $ENTITIES directory..."
-	cd "$ENTITIES" 																|| exit 1
+	cd "$ENTITIES" 																|| exit 2
 	# execute permissions on entities	
-	chmod 775 entities.bash entities.bash.min			|| exit 1
-	ln -fs php/string.inc.php	string.inc.php    	|| exit 1
+	chmod 775 entities.bash entities.bash.min			|| exit $?
+	ln -fs php/string.inc.php	string.inc.php    	|| exit $?
 	# in production, entities points to the min version
-	ln  -fs entities.bash.min entities				    || exit 1
-	ln  -fs entities.bash.min entities.min		    || exit 1
+	ln  -fs entities.bash.min entities				    || exit $?
+	ln  -fs entities.bash.min entities.min		    || exit $?
 	
 
 	# touch420 all files in $ENTITIES directory
 	msg.info "Fix owner/perms, touch420 all files in $ENTITIES directory..."
-	cd "$ENTITIES" || exit 1
-	chown root:root * -R
+	cd "$ENTITIES" || exit 2
+	chown root:root ${ENTITIES}/* -R
 	declare IFS=$'\n'
 	for f in $(/usr/bin/find | grep -v ".g"); do 
 		[[ -d "$f" ]] && chmod 775 "$f" || chmod u+rw,g+rw,o+rw "$f"
@@ -339,6 +349,63 @@ testit() {
 		strict.set on
 		trap.set on
 }
+
+make.syncexclude() {
+	cat >$SyncExclude <<-EOT
+		~*
+		.~*
+		*~
+		*.bak
+		*.c
+		CbgTerakhir
+		DEADJOE
+		.*/DEADJOE
+		deluser.sh
+		desktopokusi-do-not-use
+		dev/
+		.git
+		.git/
+		.gitignore
+		.gudang/*
+		*/gudang/
+		gudang/
+		ip2nation/
+		ips.okusi
+		iptables-save
+		IPTables.txt
+		*.lock
+		*.log
+		mktarball
+		obd-script.lst
+		obd-zip-script
+		okusi-script.lst
+		old/
+		Pakta/pakta.*
+		XXXmkuser/skel14/*
+		mkuser/skel12/*
+		shadow.bak
+		spam/
+		spool/*
+		.ssh/*
+		syncexclude
+		synclist
+		synclist-opt
+		t
+		*/t/*
+		t1
+		t2
+		taskmaster.continue
+		.taskmasterid
+		taskmaster.lock
+		*/temp/*
+		temp/*
+		*/tmp/*
+		tmp/*
+		tt
+
+	EOT
+}
+
 
 main "$@"
 #fin

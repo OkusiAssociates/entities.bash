@@ -1,0 +1,14 @@
+t
+tt
+*~
+*.bak
+*.old
+gudang/
+.gudang/
+*.zip
+mkdistzip
+_*
+dev/
+test/
+tmp/
+temp/

@@ -1,0 +1,18 @@
+declare -A FileTypes=(	
+				['ASCII text']='text'
+				['Bourne-Again shell script']='bash'
+				['XML 1.0 document']='xml'
+				['HTML document']='html'
+				['POSIX shell script']='sh'
+				['PHP script']='php'
+				['C source']='c'
+				['SMTP mail']='smtp'
+				['exported SGML document']='sgml'
+				['Windows WIN.INI']='ini'
+				['TeX document']='tex'
+				['Python script']='python'
+				['Non-ISO extended-ASCII text']='text'
+				['Perl5 module source']='perl'
+				['BSD makefile script']='bsdmake'
+				['xtext']='xtext'
+			)
