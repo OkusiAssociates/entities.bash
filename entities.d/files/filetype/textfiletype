@@ -1,6 +1,14 @@
 #!/bin/bash
-	PRG="$(basename "$0")"
-	PRGDIR="$(readlink -f "$(dirname "$0")")"
-
+#	PRG="$(basename "$0")"
+#	PRGDIR="$(readlink -f "$(dirname "$0")")"
+source entities
 	source "$PRGDIR/$PRG.bash"
 
+filename="$1"
+filetype="$2"
+echo $filename $filetype
+
+text=( "$(textfiletype "$filename")" )
+echo "|${text[@]}|"
+
+editorsyntaxstring ${text[@]}

@@ -2,7 +2,7 @@
 #source entities || exit 2
 #strict.set off
 
-export EDITOR='/usr/bin/joe -tab 2 -autoindent --wordwrap'
+	[[ -z "$EDITOR" ]] && export EDITOR='/usr/bin/joe -tab 2 -autoindent --wordwrap'
 
 # joe
 #   for f in /usr/share/joe/syntax/*.jsf; do basename -s '.jsf' "$f"; done
@@ -34,15 +34,18 @@ export EDITOR='/usr/bin/joe -tab 2 -autoindent --wordwrap'
 #      1 a /usr/bin/perl script
 #      1 a /bin/env -i /bin/bash script
 
+#X Function: editorsyntaxstring
+#X Usage   : editorsyntaxstring filename filetype
 editorsyntaxstring() {
 	local FileName="${1:-}"
-	local FileType="${2:-}"
+	local FileType="${2:-text}"
 	local editor
 	editor="${3:-${EDITOR}}"
 	local opt=''
 
 	editor="$(basename "${editor%% *}")"
-	
+
+	# aggregate some filetypes	
 	case "$FileType" in
 		html)		FileType=php;;
 		bash)		FileType=sh;;		
@@ -50,7 +53,7 @@ editorsyntaxstring() {
 
 	case "$editor" in
 		joe) 	if [[ ! -f "/usr/share/joe/syntax/$FileType.jsf" ]]; then 
-						#msg.warn "joe: Syntax file $FileType.jsf not found"
+						msg.warn "joe: Syntax file [$FileType].jsf not found for [$FileName]"
 						FileType=text
 						opt=''
 					else
@@ -68,7 +71,7 @@ editorsyntaxstring() {
 }
 declare -fx editorsyntaxstring
 
-declare -Ax TextFileTypes=(	
+declare -Ax _ent_TextFileTypes=(	
 			['ASCII text']='text'
 			['Bourne-Again shell script']='bash'
 			['XML 1.0 document']='xml'
@@ -91,21 +94,21 @@ textfiletype() {
 	
 	while (($#)); do
 		testfile="${1:-}"
-		[[ -d "$testfile" ]] 		&& { shift; continue; }
 		[[ ! -f "$testfile" ]]	&& { shift; continue; }
 		
-		File=$(trim "$(file "$testfile" | grep 'ASCII text' | cut -d':' -f2)")
+		File=$(trim "$(file "$testfile" 2>/dev/null | grep ' text' | cut -d':' -f2)")
 		[[ -z $File ]] && { shift; continue; }
-		File=${File%%,*}		
+		File=${File%%,*}
 		[[ -z $File ]] && File='text'
-		if [[ "${!TextFileTypes[@]}" == *"$File"* ]]; then
-			FileType="${TextFileTypes[$File]}"
+		if [[ "${!_ent_TextFileTypes[@]}" == *"$File"* ]]; then
+			FileType="${_ent_TextFileTypes[$File]}"
 			[[ -z $FileType ]] && FileType='text'
 		else
 			h=$(head -n1 "$testfile")
 			if 	 [[ $h =~ ^\#\!.*\/bash.* ]];	then	FileType='bash'
 			elif [[ $h =~ ^\#\!.*\/sh.*   ]];	then	FileType='sh'
-			elif [[ $h =~ ^\#\!.*\/php.*  ]];	then	FileType='php'
+			elif [[ $h =~ ^\#\!.*\/php.*  \
+								|| ${h:0:2} == '<?' ]];	then	FileType='php'
 			fi
 		fi
 
@@ -119,7 +122,7 @@ textfiletype() {
 				bash|conf)	FileType=bash;;
 				c|h)				FileType=c;;
 				xml)				FileType=xml;;
-				*)					FileType=text;;
+				''|*)				FileType=text;;
 			esac
 		fi
 		
