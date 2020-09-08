@@ -5,8 +5,8 @@ Entities is a lightweight Bash scripting library for systems and network adminis
 The basic philosophy is to be simple, unobtrusive and as flexible as possible, with minimal dependencies.
 
 Quick Install:
-  
-  sudo git clone https://github.com/OkusiAssociates/entities.bash.git && entities.bash/install.entities -y
+
+    sudo git clone https://github.com/OkusiAssociates/entities.bash.git && entities.bash/install.entities -y
 
 To invoke Entities, just put [source entitites] at the top of your script, or invoke it at the command line.
 
