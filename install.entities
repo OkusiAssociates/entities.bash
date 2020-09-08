@@ -89,7 +89,7 @@ useage() {
 	declare SyncExclude="/tmp/$PRG-exclusions-$RANDOM"
 	>$SyncExclude
 	declare _l; for _l in "${exclude[@]}"; do	echo "${_l}"; done >>"$SyncExclude"; unset _l
-	cat $SyncExclude > ttt
+#	cat $SyncExclude > ttt
 			
 main() {
 	while (($#)); do
