@@ -8,11 +8,11 @@ Quick Install:
 
     sudo git clone https://github.com/OkusiAssociates/entities.bash.git && entities.bash/install.entities -y
 
-To invoke Entities, just put [source entitites] at the top of your script, or invoke it at the command line.
+To invoke Entities, just put `source entitites` at the top of your script, or invoke it at the command line.
 
-Once loaded into the environment [entities] can be invoked without reloading the entire library.
+Once loaded into the environment `entities` can be invoked without reloading the entire library.
 
-If [entities] is already loaded at the time a script is run, it is not loaded again, greatly speeding up load and execution time for downstream scripts that also use entities library functions.
+If `entities` is already loaded at the time a script is run, it is not loaded again, greatly speeding up load and execution time for downstream scripts that also use entities library functions.
 
 Here is a some of the functions and globals that I use in my scripts:
 
