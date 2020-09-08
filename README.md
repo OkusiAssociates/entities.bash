@@ -16,23 +16,23 @@ If `entities` is already loaded at the time a script is run, it is not loaded ag
 
 Here is a some of the functions and globals that I use in my scripts:
 
-  *  PRG		local var, fq basename of current script name.
-  *  PRGDIR	local var, fq path for current script directory.
+  *  `PRG`     local var, fq basename of current script name.
+  *  `PRGDIR`  local var, fq path for current script directory.
   
-  * msg{.info|.err|.warn|.crit|.die} [log] message
-  * ask.yn [prompt]
-  * tab.set [++|--|numval]
-  * tab.width [numval]
-  * verbose.set [[on|1] | [off|0]]
-  * color.set [[on|1] | [off|0]]
-  * strict.set [[on|1] | [off|0]]
-  * trap.set [[on|1] | [off|0]]
-  * trap.function [function_name]
-  * trim {strval}
-  * rtrim {strval}
-  * ltrim {strval}
+  * `msg{.info|.err|.warn|.crit|.die} [log] message`
+  * `ask.yn [prompt]`
+  * `tab.set [++|--|numval]`
+  * `tab.width [numval]`
+  * `verbose.set [[on|1] | [off|0]]`
+  * `color.set [[on|1] | [off|0]]`
+  * `strict.set [[on|1] | [off|0]]`
+  * `trap.set [[on|1] | [off|0]]`
+  * `trap.function [function_name]`
+  * `trim {strval}`
+  * `rtrim {strval}`
+  * `ltrim {strval}`
 
-[entities] can be easily extended with new functions.
+`entities` can be easily extended with new functions.
 
-Run [entities.help] for full documentation
+Run `entities.help` for full documentation
 
