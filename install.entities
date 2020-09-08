@@ -55,10 +55,10 @@ useage() {
 	# set ENTITIES as the destination (production) directory
 	# 	ENTITIES in this case is the destination directory for the install
 	ENTITIES='/lib/include/entities'
-	mkdir -p $ENTITIES
+	mkdir -p "$ENTITIES"
 	
 	# are we trying to install into the install directory?
-	[[ $ENTITIES == $PRGDIR ]] &&	msg.die "Cannot install over installation directory!"		
+	[[ $ENTITIES == "$PRGDIR" ]] &&	msg.die "Cannot install over installation directory!"		
 
 	# get rid of old symlinks (legacy; remove soon)
 #	declare -a del=()
@@ -74,12 +74,12 @@ useage() {
 			# Installed by $(readlink -f "$0")
 			#   on $(date +'%F %T').420 by ${USER:-}@${HOSTNAME}
 			# https://github.com/OkusiAssociates/entities.bash
-			if [[ ":\${PATH}:" != *":${ENTITIES}:"* ]]; then
-			  PATH=\${PATH}:${ENTITIES}
+			ENTITIES="${ENTITIES}"
+			export ENTITIES
+			if [[ ":\${PATH}:" != *":\${ENTITIES}:"* ]]; then
+			  PATH="\${PATH}:\${ENTITIES}"
 			  export PATH
 			fi
-			ENTITIES=${ENTITIES}
-			export ENTITIES
 		
 		eot
 		)"
@@ -87,7 +87,7 @@ useage() {
 	# Exclusions for rsync
 	declare -a exclude=( 't' 'tt' '*~' '*.bak' '*.old' 'gudang/' '.gudang/' '*.zip' 'mkdistzip' '_*' 'dev/' 'test/' 'tmp/' 'temp/' )
 	declare SyncExclude="/tmp/$PRG-exclusions-$RANDOM"
-	>$SyncExclude
+	>"$SyncExclude"
 	declare _l; for _l in "${exclude[@]}"; do	echo "${_l}"; done >>"$SyncExclude"; unset _l
 #	cat $SyncExclude > ttt
 			
