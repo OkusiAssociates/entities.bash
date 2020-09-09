@@ -7,7 +7,7 @@ urlpayload_encode() {
 }
 declare -fx urlpayload_encode
 
-#X Function: payload_encode "payload_string"
+#X Function: payload_encode
 #X Synopsis: payload_encode "payload_string"
 payload_encode() { 
 	echo -n "$( echo -n "${1:-}" | gzip 2>/dev/null | base64 -w0 2>/dev/null)" 
@@ -15,7 +15,7 @@ payload_encode() {
 }
 declare -fx payload_encode 
 
-#X Function: payload_decode "encoded_payload_string"
+#X Function: payload_decode
 #X Synopsis: payload_decode "encoded_payload_string"
 payload_decode() {
 	local str="${1}" bstr='' gzipid="$(echo -e "\x1f\x8b")" 

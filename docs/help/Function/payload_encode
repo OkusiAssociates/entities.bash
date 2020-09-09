@@ -1,5 +1,5 @@
 #-Function--payload_encode
-  Function: payload_encode "payload_string"
+  Function: payload_encode
   Synopsis: payload_encode "payload_string"
     Source: /usr/share/okusi/entities/entities.d/sys/urlencode.bash
 #-Function--payload_encode----------------------------------------------------
