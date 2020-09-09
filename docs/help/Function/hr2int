@@ -2,8 +2,10 @@
   Function: hr2int
       Desc: return integer from human-readable number text
           : (b)ytes	(k)ilobytes (m)egabytes (g)igabytes (t)erabytes (p)etabytes
-  Synopsis: hr2int <integer>[bkmgtp] [<integer>[bkmgtp]]...
+          : Capitalise to use multiples of 1000 (S.I.) instead of 1024.
+  Synopsis: hr2int integer[bkmgtp] [integer[bkmgtp]]...
    Example: hr2int 34M
           : hr2int 34m
           : hr2int 34000000
+    Source: /usr/share/okusi/entities/entities.d/sys/calcfp.bash
 #-Function--hr2int------------------------------------------------------------

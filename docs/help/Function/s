@@ -1,5 +1,8 @@
 #-Function--s
   Function: s
-      Desc: print 's' if {numarg} not 1
-  Synopsis: s {numarg}
+      Desc: Print 's' if number is not 1.
+  Synopsis: s number
+   Example: num=30; echo "$num file$(s $num) counted."
+          : num=1; echo "$num file$(s $num) counted."
+    Source: /usr/share/okusi/entities/entities.d/string/s.bash
 #-Function--s-----------------------------------------------------------------

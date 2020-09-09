@@ -1,4 +1,5 @@
 #-Function--addslashes
   Function: addslashes
   Synopsis: program | addslashes
+    Source: /usr/share/okusi/entities/entities.d/string/addslashes.bash
 #-Function--addslashes--------------------------------------------------------

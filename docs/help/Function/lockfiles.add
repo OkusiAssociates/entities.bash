@@ -3,4 +3,5 @@
       Desc: add a lock file to lockfiles stack
   Synopsis: lockfiles.add [filename [timeout]] [filename timeout]...
    Example: files=$(lockfiles.add)
+    Source: /usr/share/okusi/entities/entities.d/files/cdd.bash
 #-Function--lockfiles.add-----------------------------------------------------

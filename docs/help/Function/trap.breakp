@@ -2,4 +2,5 @@
   Function: trap.breakp
       Desc: prompt to exit script or continue.
   Synopsis: trap.breakp [msg]
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--trap.breakp-------------------------------------------------------

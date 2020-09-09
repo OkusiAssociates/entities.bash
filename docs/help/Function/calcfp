@@ -1,4 +1,6 @@
 #-Function--calcfp
   Function: calcfp
-  Synopsis: calcfp <numericExpression>
+      Desc: Simple bc wrapper
+  Synopsis: calcfp numericExpression
+    Source: /usr/share/okusi/entities/entities.d/sys/calcfp.bash
 #-Function--calcfp------------------------------------------------------------

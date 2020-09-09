@@ -1,4 +1,6 @@
 #X Function: calcfp 
-#X Usage: calcfp <numericExpression>
+#X Desc    : Simple bc wrapper
+#X Synopsis: calcfp numericExpression
 calcfp() { echo "$*" | bc -l; }
+#fin
 

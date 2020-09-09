@@ -1,5 +1,7 @@
 #-Function--rtfm
   Function: rtfm
-      Desc: read the fucking manual, searches command in help, man, then google.
-  Synopsis: rtfm <search_term>
+      Desc: read the fucking manual.
+          : Searches first in help, then man, then google.
+  Synopsis: rtfm "search_term"
+    Source: /usr/share/okusi/entities/entities.d/sys/rtfm.bash
 #-Function--rtfm--------------------------------------------------------------

@@ -8,4 +8,5 @@
           : color.set off
           : # do stuff... #
           : color.set $oldstatus
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--color.set---------------------------------------------------------

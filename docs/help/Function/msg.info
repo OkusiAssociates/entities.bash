@@ -6,4 +6,5 @@
           : #X					:	and must appear before the strings to be printed.
           : if verbose() enabled, write string/s to stdout.
    Example: msg.info "Sir. There's something I think you should know."
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--msg.info----------------------------------------------------------

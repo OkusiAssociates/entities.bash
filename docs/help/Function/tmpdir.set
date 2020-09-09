@@ -1,0 +1,7 @@
+#-Function--tmpdir.set
+  Function: tmpdir.set
+  Synopsis: tmpdir.set ["tmpdir"]
+   Example: tmpdir.set '/run/entities
+          : tmpdir="$(tmpdir.set)"
+    Source: /usr/share/okusi/entities/entities.d/files/cdd.bash
+#-Function--tmpdir.set--------------------------------------------------------

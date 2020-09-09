@@ -4,4 +4,5 @@
           : the last item in the lockfiles() stack
   Synopsis: lockfiles.delete [lockfile]
    Example: lockfiles.delete
+    Source: /usr/share/okusi/entities/entities.d/files/cdd.bash
 #-Function--lockfiles.delete--------------------------------------------------

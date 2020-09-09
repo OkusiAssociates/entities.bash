@@ -1,7 +1,7 @@
 #!/bin/bash
 #X Function: elipstr
-#X Desc    : insert elipsis (...) into middle of fixed with string
-#X Synopsis: elipstr string [maxwidth]
+#X Desc    : Insert elipsis (...) into middle of fixed with string.
+#X Synopsis: elipstr "string" [maxwidth]
 #X Example : echo $(elipstr "the quick brown fox jumped over." 15) 
 elipstr() {
 	local str=${1:-} pd=''

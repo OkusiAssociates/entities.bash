@@ -17,4 +17,5 @@
           : source entities.bash load-to newdir
           :       # ^ load into new dir (eg, /run/entities) and
           :       # set ENTITIES globalvar to new position.
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #----Local--PRG---------------------------------------------------------------

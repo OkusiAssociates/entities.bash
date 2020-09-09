@@ -1,6 +1,7 @@
 #X Function: rtfm
-#X Desc: read the fucking manual, searches command in help, man, then google.
-#X Usage: rtfm <search_term>
+#X Desc    : read the fucking manual. 
+#X         : Searches first in help, then man, then google.
+#X Usage   : rtfm "search_term"
 rtfm() { 
 	if [[ -z ${1:-} ]]; then
 		echo "read the fucking manual, searches command in help, man, then google."

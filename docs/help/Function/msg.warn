@@ -6,4 +6,5 @@
           : 	'log'		if specified, write log entry to journal info.
           : 	string	if verbose() enabled, write string/s to stdout.
    Example: msg.warn log "Pardon me, Sir." "Is this supposed to happen?"
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--msg.warn----------------------------------------------------------

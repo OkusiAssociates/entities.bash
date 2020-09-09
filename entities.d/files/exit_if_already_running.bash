@@ -1,8 +1,8 @@
 #X Function : exit_if_already_running
-#X Desc     : if there is an instance of the script already being run on the
+#X Desc     : If there is an instance of the script already being run on the
 #X          : server, then throw an error message and exit 1 immediately.
-#X          : this function is mostly used at the very
-#X          : beginning of the script.
+#X          : This function is mostly used at the very
+#X          : beginning of a script.
 #X Synopsis : exit_if_already_running [locktimeout]
 #X          : locktimeout optionally sets the _ent_LOCKTIMEOUT global. if the age of
 #X          : the lock file+_ent_LOCKTIMEOUT is < than current time, then the

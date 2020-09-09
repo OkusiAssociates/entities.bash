@@ -6,4 +6,5 @@
           : -n  suppress line feed, applied separately to each
           :     string argument
    Example: msg "hello world!" "it's so nice to be back!"
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--msg---------------------------------------------------------------

@@ -2,11 +2,13 @@
 #X Function: clntempfiles 
 #X Desc    : Remove all *~ files recursively from current directory.
 #X         : CLNTEMPFILES array defines temporary files, default is ( '*~' '~*' '.~*' )
-#X Usage   : clntempfiles [--maxdepth|-m depth] [--dryrun|-n || --notdryrun|-N] [--quiet|-q || --verbose|-v] [dirspec]..."
+#X Usage   : clntempfiles [--maxdepth|-m depth] [--dryrun|-n || --notdryrun|-N] 
+#X         :     [--quiet|-q || --verbose|-v] [dirspec]...
 #X Desc    : Recursively remove all temporary files ( ${CLNTEMPFILES[@]} )"
 #X         : Defaults: maxdepth 2, verbose enabled, dryrun enabled'
 #X         : More than one dirspec can be specified. Default is current directory.'
-#X         : if defined, CLNTEMPFILES envar sets temporary files to search for. Default is ( '*~' '~*' '.~*' )"
+#X         : If defined, CLNTEMPFILES envar sets temporary files to search for. 
+#X         : Default is ( '*~' '~*' '.~*' )"
 declare -ax CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
 clntempfiles() {
 	(( ${#CLNTEMPFILES[@]} )) || CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )

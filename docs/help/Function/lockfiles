@@ -3,4 +3,5 @@
       Desc: return array of locked files
   Synopsis: lockfiles
    Example: files=$(lockfiles)
+    Source: /usr/share/okusi/entities/entities.d/files/cdd.bash
 #-Function--lockfiles---------------------------------------------------------

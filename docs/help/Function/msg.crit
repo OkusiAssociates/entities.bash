@@ -7,4 +7,5 @@
           : 'log'   if specified, write log entry to journal err.
           :  string  write string/s to stderr.
    Example: msg.crit log "Good god!" "Oh, the Humanity..."
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--msg.crit----------------------------------------------------------

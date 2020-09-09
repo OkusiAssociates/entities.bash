@@ -6,4 +6,5 @@
           : 'log'		if specified, write log entry to journal err.
           : string	write string/s to stderr.
    Example: msg.err log "Sir!" "I think you better come here."
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--msg.err-----------------------------------------------------------

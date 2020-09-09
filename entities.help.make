@@ -46,7 +46,7 @@ source $(dirname "$0")/entities.bash new || { echo >&2 "Could not open [$(dirnam
 			Author
 			Bugs
 			Copyright	
-			See_also 
+			See_Also 
 			Tags
 			)
 			
@@ -58,8 +58,9 @@ source $(dirname "$0")/entities.bash new || { echo >&2 "Could not open [$(dirnam
 					Defaults='' \
 					Depends='' 	\
 					Example=''  \
-					See_also='' \
-					Tags=''
+					See_Also='' \
+					Tags=''			\
+					Source=''
 
 	declare -a Symlinks=()
 
@@ -107,7 +108,6 @@ main() {
 
 	bashfiles="$(find "$EntitiesDir/" -name "*.bash"  -not -name "_*" -type f \
 								| grep -v '/docs/' | grep -v '.gudang' | grep -v '.min.')"
-	#bashfiles="$(find $EntitiesDir/ -name "*.bash" -type f | grep -v 'docs/' | grep -v '.gudang' | grep -v '.min.')"
 	for file in ${bashfiles[@]}; do
 		msg.info "Processing [$file] for documentation"
 		hlp="$(grep '^#X\+' "$file" | grep ':')"
@@ -135,7 +135,6 @@ main() {
 				if (( ${#Label} )); then
 					destdir="$HelpFilesDir/$Label"
 					mkdir -p "$destdir"
-	
 					declare -a Symlink=()
 					IFS=$' \t';	Symlink=( $Header ); IFS=$'\n'
 					#msg.info "#write $label out to file $Label:$destdir"
@@ -144,14 +143,15 @@ main() {
 					endtag+="-${Symlink[0]}"
 					endtag=$(printf "#%${sx}.${sx}s%s" $dashes $endtag)
 					(	echo "${endtag}"
-						printlines "$Label"  "$Header"
-						printlines 'Tags' "$Tags"
-						printlines 'Desc' "$Desc"
+						printlines "$Label"  	"$Header"
+						printlines 'Tags' 		"$Tags"
+						printlines 'Desc' 		"$Desc"
 						printlines 'Synopsis' "$Synopsis"
 						printlines 'Defaults' "$Defaults"
-						printlines 'Depends' "$Depends"
-						printlines 'See_also' "$See_also"
-						printlines 'Example' "$Example"
+						printlines 'Depends' 	"$Depends"
+						printlines 'See_Also' "$See_Also"
+						printlines 'Example' 	"$Example"
+						printlines 'Source'  	"$FinishFile"
 						sx=$(( 76-${#endtag} ))
 						printf "%s--%${sx}.${sx}s%s" "$endtag" "$dashes" "$LF"
 					) > "$destdir/${Symlink[0]}"
@@ -166,7 +166,7 @@ main() {
 				fi
 				Label="$label"
 				Header="$cmt"
-				Synopsis='' Desc='' Defaults='' Depends='' Example='' See_also='' Tags=''
+				Synopsis='' Desc='' Defaults='' Depends='' Example='' See_Also='' Tags='' Source=''
 	
 			elif [[ "${SubHdrs[@]}" == *"$label"* ]]; then  # check if new label is a subheader category
 				#msg.info "  subheader [$label] found"
@@ -178,6 +178,7 @@ main() {
 	
 			oldlabel=$label
 		done
+		FinishFile="$file"
 	done
 
 	# make symlinks in the help root to canonical files in category directories

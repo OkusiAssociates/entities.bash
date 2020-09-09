@@ -810,13 +810,14 @@ TmpDir="${TMPDIR:-/tmp}/${1:-entities}"
 mkdir --mode=0770 -p "${TmpDir}" || { echo ''; return; }
 TmpFile="$(mktemp "${TmpDir}/${PRG:-$(basename "$0")}_XXXX")"
 echo "$TmpFile"
+return 0
 }
 declare -fx mktempfile
 declare -x TMPDIR="${TMPDIR:-/tmp}"
 tmpdir.set() {
 if (( $# )); then
 tmp="${1}"
-mkdir -p "$tmp" && cd "$tmp" && TMPDIR="$(pwd)"
+mkdir -p "$tmp" && cd "$tmp" && TMPDIR="$(pwd)" && cd -
 fi
 echo "$TMPDIR:-/tmp"
 }
@@ -937,8 +938,8 @@ str="$(echo "${str,,}" | iconv -f UTF-8 -t ASCII//TRANSLIT )"
 fi
 str="${str//[^[:alnum:]]/${repl}}"
 str="${str//+([${repl}])/${repl}}"
-[[ ${str:0:1} == $repl ]] && str="${str:1}"
-[[ ${str: -1} == $repl ]] && str="${str:0: -1}"
+[[ ${str:0:1} == "$repl" ]] && str="${str:1}"
+[[ ${str: -1} == "$repl" ]] && str="${str:0: -1}"
 echo -n "$str"
 }
 remove_accents() {
@@ -1050,10 +1051,12 @@ urlpayload_encode() {
 echo -n "$( urlencode "$(payload_encode "${1}")" )"
 return 0
 }
+declare -fx urlpayload_encode
 payload_encode() {
 echo -n "$( echo -n "${1:-}" | gzip 2>/dev/null | base64 -w0 2>/dev/null)"
 return 0
 }
+declare -fx payload_encode
 payload_decode() {
 local str="${1}" bstr='' gzipid="$(echo -e "\x1f\x8b")"
 [[ -z "$str" ]] && { echo -n ''; return 0; }
@@ -1070,6 +1073,4 @@ fi
 unset str bstr
 return 0
 }
-declare -fx urlpayload_encode
-declare -fx payload_encode
 declare -fx payload_decode

@@ -1,5 +1,5 @@
 #X Function : slog slog.file slog.prefix slog.prefix.eval slog.truncate
-#X Desc     : write strings to user log file
+#X Desc     : Write strings to user log file
 #X Synopsis : slog string [...]
 #X Example  : source entities.bash new \\
 #X          : 		|| { echo &>2 "source entities.bash not found!"; exit 1; }
@@ -55,3 +55,4 @@ slog.truncate() {
 	> "$(slog.file)"
 }
 
+#fin

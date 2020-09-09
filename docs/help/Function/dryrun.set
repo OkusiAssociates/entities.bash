@@ -6,4 +6,5 @@
   Defaults: 0
    Example: dryrun.set off
           : ((dryrun.set)) || doit.sh
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--dryrun.set--------------------------------------------------------

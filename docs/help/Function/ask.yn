@@ -6,4 +6,5 @@
           : response.
   Synopsis: ask.yn string
    Example: ask.yn "Continue?" || msg.die 'Not Continuing.'
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--ask.yn------------------------------------------------------------

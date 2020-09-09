@@ -1,12 +1,11 @@
 #!/bin/bash
-declare -x perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"
-
 #X Function: perrno
 #X Desc    : return text of OS or MySQL error codes
 #X Synopsis: perrno errnumber [os|mysql]
 #X Example : perrno 127 os		# returns text of err 127 in OS
 #X         : perrno 127 mysql	# returns text of err 127 in MySQL
 #X         : perrno 127 os		# returns texts of err 127 in both OS and MySQL
+declare -x perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"
 perrno() {
 	(($#)) || return 0 
 	local OS=${2:-}

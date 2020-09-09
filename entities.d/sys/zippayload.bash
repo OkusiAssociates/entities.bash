@@ -1,16 +1,22 @@
 #!/bin/bash
-#X Function: urlpayload_encode payload_encode payload_decode
-
+#X Function: urlpayload_encode 
+#X Synopsis: urlpayload_encode "payload_string"
 urlpayload_encode() {	
 	echo -n "$( urlencode "$(payload_encode "${1}")" )" 
 	return 0
 }
+declare -fx urlpayload_encode
 
+#X Function: payload_encode "payload_string"
+#X Synopsis: payload_encode "payload_string"
 payload_encode() { 
 	echo -n "$( echo -n "${1:-}" | gzip 2>/dev/null | base64 -w0 2>/dev/null)" 
 	return 0
 }
+declare -fx payload_encode 
 
+#X Function: payload_decode "encoded_payload_string"
+#X Synopsis: payload_decode "encoded_payload_string"
 payload_decode() {
 	local str="${1}" bstr='' gzipid="$(echo -e "\x1f\x8b")" 
 	[[ -z "$str" ]] && { echo -n ''; return 0; }
@@ -33,9 +39,6 @@ payload_decode() {
 	unset str bstr
 	return 0
 }
-
-declare -fx urlpayload_encode
-declare -fx payload_encode 
 declare -fx payload_decode
 
 #fin

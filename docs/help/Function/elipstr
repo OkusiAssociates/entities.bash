@@ -1,6 +1,7 @@
 #-Function--elipstr
   Function: elipstr
-      Desc: insert elipsis (...) into middle of fixed with string
-  Synopsis: elipstr string [maxwidth]
+      Desc: Insert elipsis (...) into middle of fixed with string.
+  Synopsis: elipstr "string" [maxwidth]
    Example: echo $(elipstr "the quick brown fox jumped over." 15)
+    Source: /usr/share/okusi/entities/entities.d/string/elipstr.bash
 #-Function--elipstr-----------------------------------------------------------

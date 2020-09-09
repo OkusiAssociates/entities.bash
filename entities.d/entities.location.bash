@@ -1,8 +1,6 @@
 #!/bin/bash
-
 #X Function: entities.location
-#X Desc    : return with current setting for ENTITIES and PATH
+#X Desc    : Return with current setting for ENTITIES and PATH.
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
-
 #fin

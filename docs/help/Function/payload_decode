@@ -1,1 +1,5 @@
-urlpayload_encode
+#-Function--payload_decode
+  Function: payload_decode "encoded_payload_string"
+  Synopsis: payload_decode "encoded_payload_string"
+    Source: /usr/share/okusi/entities/entities.d/sys/zippayload.bash
+#-Function--payload_decode----------------------------------------------------

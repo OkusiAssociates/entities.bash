@@ -1,9 +1,9 @@
 #!/bin/bash
 #X Function: hr2int
-#X Desc		: return integer from human-readable number text
+#X Desc		 : return integer from human-readable number text
 #X				 : (b)ytes	(k)ilobytes (m)egabytes (g)igabytes (t)erabytes (p)etabytes
-#X					 Capitalise to use multiples of 1000 (S.I.) instead of 1024.
-#X Synopsis: hr2int <integer>[bkmgtp] [<integer>[bkmgtp]]...
+#X				 : Capitalise to use multiples of 1000 (S.I.) instead of 1024.
+#X Synopsis: hr2int integer[bkmgtp] [integer[bkmgtp]]...
 #X Example : hr2int 34M
 #X				 : hr2int 34m
 #X				 : hr2int 34000000
@@ -24,12 +24,12 @@ hr2int() {
 	return 0
 }
 
-#X function: int2hr 
-#X synopsis: int2hr <integer> <hr> [<integer> <hr>]...
-#X				 : <number> is any integer
-#X				 : <hr> is one of {b|B|k|K|m|M|g|G|t|T|p|P}
+#X Function: int2hr 
+#X Synopsis: int2hr number hrchar [number hrchar]...
+#X				 : number is any integer.
+#X				 : hrchar is one of {b|B|k|K|m|M|g|G|t|T|p|P}
 #X Example : int2hr 34393827 m
-#X Example : int2hr 10382 K 872929292929 g
+#X         : int2hr 10382 K 872929292929 g
 int2hr() {
 	local -i num=0
 	local h=''

@@ -7,4 +7,5 @@
           :  'log'   if specified, write log entry to journal err.
           :  string  write string/s to stderr.
    Example: msg.die log "I'm sorry, Sir." "I give up." "There's nothing more I can do."
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--msg.die-----------------------------------------------------------

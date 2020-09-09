@@ -1,0 +1,10 @@
+#-Function--remsp2
+  Function: remsp2
+      Desc: Remove double blanks (space,tab) from string, replace with
+          : single space, and remove leading and trailing blanks,
+  Synopsis: remsp "string"
+   Depends: trim
+   Example: str=" 123     456 789     0123   "
+          : str2=$(remsp "$str")
+    Source: /usr/share/okusi/entities/entities.d/string/remsp2.bash
+#-Function--remsp2------------------------------------------------------------

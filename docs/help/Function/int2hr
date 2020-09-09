@@ -1,8 +1,9 @@
 #-Function--int2hr
   Function: int2hr
-  Synopsis: int2hr <integer> <hr> [<integer> <hr>]...
-          : <number> is any integer
-          : <hr> is one of {b|B|k|K|m|M|g|G|t|T|p|P}
+  Synopsis: int2hr number hrchar [number hrchar]...
+          : number is any integer.
+          : hrchar is one of {b|B|k|K|m|M|g|G|t|T|p|P}
    Example: int2hr 34393827 m
           : int2hr 10382 K 872929292929 g
+    Source: /usr/share/okusi/entities/entities.d/sys/hr2int.bash
 #-Function--int2hr------------------------------------------------------------

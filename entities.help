@@ -5,7 +5,7 @@ source $(dirname "$0")/entities.bash new || { echo >&2 "Could not open [$(dirnam
 	
 	declare HelpFilesDir="$PRGDIR/docs/help"
 
-entities.help() {
+main() {
 	# sanity check first
 	[[ ! -d "$HelpFilesDir" ]]	&& msg.die "Help files directory [$HelpFilesDir] not found."
 	cd "$HelpFilesDir" 					|| msg.die "Could not cd into '$HelpFilesDir'!"
@@ -43,7 +43,7 @@ entities.help() {
 	
 	if [[ -n "$search" && reentry==0 ]]; then
 		s=( $(grep --color=never -silr ${search} "$HelpFilesDir/" ) )
-		entities.help "${s[@]}" --reentry
+		main "${s[@]}" --reentry
 		return
 	fi
 	
@@ -66,9 +66,11 @@ display_tree() {
 	local htmfile='index.html'
 	local pwd="$(pwd)"
 	local browser
-	browser="$(which w3m || which lynx)"
+	browser="$(which lynx || which w3m)"
 	
-	cd "$HelpFilesDir" || msg.die "Could not cd into $HelpFilesDir."
+	if [[ ! -f "$HelpFilesDir/$htmfile" ]]; then
+		msg.info "Creating [$htmfile]..."
+		cd "$HelpFilesDir" || msg.die "Could not cd into $HelpFilesDir."
 		/usr/bin/tree --noreport -H ./ -T 'entities.bash help files' "$(pwd)" > "$htmfile"
 		# clean up html output
 		tmp=$(cat "$htmfile")
@@ -79,8 +81,9 @@ display_tree() {
 		# blast it back to the html file
 		echo "$tmp" > $htmfile
 		chmod 666 "$htmfile"
-	cd "$pwd"
-
+		cd "$pwd"
+	fi
+	
 	$browser "$HelpFilesDir/index.html" 
 
 	return 0 
@@ -100,10 +103,10 @@ usage() {
 		       :        -S|--synopsis # only show synopsis (usage)
 		       :        -v|--verbose
 		       :        -q|--quiet
-		Example: entities.help msg.line 
+		Example: main msg.line 
 	usage
 	[[ $1 == 'exit' ]] && exit 1
 }
 
-entities.help "$@"
+main "$@"
 #fin

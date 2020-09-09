@@ -1,4 +1,5 @@
 #-Function--editorsyntaxstring
   Function: editorsyntaxstring
   Synopsis: editorsyntaxstring filename filetype
+    Source: /usr/share/okusi/entities/entities.d/files/filetype/textfiletype.bash
 #-Function--editorsyntaxstring------------------------------------------------

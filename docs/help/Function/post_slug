@@ -5,11 +5,11 @@
           : all non-alnum characters are replaced with string {replstr} (default '-')
           : multiple occurances of {replstr} are reduced to one, and
           : leading and trailing {replstr} chars removed.
-  Synopsis: {newstr}=$(post_slug {str} [{replstr}])
-          : {replstr} is optional, defaults to _
-   Depends: shopt -s extglob
+  Synopsis: myslug=$(post_slug "str" ["replstr"])
+          : replstr is optional, defaults to '-'
    Example: post_slug 'A title, with  Ŝŧřãņġę  cHaracters ()'
           : returns "a-title-with-strange-characters"
           : post_slug ' A title, with  Ŝŧřãņġę  cHaracters ()" '_'
           : returns: "a_title_with_strange_characters"
+    Source: /usr/share/okusi/entities/entities.d/string/remsp2.bash
 #-Function--post_slug---------------------------------------------------------

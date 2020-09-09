@@ -1,6 +1,6 @@
 #-Function--slog
   Function: slog slog.file slog.prefix slog.prefix.eval slog.truncate
-      Desc: write strings to user log file
+      Desc: Write strings to user log file
   Synopsis: slog string [...]
    Example: source entities.bash new \\
           : 		|| { echo &>2 "source entities.bash not found!"; exit 1; }
@@ -16,4 +16,5 @@
           : 	cat "$(slog.file)"
           : }
           : main "$@"
+    Source: /usr/share/okusi/entities/entities.d/files/slog.bash
 #-Function--slog--------------------------------------------------------------

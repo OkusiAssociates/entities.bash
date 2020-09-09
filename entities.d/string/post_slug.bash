@@ -5,16 +5,13 @@
 #X         : all non-alnum characters are replaced with string {replstr} (default '-')
 #X				 : multiple occurances of {replstr} are reduced to one, and 
 #X         : leading and trailing {replstr} chars removed.
-#X Synopsis: {newstr}=$(post_slug {str} [{replstr}])
-#X         : {replstr} is optional, defaults to _
+#X Synopsis: myslug=$(post_slug "str" ["replstr"])
+#X         : replstr is optional, defaults to '-'
 #X Example : post_slug 'A title, with  Ŝŧřãņġę  cHaracters ()'
 #X         : returns "a-title-with-strange-characters" 
-#X Example : post_slug ' A title, with  Ŝŧřãņġę  cHaracters ()" '_'
+#X         : post_slug ' A title, with  Ŝŧřãņġę  cHaracters ()" '_'
 #X         : returns: "a_title_with_strange_characters"
-#X Requires: shopt -s extglob
-
 shopt -s extglob
-
 post_slug() {
 	local str="${1:-}" repl="${2:--}" preserve_case="${3:-0}"
 	# lowercase all
@@ -28,9 +25,9 @@ post_slug() {
   # replace all double occurences of {repl} with one only {repl}
 	str="${str//+([${repl}])/${repl}}"
 	# remove beginning {repl} char
-	[[ ${str:0:1} == $repl ]] && str="${str:1}"
+	[[ ${str:0:1} == "$repl" ]] && str="${str:1}"
 	# remove ending {repl} char
-	[[ ${str: -1} == $repl ]] && str="${str:0: -1}"
+	[[ ${str: -1} == "$repl" ]] && str="${str:0: -1}"
 	# translate non ascii chars
 	echo -n "$str"
 }

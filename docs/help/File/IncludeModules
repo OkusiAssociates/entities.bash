@@ -4,4 +4,5 @@
           : $ENTITIES/entities.d/** are
           : automatically included in the entities.bash source file.
           : #X     :
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-----File--IncludeModules----------------------------------------------------
