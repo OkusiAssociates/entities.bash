@@ -701,7 +701,7 @@ declare -fx 'ask.yn'
 #X Synopsis : entities.help [function|globalvar|localvar|file] | [-s|--search searchstring] [-h|--help]
 #X Example  : entities.help ask.yn msg.info
 entities.help() {
-	"$ENTITIES/docs/entities.help" "$@"
+	"$ENTITIES/entities.help" "$@"
 	return 0
 }
 declare -fx 'entities.help'
