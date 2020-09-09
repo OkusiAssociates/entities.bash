@@ -1,4 +1,5 @@
 #-Function--rtfm
   Function: rtfm
       Desc: read the fucking manual, searches command in help, man, then google.
+  Synopsis: rtfm <search_term>
 #-Function--rtfm--------------------------------------------------------------

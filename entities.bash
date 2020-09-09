@@ -98,13 +98,12 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		case "${1,,}" in
 			# new load
 			new) 									__entities__=0 ;;
-
 			# does the calling script wish to inherit the current Entities environment/functions?
 			# (inherit is the default)
 				# can only inherit if called from a script
 			''|inherit|preserve)	__entities__=${__entities__:-0} ;;
 
-			# all other passed parameters are ignored (probably script parameters, not for entities)
+			# all other passed parameters are ignored (possibly script parameters? but not for entities)
 			*)	break;;
 		esac
 		shift
@@ -119,7 +118,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 _ent_scriptstatus+="reloading|\n"
 
 
-# turn off strict! (strict is default)
+# turn off strict while we run through the included functions! (strict is default)
 set +o errexit +o nounset +o pipefail
 
 # why not? ...

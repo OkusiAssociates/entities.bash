@@ -121,7 +121,7 @@ main() {
 		msg.sys "Production: Updating help files..."
 		tab.set ++
 		msg.sys "Updating entities help files..."
-		$PRGDIR/docs/entities.help.make --auto	|| msg.die "[PRGDIR=$PRGDIR] entities.help.make failed!"
+		$PRGDIR/entities.help.make --auto	|| msg.die "[PRGDIR=$PRGDIR] entities.help.make failed!"
 		#if [[ -x entities.scripts/_linkscripts2entities ]]; then
 		#	msg.info "Running linkscripts2entities"
 		#	cd entities.scripts || msg.die "could not cd into entities.scripts!"

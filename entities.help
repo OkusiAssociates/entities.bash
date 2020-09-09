@@ -1,0 +1,109 @@
+#!/bin/bash
+source $(dirname "$0")/entities.bash new || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
+	strict.set on
+	trap.set on
+	
+	declare HelpFilesDir="$PRGDIR/docs/help"
+
+entities.help() {
+	# sanity check first
+	[[ ! -d "$HelpFilesDir" ]]	&& msg.die "Help files directory [$HelpFilesDir] not found."
+	cd "$HelpFilesDir" 					|| msg.die "Could not cd into '$HelpFilesDir'!"
+
+	local -a helpfile=() 
+	local search=''
+	local -i synopsis=0 reentry=0
+
+	while (($#)); do
+		case "$1" in
+			-a|--all)				helpfile+=( '*' ) 		;;
+			-S|--synopsis)	synopsis=1						;;
+			-t|--tree)			display_tree; exit 0	;;
+			-h|--help)			usage exit						;;
+			-v|--verbose)		verbose.set on				;;
+			-q|--quiet)			verbose.set off			 	;;
+			-s|--search)		shift; search="${1:-}";;
+			--reentry)			reentry=1							;;
+			*)							helpfile+=( "${1:-}" );;
+		esac
+		shift
+	done
+
+	if (( !( ${#helpfile[@]} || ${#search} || ${synopsis}) )); then
+		display_tree
+		exit 0
+	fi
+
+	if ((synopsis)); then
+		synopsis=$(grep --color=never -sih '^Synopsis' *)
+		#synopsis=$(sed '/Synopsis :/d' <<<$synopsis))
+		echo -e "$synopsis"
+		return
+	fi
+	
+	if [[ -n "$search" && reentry==0 ]]; then
+		s=( $(grep --color=never -silr ${search} "$HelpFilesDir/" ) )
+		entities.help "${s[@]}" --reentry
+		return
+	fi
+	
+	numhelpfiles=$(( ${#helpfile[@]} ))
+	for s in ${helpfile[@]}; do
+		if [[ -f "${s}" ]]; then
+			if ((numhelpfiles<2)); then
+				grep --color=never -v "#-" "${s}"
+			else
+				cat "${s}"
+			fi
+		else
+			msg.err "Help file '${s}' not found."
+		fi
+	done
+}
+
+display_tree() {
+	local tmp
+	local htmfile='index.html'
+	local pwd="$(pwd)"
+	local browser
+	browser="$(which w3m || which lynx)"
+	
+	cd "$HelpFilesDir" || msg.die "Could not cd into $HelpFilesDir."
+		/usr/bin/tree --noreport -H ./ -T 'entities.bash help files' "$(pwd)" > "$htmfile"
+		# clean up html output
+		tmp=$(cat "$htmfile")
+		tmp="${tmp/<!--/}" 
+		tmp="${tmp/-->${LF}/}" 
+		tmp="${tmp/<p class=\"VER*\/p>/}" 
+		tmp="${tmp/<\/style>/H1,h1 \{text-align:left;color:green;\}${LF}<\/style>}"
+		# blast it back to the html file
+		echo "$tmp" > $htmfile
+		chmod 666 "$htmfile"
+	cd "$pwd"
+
+	$browser "$HelpFilesDir/index.html" 
+
+	return 0 
+}
+
+cleanup() {
+	[[ -z $1 ]] && exitcode=$? || exitcode=$1
+	exit $exitcode
+}
+
+usage() {
+	cat <<-usage
+		Usage  : $PRG [intro|functionname|globalvarname|localvarname|filename]
+		       :        -t|--tree     # show interactive web tree of all functions.
+		       :        -s|--search   # search all help files for keyword
+		       :        -a|--all      # show all help
+		       :        -S|--synopsis # only show synopsis (usage)
+		       :        -v|--verbose
+		       :        -q|--quiet
+		Example: entities.help msg.line 
+	usage
+	[[ $1 == 'exit' ]] && exit 1
+}
+
+entities.help "$@"
+#fin

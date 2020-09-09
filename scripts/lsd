@@ -28,10 +28,10 @@ main() {
 	done
 
 	while [ ! -x "$(which tree)" ]; do
-		askyn "The 'tree' program has not been installed. Install now?" \
-				|| msgdie "tree is not installed."
-		msginfo "Installing tree program..." ""
-		apt-get install tree || msgdie "Could not install tree."
+		ask.yn "The 'tree' program has not been installed. Install now?" \
+				|| msg.die "tree is not installed."
+		msg.info "Installing tree program..." ""
+		apt-get install tree || msg.die "Could not install tree."
 	done
 	
 	/usr/bin/tree -d -L $Level $ls "${cmd[@]}"

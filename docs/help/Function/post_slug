@@ -7,6 +7,7 @@
           : leading and trailing {replstr} chars removed.
   Synopsis: {newstr}=$(post_slug {str} [{replstr}])
           : {replstr} is optional, defaults to _
+   Depends: shopt -s extglob
    Example: post_slug 'A title, with  Ŝŧřãņġę  cHaracters ()'
           : returns "a-title-with-strange-characters"
           : post_slug ' A title, with  Ŝŧřãņġę  cHaracters ()" '_'

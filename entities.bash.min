@@ -944,6 +944,11 @@ echo -n "$str"
 remove_accents() {
 echo -n "${1:-}" | iconv -c -f UTF-8 -t ASCII//TRANSLIT//IGNORE
 }
+remsp2() {
+(($#)) || { echo -n ''; return 0; }
+echo -n "$(trim "${1//+([[:blank:]])/ }")"
+}
+declare -nx remsp2
 s() {	(( ${1} == 1 )) || echo -n 's'; }
 declare -fx s
 str_str() {

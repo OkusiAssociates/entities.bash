@@ -2,4 +2,8 @@
   Function: urldecode
       Desc: URL-decode string
   Synopsis: urldecode string
+   Example: for f in /opt/logs/*.log; do
+          :   name=${f##/*/}
+          :   cat $f | urldecode > /opt/logs/processed/$HOSTNAME.$name
+          : done
 #-Function--urldecode---------------------------------------------------------

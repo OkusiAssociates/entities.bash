@@ -6,4 +6,5 @@
           : Defaults: maxdepth 2, verbose enabled, dryrun enabled'
           : More than one dirspec can be specified. Default is current directory.'
           : if defined, CLNTEMPFILES envar sets temporary files to search for. Default is ( '*~' '~*' '.~*' )"
+  Synopsis: clntempfiles [--maxdepth|-m depth] [--dryrun|-n || --notdryrun|-N] [--quiet|-q || --verbose|-v] [dirspec]..."
 #-Function--clntempfiles------------------------------------------------------

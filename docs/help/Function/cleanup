@@ -6,6 +6,5 @@
           : files and other detritus before terminating.
           : if you are not using the exit_if_already_running function
   Synopsis: cleanup [exitcode] [_LINENO_]
-  See_Also: trap.set trap.function, exit_if_already_running
    Example: cleanup
 #-Function--cleanup-----------------------------------------------------------
