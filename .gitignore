@@ -1,6 +1,7 @@
 # git notes
 git/
 bash/
+.git*
 
 # rubbish files
 .*~
@@ -11,6 +12,9 @@ old/
 tmp
 t
 tt
+ttt
+t1
+t2
 .bash_*
 
 # under development 
@@ -18,4 +22,5 @@ dev
 .gudang
 gudang
 org
+test
 test-scripts

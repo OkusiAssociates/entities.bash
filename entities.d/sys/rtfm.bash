@@ -10,11 +10,13 @@ rtfm() {
 		return 1
 	fi
 
-	help -m "$@" 2>/dev/null && return 0
+	builtin help -m "$@" 2>/dev/null && return 0
 	
-	man "$@"  2>/dev/null && return 0
+	$(which man) 		"$@" 2>/dev/null && return 0
 
-	${BROWSER:-$(which w3m || which lynx)} "http://www.google.com/search?q=linux+bash+$@" && return 0
+	entities.help 	"$@" 2>/dev/null && return 0 
+
+	${BROWSER:-$(which w3m || which lynx)} "http://www.google.com/search?q=linux+bash+%2B$@" && return 0
 }
 declare -fx rtfm
 #fin
