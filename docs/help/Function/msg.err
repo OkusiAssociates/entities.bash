@@ -3,8 +3,8 @@
       Desc: output an error message, with option to write to systemd journal.
           : message is coloured red on terminals.
   Synopsis: msg.err [log] string [string ...]
-          : 'log'		if specified, write log entry to journal err.
-          : string	write string/s to stderr.
+          : 'log'   if specified, write log entry to journal err.
+          : string  write string/s to stderr.
    Example: msg.err log "Sir!" "I think you better come here."
     Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--msg.err-----------------------------------------------------------

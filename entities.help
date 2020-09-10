@@ -8,47 +8,53 @@ source $(dirname "$0")/entities.bash new || { echo >&2 "Could not open [$(dirnam
 main() {
 	# sanity check first
 	[[ ! -d "$HelpFilesDir" ]]	&& msg.die "Help files directory [$HelpFilesDir] not found."
+
+	# everything happens here
 	cd "$HelpFilesDir" 					|| msg.die "Could not cd into '$HelpFilesDir'!"
 
-	local -a helpfile=() 
-	local search=''
-	local -i synopsis=0 reentry=0
+	local -a HelpFile=() 
+	local Search=''
+	local -i synopsis=0 reentry=0 err=0
 
 	while (($#)); do
 		case "$1" in
-			-a|--all)				helpfile+=( '*' ) 		;;
-			-S|--synopsis)	synopsis=1						;;
-			-t|--tree)			display_tree; exit 0	;;
-			-h|--help)			usage exit						;;
-			-v|--verbose)		verbose.set on				;;
-			-q|--quiet)			verbose.set off			 	;;
-			-s|--search)		shift; search="${1:-}";;
-			--reentry)			reentry=1							;;
-			*)							helpfile+=( "${1:-}" );;
+			-a|--all)				HelpFile+=( '*' ) 			;;
+			-S|--synopsis)	synopsis=1							;;
+			-t|--tree)			display_tree; return $?	;;
+			-h|--help)			usage; return 1					;;
+			-v|--verbose)		verbose.set on					;;
+			-q|--quiet)			verbose.set off			 		;;
+			-s|--search)		shift; Search="${1:-}"	;;
+			--reentry)			reentry=1								;;
+			*)							HelpFile+=( "${1}" )		;;
 		esac
 		shift
 	done
 
-	if (( !( ${#helpfile[@]} || ${#search} || ${synopsis}) )); then
+	# nothing specified, so present helpfiles tree
+	if (( !( ${#HelpFile[@]} || ${#Search} || ${synopsis}) )); then
 		display_tree
-		exit 0
+		return $?
 	fi
 
+	# present a synopsis #TODO
 	if ((synopsis)); then
 		synopsis=$(grep --color=never -sih '^Synopsis' *)
 		#synopsis=$(sed '/Synopsis :/d' <<<$synopsis))
 		echo -e "$synopsis"
-		return
+		return $?
 	fi
 	
-	if [[ -n "$search" && reentry==0 ]]; then
-		s=( $(grep --color=never -silr ${search} "$HelpFilesDir/" ) )
+	# re-entry for Search
+	if [[ -n "$Search" && reentry==0 ]]; then
+		s=( $(grep --color=never -silr ${Search} "$HelpFilesDir/" ) )
 		main "${s[@]}" --reentry
-		return
+		return $?
 	fi
 	
-	numhelpfiles=$(( ${#helpfile[@]} ))
-	for s in ${helpfile[@]}; do
+	# lookup function/topic name as filename 
+	numhelpfiles=$(( ${#HelpFile[@]} ))
+	for s in ${HelpFile[@]}; do
 		if [[ -f "${s}" ]]; then
 			if ((numhelpfiles<2)); then
 				grep --color=never -v "#-" "${s}"
@@ -56,9 +62,11 @@ main() {
 				cat "${s}"
 			fi
 		else
+			err=1
 			msg.err "Help file '${s}' not found."
 		fi
 	done
+	return $err
 }
 
 display_tree() {
@@ -90,7 +98,8 @@ display_tree() {
 }
 
 cleanup() {
-	[[ -z $1 ]] && exitcode=$? || exitcode=$1
+	local -i exitcode=$?
+	(($#)) && exitcode=$1
 	exit $exitcode
 }
 
@@ -103,9 +112,8 @@ usage() {
 		       :        -S|--synopsis # only show synopsis (usage)
 		       :        -v|--verbose
 		       :        -q|--quiet
-		Example: main msg.line 
+		Example: $PRG msg.line 
 	usage
-	[[ $1 == 'exit' ]] && exit 1
 }
 
 main "$@"

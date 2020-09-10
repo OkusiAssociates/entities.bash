@@ -708,9 +708,9 @@ declare -fx 'entities.help'
 
 #X Function : check.dependencies
 #X Desc     : check for script dependencies (programs, scripts, or functions).
-#X Synopsis : check.dependencies [-q|--quiet] name [...]
-#X          : 	name				is the name of a program, script or function.
-#X					:		-q|--quiet	do not print 'dependency-not-found' messages.
+#X Synopsis : check.dependencies [-q|--quiet] name...
+#X          : 	name        is the name of a program, script or function.
+#X					:	  -q|--quiet  do not print 'dependency-not-found' messages.
 #X Example  : (( check.dependencies dirname ln )) && msg.die "Dependencies missing."
 check.dependencies() {
 	((${#@})) || return 0
@@ -734,7 +734,7 @@ check.dependencies() {
   	fi
 	done
 	((missing && _ent_VERBOSE)) && \
-			>&2 echo "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
+			>&2 echo "These dependencies are missing: '$(trim "${missing_deps[@]}")'"
 	return $missing
 }
 declare -fx 'check.dependencies'

@@ -1,16 +1,20 @@
 #!/bin/bash
-x="$(readlink -f "$0")"
-PRGDIR=$(dirname $x)
-PRG=$(basename "$x")
+declare _x_
+_x_="$(readlink -f "$0")"
+PRGDIR="$(dirname "${_x_}")"
+PRG="$(basename "${_x_}")"
+unset _x_
 
 # hbpattern='#!*bash'
 # f=../cleanakfiles.bash
 # hd="$(head -n1 $f 2>/dev/null)"
 # [[ "$hd" == $hbpattern ]] && echo 1
 
+hb_EXCLUDE=( '*~' '~*' '.gudang/' 'gudang/' '.old' '.bak' 'dev/'  )
+
 declare -i verbose=1
 
-main() {
+hashbang_main() {
 	version.set '0.9'
 	local dir='' search='' hashbang="#!$(which bash)" prefix='' suffix='' LF=$'\n'
 	local -a gcmd=()
@@ -69,6 +73,12 @@ main() {
 	done
 	((! ${#LF})) && msg '\n'
 	msg "# ${ccc} file$( ((ccc!=1)) && echo 's') found\n"
+	return 0
+}
+
+make_find_exclude_file() {
+
+	return 0
 }
 
 msg() {
@@ -101,5 +111,5 @@ usage() {
 	exit 1
 }
 
-main "$@"
+hashbang_main "$@"
 #fin

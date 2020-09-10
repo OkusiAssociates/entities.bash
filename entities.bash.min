@@ -397,7 +397,7 @@ done
 declare -fx 'ask.yn'
 alias askyn='ask.yn' #X legacy X#
 entities.help() {
-"$ENTITIES/docs/entities.help" "$@"
+"$ENTITIES/entities.help" "$@"
 return 0
 }
 declare -fx 'entities.help'
@@ -423,7 +423,7 @@ fi
 fi
 done
 ((missing && _ent_VERBOSE)) && \
->&2 echo "These dependenc$( ((missing==1)) && echo 'y is' || echo 'ies are' ) missing: '$(trim "${missing_deps[@]}")'"
+>&2 echo "These dependencies are missing: '$(trim "${missing_deps[@]}")'"
 return $missing
 }
 declare -fx 'check.dependencies'
@@ -1023,8 +1023,9 @@ return 0
 }
 declare -fx perrno
 rtfm() {
-if [[ -z ${1:-} ]]; then
-echo "read the fucking manual, searches command in help, man, then google."
+if [[ -z ${1:-} || ${1:-} == '-h' || ${1:-} == '--help' ]]; then
+echo "rtfm - read the fucking manual"
+echo "Searches command in help, man, then tries to google it."
 return 1
 fi
 help -m "$@" 2>/dev/null && return 0
@@ -1032,6 +1033,7 @@ help -m "$@" 2>/dev/null && return 0
 man "$@"  2>/dev/null && return 0
 ${BROWSER:-$(which w3m || which lynx)} "http://www.google.com/search?q=linux+bash+$@" && return 0
 }
+declare -fx rtfm
 urldecode() { echo -e "$(sed 's/+/ /g;s/%\(..\)/\\x\1/g;')"; }
 declare -fx urldecode
 urlencode() {

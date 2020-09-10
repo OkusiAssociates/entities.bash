@@ -1,7 +1,8 @@
 #-Function--rtfm
   Function: rtfm
       Desc: read the fucking manual.
-          : Searches first in help, then man, then google.
+          : Searches first in help, then man, then google using $BROWSER.
+          : If BROWSER not defined, defaults to w3m or lynx.
   Synopsis: rtfm "search_term"
     Source: /usr/share/okusi/entities/entities.d/sys/rtfm.bash
 #-Function--rtfm--------------------------------------------------------------

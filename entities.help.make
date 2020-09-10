@@ -124,7 +124,7 @@ main() {
 			cmt=$(rtrim "$cmt")
 			[[ -z "$cmt" ]] && continue
 			if [[ -z "$lbl" ]]; then
-				v="${label}+=\${cmt}\"\${LF}\""
+				v="${label}+=\"\${cmt}\"\${LF}\"\""
 				eval "$v"
 				continue
 			fi
@@ -202,11 +202,13 @@ cleanup() {
 }
 
 printlines() {
-	local label="$1" content="$2"
+	local label content l
  	local IFS=$'\n'	
-	content=$(trim "$content")
+	label=$(trim "${1:-}")
+	content=$(trim "${2:-}")
 	[[ -z "$content" ]] && return 0
 	for l in $content; do
+		l="$(echo "$l" | expand -t 2)"
 		printf '%10.10s: %s\n' "$label" "$l"
 		label=''
 	done

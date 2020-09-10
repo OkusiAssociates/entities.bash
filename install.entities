@@ -288,8 +288,10 @@ install() {
 	mkdir -p "$ENTITIES" || exit $?
 	[[ -d "$ENTITIES" ]] || exit $?
 
-	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.bash 		"$ENTITIES/" >/dev/null || exit 1
-	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.bash.min "$ENTITIES/" >/dev/null || exit 1
+	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.bash 		 "$ENTITIES/" >/dev/null || exit 1
+	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.bash.min  "$ENTITIES/" >/dev/null || exit 1
+	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.help      "$ENTITIES/" >/dev/null || exit 1
+	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.help.make "$ENTITIES/" >/dev/null || exit 1
 
 	mkdir -p "$ENTITIES/entities.d"
 	/usr/bin/rsync -avl --exclude-from "$SyncExclude" entities.d/*			"$ENTITIES/entities.d/" >/dev/null || exit 1

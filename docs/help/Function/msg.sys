@@ -2,8 +2,8 @@
   Function: msg.sys
       Desc: output an informational message, with option to write to systemd journal.
   Synopsis: msg.sys [log] string [string ...]
-          : 	'log'		if specified, write log entry to journal info.
-          : 	string	if verbose() enabled, write string/s to stdout.
+          :   'log'   if specified, write log entry to journal info.
+          :   string  if verbose() enabled, write string/s to stdout.
    Example: msg.sys "Sir. There's something I think you should know."
     Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--msg.sys-----------------------------------------------------------

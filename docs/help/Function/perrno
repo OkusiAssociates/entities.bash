@@ -2,8 +2,8 @@
   Function: perrno
       Desc: return text of OS or MySQL error codes
   Synopsis: perrno errnumber [os|mysql]
-   Example: perrno 127 os		# returns text of err 127 in OS
-          : perrno 127 mysql	# returns text of err 127 in MySQL
-          : perrno 127 os		# returns texts of err 127 in both OS and MySQL
+   Example: perrno 127 os   # returns text of err 127 in OS
+          : perrno 127 mysql  # returns text of err 127 in MySQL
+          : perrno 127 os   # returns texts of err 127 in both OS and MySQL
     Source: /usr/share/okusi/entities/entities.d/sys/perrno.bash
 #-Function--perrno------------------------------------------------------------

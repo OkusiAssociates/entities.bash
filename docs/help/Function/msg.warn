@@ -3,8 +3,8 @@
       Desc: output a warning message, with option to write to systemd journal.
           : message is coloured red on terminals.
   Synopsis: msg.warn [log] string [string ...]
-          : 	'log'		if specified, write log entry to journal info.
-          : 	string	if verbose() enabled, write string/s to stdout.
+          :   'log'   if specified, write log entry to journal info.
+          :   string  if verbose() enabled, write string/s to stdout.
    Example: msg.warn log "Pardon me, Sir." "Is this supposed to happen?"
     Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--msg.warn----------------------------------------------------------
