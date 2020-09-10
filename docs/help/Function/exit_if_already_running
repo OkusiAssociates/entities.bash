@@ -9,5 +9,5 @@
           : the lock file+_ent_LOCKTIMEOUT is < than current time, then the
           : script is immediately exitted.
    Example: exit_if_already_running 60
-    Source: /usr/share/okusi/entities/entities.d/files/exit_if_already_running.bash
+    Source: /usr/share/okusi/entities/entities.d/files/slog.bash
 #-Function--exit_if_already_running-------------------------------------------

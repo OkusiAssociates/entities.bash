@@ -6,5 +6,5 @@
   Defaults: '0.00 prealpha'
    Example: version.set '4.20 beta'
           : ver=$(version.set)
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #-Function--version.set-------------------------------------------------------

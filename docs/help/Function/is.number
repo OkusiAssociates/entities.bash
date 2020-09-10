@@ -3,5 +3,5 @@
       Desc: Is parameter a number? return true/false
   Synopsis: is.number "numstr"
    Example: is.number "$1" && echo "$1 is number"
-    Source: /usr/share/okusi/entities/entities.d/string/is.number.bash
+    Source: /usr/share/okusi/entities/entities.d/string/elipstr.bash
 #-Function--is.number---------------------------------------------------------

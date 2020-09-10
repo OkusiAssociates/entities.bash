@@ -2,5 +2,5 @@
   Function: lockfiles.delete.all
       Desc: delete all lock files in lockfiles() stack. usually done on script exit (see cleanup()).
   Synopsis: lockfiles.delete.all
-    Source: /usr/share/okusi/entities/entities.d/files/cdd.bash
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--lockfiles.delete.all----------------------------------------------

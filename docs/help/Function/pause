@@ -1,5 +1,5 @@
 #-Function--pause
   Function: pause
       Desc: wait for one keypress
-    Source: /usr/share/okusi/entities/entities.d/sys/pause.bash
+    Source: /usr/share/okusi/entities/entities.d/sys/calcfp.bash
 #-Function--pause-------------------------------------------------------------

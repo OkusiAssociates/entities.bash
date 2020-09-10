@@ -4,5 +4,5 @@
   Synopsis: onoff on|1 || off|0 [defaultval]
           : for ambiguous value, echo 'defaultval' if defined, otherwise echo 0.
    Example: result=$(onoff off 1)
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #-Function--onoff-------------------------------------------------------------

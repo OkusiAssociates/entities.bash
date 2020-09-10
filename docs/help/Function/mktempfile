@@ -2,5 +2,5 @@
   Function: mktempfile
   Synopsis: mktempfile [base_subdir]
           : Return value of '' means failure.
-    Source: /usr/share/okusi/entities/entities.d/files/slog.bash
+    Source: /usr/share/okusi/entities/entities.d/files/mktempfile.bash
 #-Function--mktempfile--------------------------------------------------------

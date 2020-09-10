@@ -1,5 +1,5 @@
 #-Function--trap.function
   Function: trap.function
   Synopsis: trap.function [{ bash_exit_trap_function } ]
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #-Function--trap.function-----------------------------------------------------

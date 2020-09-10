@@ -13,5 +13,5 @@
    Example: debug.set on
           : debug && msg "my debug message"
           : olddebug=$(debug.set)
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #-Function--debug-------------------------------------------------------------

@@ -5,5 +5,5 @@
           : hrchar is one of {b|B|k|K|m|M|g|G|t|T|p|P}
    Example: int2hr 34393827 m
           : int2hr 10382 K 872929292929 g
-    Source: /usr/share/okusi/entities/entities.d/sys/hr2int.bash
+    Source: /usr/share/okusi/entities/entities.d/sys/rtfm.bash
 #-Function--int2hr------------------------------------------------------------

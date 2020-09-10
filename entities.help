@@ -82,10 +82,10 @@ display_tree() {
 		/usr/bin/tree --noreport -H ./ -T 'entities.bash help files' "$(pwd)" > "$htmfile"
 		# clean up html output
 		tmp=$(cat "$htmfile")
-		tmp="${tmp/<!--/}" 
-		tmp="${tmp/-->${LF}/}" 
-		tmp="${tmp/<p class=\"VER*\/p>/}" 
-		tmp="${tmp/<\/style>/H1,h1 \{text-align:left;color:green;\}${LF}<\/style>}"
+		tmp="${tmp//<!--/}" 
+		tmp="${tmp//-->${LF}/}" 
+		tmp="${tmp//<p class=\"VER*\/p>/}" 
+		tmp="${tmp//<\/style>/H1,h1 \{text-align:left;color:green;\}${LF}<\/style>}"
 		# blast it back to the html file
 		echo "$tmp" > $htmfile
 		chmod 666 "$htmfile"

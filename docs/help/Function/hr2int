@@ -7,5 +7,5 @@
    Example: hr2int 34M
           : hr2int 34m
           : hr2int 34000000
-    Source: /usr/share/okusi/entities/entities.d/sys/calcfp.bash
+    Source: /usr/share/okusi/entities/entities.d/sys/hr2int.bash
 #-Function--hr2int------------------------------------------------------------

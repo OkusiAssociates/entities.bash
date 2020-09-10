@@ -9,5 +9,5 @@
           : Default is ( '*~' '~*' '.~*' )"
   Synopsis: clntempfiles [--maxdepth|-m depth] [--dryrun|-n || --notdryrun|-N]
           :     [--quiet|-q || --verbose|-v] [dirspec]...
-    Source: /usr/share/okusi/entities/entities.d/clntempfiles.bash
+    Source: /usr/share/okusi/entities/entities.d/entities.location.bash
 #-Function--clntempfiles------------------------------------------------------

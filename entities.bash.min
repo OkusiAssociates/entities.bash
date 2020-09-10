@@ -398,7 +398,7 @@ declare -fx 'ask.yn'
 alias askyn='ask.yn' #X legacy X#
 entities.help() {
 "$ENTITIES/entities.help" "$@"
-return 0
+return $?
 }
 declare -fx 'entities.help'
 check.dependencies() {
@@ -1024,8 +1024,9 @@ return 0
 declare -fx perrno
 rtfm() {
 if [[ -z ${1:-} || ${1:-} == '-h' || ${1:-} == '--help' ]]; then
-echo "rtfm - read the fucking manual"
-echo "Searches command in help, man, then tries to google it."
+echo 'rtfm - read the fucking manual'
+echo "Searches command in 'help', 'man', 'entities.help', then tries to google it."
+echo "See 'entities.help rtfm', or 'rtfm rtfm'"
 return 1
 fi
 builtin help -m "$@" 2>/dev/null && return 0

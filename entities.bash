@@ -702,7 +702,7 @@ declare -fx 'ask.yn'
 #X Example  : entities.help ask.yn msg.info
 entities.help() {
 	"$ENTITIES/entities.help" "$@"
-	return 0
+	return $?
 }
 declare -fx 'entities.help'
 

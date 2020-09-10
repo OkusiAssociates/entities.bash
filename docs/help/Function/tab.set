@@ -11,5 +11,5 @@
           : tab.set reset; msg.warn "indent reset to 0"
           : tab.set +3; msg.info "indent to column 6"
           : msg "current tab setting is $(tab.set)"
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #-Function--tab.set-----------------------------------------------------------

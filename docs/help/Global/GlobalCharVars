@@ -8,5 +8,5 @@
           : IFS=$' \\t\\n'  # 'standard' IFS
    Example: str = "${LF}${CH9}This is a wrapping string.${LF}{$CH9}This is another sentence."
           : echo -e "$str"
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #---Global--GlobalCharVars----------------------------------------------------

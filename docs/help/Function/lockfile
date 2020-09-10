@@ -6,5 +6,5 @@
           : you may wish to set this very differently
   Synopsis: lockfile [newlockfile]
    Example: lck=$(lockfile)
-    Source: /usr/share/okusi/entities/entities.d/files/cdd.bash
+    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
 #-Function--lockfile----------------------------------------------------------

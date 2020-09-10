@@ -8,5 +8,5 @@
           : curstatus=$(strict.set)
    Example: strict.set on
           : curstatus=$(strict.set)
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #-Function--strict.set--------------------------------------------------------

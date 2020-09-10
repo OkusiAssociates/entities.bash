@@ -3,5 +3,5 @@
       Desc: __entities__ global indicated whether entities.bash has
           : already been loaded or not.
    Example: (("${__entities__:-}")) || { echo >&2 'entities.bash not loaded!'; exit; }
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #---Global--__entities__------------------------------------------------------

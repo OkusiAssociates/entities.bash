@@ -3,7 +3,7 @@
       Desc: check for script dependencies (programs, scripts, or functions).
   Synopsis: check.dependencies [-q|--quiet] name...
           :   name        is the name of a program, script or function.
-          : #X          :   -q|--quiet  do not print 'dependency-not-found' messages.
+          :   -q|--quiet  do not print 'dependency-not-found' messages.
    Example: (( check.dependencies dirname ln )) && msg.die "Dependencies missing."
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #-Function--check.dependencies------------------------------------------------

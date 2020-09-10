@@ -11,5 +11,5 @@
           : verbose.set on
           : # do stuff... #
           : verbose.set $oldverbose
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #-Function--verbose.set-------------------------------------------------------

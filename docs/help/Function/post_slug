@@ -11,5 +11,5 @@
           : returns "a-title-with-strange-characters"
           : post_slug ' A title, with  Ŝŧřãņġę  cHaracters ()" '_'
           : returns: "a_title_with_strange_characters"
-    Source: /usr/share/okusi/entities/entities.d/string/remsp2.bash
+    Source: /usr/share/okusi/entities/entities.d/string/post_slug.bash
 #-Function--post_slug---------------------------------------------------------

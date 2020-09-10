@@ -109,7 +109,7 @@ main() {
 	bashfiles="$(find "$EntitiesDir/" -name "*.bash"  -not -name "_*" -type f \
 								| grep -v '/docs/' | grep -v '.gudang' | grep -v '.min.')"
 	for file in ${bashfiles[@]}; do
-		msg.info "Processing [$file] for documentation"
+		msg.info "Searching [$file]..."
 		hlp="$(grep '^#X\+' "$file" | grep ':')"
 		for hline in ${hlp[@]}; do 
 			lbl=$(str_str "$hline" '#X' ':')
@@ -120,7 +120,7 @@ main() {
 			[[ $lbl == 'Examples' || $lbl == 'Eg' ]] && lbl='Example'
 			[[ $lbl == 'Requires' || $lbl == 'Dependencies' ]] && lbl='Depends'
 			
-			cmt="${hline#*: }"
+			cmt="${hline#*:[[:blank:]]}"
 			cmt=$(rtrim "$cmt")
 			[[ -z "$cmt" ]] && continue
 			if [[ -z "$lbl" ]]; then
@@ -132,6 +132,7 @@ main() {
 			label=$lbl # there's a new label in town
 			if [[ "${CatHdrs[@]}" == *"$label"* ]]; then  # check if new label is a header category
 				#msg.info "header [$label] found"
+		FinishFile="$file"
 				if (( ${#Label} )); then
 					destdir="$HelpFilesDir/$Label"
 					mkdir -p "$destdir"

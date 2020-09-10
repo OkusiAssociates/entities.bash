@@ -4,5 +4,5 @@
           : calling script should define its own 'synopsis' function.
   Synopsis: synopsis [-x|--exit]
    Example: synopsis --exit
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #-Function--synopsis----------------------------------------------------------

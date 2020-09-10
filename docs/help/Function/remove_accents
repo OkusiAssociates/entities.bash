@@ -1,4 +1,4 @@
 #-Function--remove_accents
   Function: remove_accents
-    Source: /usr/share/okusi/entities/entities.d/string/post_slug.bash
+    Source: /usr/share/okusi/entities/entities.d/string/is.number.bash
 #-Function--remove_accents----------------------------------------------------

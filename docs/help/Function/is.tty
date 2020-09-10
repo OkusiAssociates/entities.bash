@@ -3,5 +3,5 @@
       Desc: return 0 if tty available, otherwise 1.
   Synopsis: is.tty
    Example: is.tty && ask.yn "Continue?"
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #-Function--is.tty------------------------------------------------------------

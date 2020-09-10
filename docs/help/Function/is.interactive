@@ -4,5 +4,5 @@
           : this function should be used as a comparison function
   Synopsis: is.interactive [report|noreport*]
    Example: is.interactive && ask.yn "Continue?"
-    Source: /usr/share/okusi/entities/entities.d/files/lockfiles.bash
+    Source: /usr/share/okusi/entities/entities.bash
 #-Function--is.interactive----------------------------------------------------
