@@ -311,10 +311,6 @@ install() {
 	mkdir -p "$ENTITIES/util"
 	/usr/bin/rsync -avl --exclude-from "$SyncExclude" util/*						"$ENTITIES/util/" >/dev/null || exit 1
 
-#	if [[ ! -L "$ENTITIES/entities-user.inc.sh" ]]; then
-#		ln -s ~/entities-user.inc.sh "$ENTITIES/entities-user.inc.sh"
-#	fi
-
 	# make symlinks in $ENTITIES directory
 	msg.info "Make symlinks in $ENTITIES directory..."
 	cd "$ENTITIES" 																|| exit 2

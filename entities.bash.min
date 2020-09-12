@@ -578,6 +578,34 @@ fi
 return 0
 }
 declare -fx clntempfiles
+declare -gx _ent_EDITOR
+_ent_EDITOR="$(which joe 2>/dev/null) -tab 2 -autoindent --wordwrap"
+declare -gx EDITOR
+if [[ -z "${EDITOR:-}" ]]; then
+[[ -n "${_ent_EDITOR:-}" ]] && EDITOR="${_ent_EDITOR}"
+if [[ -n "${SUDO_EDITOR:-}" ]]; then
+EDITOR="${SUDO_EDITOR}"
+elif [[ -n "${SELECTED_EDITOR:-}" ]]; then
+EDITOR="${SELECTED_EDITOR}"
+elif [[ -r "${HOME:-}/.selected_editor" ]]; then
+source "${HOME:-}/.selected_editor"
+[[ -n "${SELECTED_EDITOR:-}" ]] && EDITOR="${SELECTED_EDITOR}"
+elif [[ -x /etc/alternatives/editor ]]; then
+EDITOR='/etc/alternatives/editor'
+fi
+fi
+declare _ed_
+_ed_="${EDITOR%% *}"
+_ed_="$(which "${_ed_}" 2>/dev/null)"
+if [[ ! -x "${_ed_}" ]]; then
+echo >&2 "Editor [${EDITOR}] not found!"
+EDITOR="${_ent_EDITOR}"
+else
+[[ $EDITOR != *' '* ]] && EDITOR=''
+EDITOR="${_ed_} ${EDITOR#* }"
+fi
+unset _ed_
+export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -x _ent_VERSION='0.9.420.220.0'
@@ -641,7 +669,7 @@ lockfiles.add "${lockfile}" ${_ent_LOCKTIMEOUT}
 fi
 }
 declare -fx exit_if_already_running
-[[ -z "$EDITOR" ]] && export EDITOR='/usr/bin/joe -tab 2 -autoindent --wordwrap'
+
 editorsyntaxstring() {
 local FileName="${1:-}"
 local FileType="${2:-text}"
@@ -946,8 +974,29 @@ remove_accents() {
 echo -n "${1:-}" | iconv -c -f UTF-8 -t ASCII//TRANSLIT//IGNORE
 }
 remsp2() {
-(($#)) || { echo -n ''; return 0; }
-echo -n "$(trim "${1//+([[:blank:]])/ }")"
+local -i incblank=0
+if (($#)); then
+if [[ $1 == '-b' ]]; then
+incblank=1
+shift
+fi
+fi
+
+if (($#)); then
+if ((incblank)); then
+trim "${1//+( )/ }"; echo
+else
+trim "${1//+([[:blank:]])/ }"; echo
+fi
+return $?
+fi
+local l
+if ((incblank)); then
+while read -r l; do trim "${l//+([[:blank:]])/ }"; echo; done
+else
+while read -r l; do trim "${l//+( )/ }"; echo; done
+fi
+return $?
 }
 declare -nx remsp2
 s() {	(( ${1} == 1 )) || echo -n 's'; }

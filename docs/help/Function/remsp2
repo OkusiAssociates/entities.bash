@@ -1,8 +1,9 @@
 #-Function--remsp2
   Function: remsp2
-      Desc: Remove double blanks (space,tab) from string, replace with
+      Desc: Remove double space from string, replace with
           : single space, and remove leading and trailing blanks,
-  Synopsis: remsp "string"
+  Synopsis: remsp [-b] "string"
+          :   -b  include tab characters as space.
    Depends: trim
    Example: str=" 123     456 789     0123   "
           : str2=$(remsp "$str")

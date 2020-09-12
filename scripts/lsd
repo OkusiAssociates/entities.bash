@@ -1,13 +1,11 @@
 #!/bin/bash 
-#--norc --rcfile /usr/lib/entities/entities.rc
+#source entities || exit 1
 source "${ENTITIES:-/lib/include/entities}/entities.bash.min" || exit 1
 	trap.set on
 	strict.set off
 	version.set 0.95
-#	[ "$PS1" ] && color.set on || color.set off
 	verbose.set on
 	tab.width 4
-	tab.set 0
 
 main() {
 	local -i Level=1

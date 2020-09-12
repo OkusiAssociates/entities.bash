@@ -1,9 +1,7 @@
 #!/bin/bash
-#source entities || exit 2
-#strict.set off
-
-	[[ -z "$EDITOR" ]] && export EDITOR='/usr/bin/joe -tab 2 -autoindent --wordwrap'
-
+#echo "EDITOR=$EDITOR"
+#source $OKROOT/entities/entities.d/editor.set.bash
+	
 # joe
 #   for f in /usr/share/joe/syntax/*.jsf; do basename -s '.jsf' "$f"; done
 # nano
