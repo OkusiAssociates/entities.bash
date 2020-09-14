@@ -279,7 +279,7 @@ install() {
 	fi
 	if [[ -d "${ENTITIES}" ]]; then
 		msg.info "* Renaming $ENTITIES to $ENTITIES.old."
-		mv "${ENTITIES}" "${ENTITIES}.old" || exit 1
+		mv "${ENTITIES}" "${ENTITIES}.old" || { msg.err "$(errno $?)" "Could not move [${ENTITIES}] to [${ENTITIES}.old]"; exit 1; }
 	fi
 	tab.set --
 

@@ -4,22 +4,15 @@
 source entities
 	strict.set on
 
-	EDITOR=''
-	source ./editor.set.bash
-
-	source "$PRGDIR/$PRG.bash"
-
-	echo e  ${EDITOR:-}
-	echo ee ${_ent_EDITOR:-}
-	echo se ${SUDO_EDITOR:-}
-	echo le ${SELECTED_EDITOR:-}
+	source "./$PRG.bash"
 	
 	filename="$1"
-	filetype="$2"
-	echo "Filename: $filename" "Filetype: $filetype"
+	echo "Filename: $filename"
 
 	text=( "$(textfiletype "$filename" 2>/dev/null)" )
 	echo "textfiletype: |${text[@]}|"
-
+	echo $text
+	echo ${text[0]}
+		
 	editstr="editstr=$(editorsyntaxstring ${text[@]} 2>/dev/null)"
 	echo $editstr

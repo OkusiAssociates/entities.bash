@@ -42,21 +42,23 @@
 #X          :       # ^ load into new dir (eg, /run/entities) and
 #X          :       # set ENTITIES globalvar to new position. 
 declare -- PRG PRGDIR 
+
 declare -x _ent_scriptstatus="\$0=$0|"
 
 	# is script is being run?
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
-		p_="$(/bin/readlink -f "${0}")"
+		declare p_
+		p_="$(/bin/readlink -f "${0}")" || p_=''
 		_ent_scriptstatus+="is.script|\$p_=$p_|\n"
+
 		# has entities.bash been executed?
 		if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
 			_ent_scriptstatus+='is.execute|\n'
 			__entities__=0
-			while (($#)); do
+			while (( $# )); do
 				# do options for execute
-		    case "${1,,}" in
-					-h|--help)	entities.help "#@"
-											echo 'tbd: entities execute help'
+				case "${1,,}" in
+					-h|--help)	"${ENTITIES:-/lib/include/entities}/entities.help" "#@"
 											break ;;
 					# all other passed parameters are ignored.
 					-*)					echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
@@ -71,9 +73,10 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
 		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
 		unset _p
-	  # entities is already loaded, and no other parameters have been given, so do not reload.
+
+		# entities is already loaded, and no other parameters have been given, so do not reload.
 		if (( ! $# )); then
-			(( ${__entities__:-} )) && return 0
+			(( ${__entities__:-0} )) && return 0
 		fi
 	
 	# source entities has been executed at the shell command prompt
@@ -94,36 +97,32 @@ declare -x _ent_scriptstatus="\$0=$0|"
 	fi
 
 	# there are parameters
-	while (($#)); do
+	while (( $# )); do
 		case "${1,,}" in
 			# new load
 			new) 									__entities__=0 ;;
 			# does the calling script wish to inherit the current Entities environment/functions?
 			# (inherit is the default)
-				# can only inherit if called from a script
-			''|inherit|preserve)	__entities__=${__entities__:-0} ;;
-
+			# can only inherit if called from a script
+			inherit|preserve)	__entities__=${__entities__:-0} ;;
 			# all other passed parameters are ignored (possibly script parameters? but not for entities)
 			*)	break;;
 		esac
 		shift
 	done
 
-#X Global   : __entities__
-#X Desc     : __entities__ global indicated whether entities.bash has 
-#X          : already been loaded or not.
-#X Example  : (("${__entities__:-}")) || { echo >&2 'entities.bash not loaded!'; exit; }
+#X Global  : __entities__
+#X Desc    : __entities__ global indicated whether entities.bash has 
+#X         : already been loaded or not.
+#X Example : (("${__entities__:-}")) || { echo >&2 'entities.bash not loaded!'; exit; }
 ((__entities__)) && return 0;
 #echo 'reloading...'
 _ent_scriptstatus+="reloading|\n"
 
-
 # turn off strict while we run through the included functions! (strict is default)
 set +o errexit +o nounset +o pipefail
-
-# why not? ...
+# oh why not ...
 shopt -s extglob
-
 
 #X Global   : GlobalCharVars CH9 LF CR OLDIFS IFS
 #X Desc     : Constant global char values.
@@ -134,9 +133,9 @@ shopt -s extglob
 #X          : IFS=$' \\t\\n'  # 'standard' IFS
 #X Example  : str = "${LF}${CH9}This is a wrapping string.${LF}{$CH9}This is another sentence."
 #X          : echo -e "$str"
-declare -x  LF=$'\n' CR=$'\r' CH9=$'\t'
-declare -x  OLDIFS="$IFS" IFS=$' \t\n'
-declare -nx OIFS="OLDIFS"
+declare -x	LF=$'\n' CR=$'\r' CH9=$'\t'
+declare -x	OLDIFS="$IFS" IFS=$' \t\n'
+declare -nx	OIFS="OLDIFS"
 
 
 #X Function : onoff 
@@ -149,7 +148,7 @@ onoff() {
 	case "${o,,}" in
 		on|1)			o=1;;
 		off|0)		o=0;;
-    *)        o=0; (( $# > 1 )) && o=$(( ${2} ));; 
+		*)				o=0; (( $# > 1 )) && o=$(( ${2} ));; 
 	esac
 	echo -n $((o))
 	return 0
@@ -174,8 +173,8 @@ declare -ix _ent_VERBOSE
 [ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
 verbose() { return $(( ! _ent_VERBOSE )); }
 declare -fx verbose
-verbose.set() {   
-	if ((${#@})); then
+verbose.set() {
+	if (( ${#@} )); then
 		_ent_VERBOSE=$(onoff "${1}")
 	else
 		#-- SC2086: Double quote to prevent globbing and word splitting.
@@ -201,7 +200,7 @@ declare -ix _ent_COLOR=1
 color() { return $(( ! _ent_COLOR )); }
 declare -fx color
 color.set() {
-	if ((${#@})); then 
+	if (( ${#@} )); then 
 		if [[ $1 == 'auto' ]]; then
 			is.tty && status=1 || status=0
 		else
@@ -222,16 +221,16 @@ declare -fx 'color.set'
 #X          : emerg alert crit err warning notice info debug
 #X          : panic (dep=emerg) err (dep=error) warning (dep=warn)
 #X See Also :
-declare  -x colorreset="\x1b[0;39;49m"
-declare  -x color0="\x1b[0;39;49m"
-declare  -x colordebug="\x1b[35m"
-declare  -x colorinfo="\x1b[32m"
-declare  -x colornotice="\x1b[34m"
-declare  -x colorwarning="\x1b[33m"				; declare -nx colorwarn='colorwarning'
-declare  -x colorerr="\x1b[31m"						; declare -nx colorerror='colorerr'
-declare  -x colorcrit="\x1b[1;31m"				; declare -nx colorcritical='colorcrit'
-declare  -x coloralert="\x1b[1;33;41m"
-declare  -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
+declare -x colorreset="\x1b[0;39;49m"
+declare -x color0="\x1b[0;39;49m"
+declare -x colordebug="\x1b[35m"
+declare -x colorinfo="\x1b[32m"
+declare -x colornotice="\x1b[34m"
+declare -x colorwarning="\x1b[33m";					declare -nx colorwarn='colorwarning'
+declare -x colorerr="\x1b[31m";							declare -nx colorerror='colorerr'
+declare -x colorcrit="\x1b[1;31m";					declare -nx colorcritical='colorcrit'
+declare -x coloralert="\x1b[1;33;41m"
+declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 
 #X Function : version.set
 #X Desc     : set or return version of the script.
@@ -244,7 +243,7 @@ declare -x _ent_SCRIPT_VERSION='0.00 prealpha'
 version() { echo -n "$_ent_SCRIPT_VERSION"; return 0; }
 declare -fx version
 version.set() {
-	if ((${#@})); then _ent_SCRIPT_VERSION="$1"
+	if (( ${#@} )); then _ent_SCRIPT_VERSION="$1"
 								else echo -n "${_ent_SCRIPT_VERSION}"
 	fi
 	return 0
@@ -260,10 +259,10 @@ declare -fx 'version.set'
 #X Example  : dryrun.set off
 #X          : ((dryrun.set)) || doit.sh
 declare -ix _ent_DRYRUN=0
-dryrun() { return $((! _ent_DRYRUN)); }
+dryrun() { return $(( ! _ent_DRYRUN )); }
 declare -fx dryrun
 dryrun.set() {
-	if (($#)); then 
+	if (( $# )); then 
 		_ent_DRYRUN=$(onoff "${1}" "${_ent_DRYRUN}")
 	else 
 		#	-- SC2086: Double quote to prevent globbing and word splitting.
@@ -289,10 +288,10 @@ declare -fx 'dryrun.set'
 #X         : debug && msg "my debug message"
 #X         : olddebug=$(debug.set)
 declare -ix _ent_DEBUG=0
-debug() {	return $((! _ent_DEBUG)); }
+debug() {	return $(( ! _ent_DEBUG )); }
 declare -fx debug
 debug.set() {
-	if (($#)); then 	_ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
+	if (( $# )); then _ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
 	else							echo ${_ent_DEBUG}
 	fi
 	return 0
@@ -310,10 +309,10 @@ declare -fx 'debug.set'
 #X Example  : strict.set on
 #X          : curstatus=$(strict.set)
 declare -ix _ent_STRICT=0
-strict() { return $((! _ent_STRICT)); }
+strict() { return $(( ! _ent_STRICT )); }
 declare -fx strict
 strict.set() {
-	if (($#)); then
+	if (( $# )); then
 	 	local opt='+'
 		_ent_STRICT=$(onoff "${1}" ${_ent_STRICT})
 		((_ent_STRICT)) && opt='-'
@@ -329,7 +328,7 @@ declare -fx 'strict.set'
 #X Synopsis : trap.function [{ bash_exit_trap_function } ]
 declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? ${LINENO:-0}; }'
 trap.function() {
-	if (($#));	then _ent_EXITTRAPFUNCTION="$1" 
+	if (( $# ));	then _ent_EXITTRAPFUNCTION="$1" 
 							else echo -n "$_ent_EXITTRAPFUNCTION"
 	fi
 	return 0
@@ -340,17 +339,17 @@ declare -fx 'trap.function'
 #X Synopsis : trap.set [[on|1] | [off|0]]
 declare -ix _ent_EXITTRAP=0
 trap.set() {
-	if (($#)); then
+	if (( $# )); then
 		_ent_EXITTRAP=$(onoff "${1}" ${_ent_EXITTRAP})
 		if ((_ent_EXITTRAP)); then
-	    #-- SC2064: Use single quotes, otherwise this expands now rather than when signalled.
+			#-- SC2064: Use single quotes, otherwise this expands now rather than when signalled.
 			# shellcheck disable=SC2064
 			trap "$_ent_EXITTRAPFUNCTION" EXIT
 		else
 			trap -- EXIT
 		fi
 	else
-		echo -n $_ent_EXITTRAP
+		echo -n ${_ent_EXITTRAP}
 	fi
 	return 0
 }
@@ -367,12 +366,13 @@ declare -fx 'trap.set'
 #X See Also : trap.set trap.function, exit_if_already_running
 cleanup() {
 	local -i exitcode=$?
-	if (( exitcode )); then
-		msg.err "script=$PRG:exit=$exitcode:line=${2:-}:1=${1:-}:f=${FUNCNAME[@]}:ln=${BASH_LINENO[@]}:s=${BASH_SOURCE[@]}}"
+	if ((exitcode)); then
 		if ((_ent_DEBUG)); then
-			msg.info "$(set | grep "^_ent_" | grep -v "^_ent_LOCK")"
-			msg.info "$(set | grep "^BASH"  | grep -v BASH_VERSINFO)"
+			msg.info "Debug [$PRG]:"
+			msg.info "$(set | grep "^_ent_")"
+			msg.info "$(set | grep "^BASH"	| grep -v BASH_VERSINFO)"
 		fi
+		msg.err "script=$PRG: exit=$exitcode: line=${2:-}: \$1=${1:-}: fn=${FUNCNAME[*]}: ln=${BASH_LINENO[*]}: s=${BASH_SOURCE[*]}}"
 	fi
 	exit $exitcode
 }
@@ -386,7 +386,7 @@ declare -fx cleanup
 #X Example  : synopsis --exit
 synopsis() {
 	local -i xt=0
-	while (($#)); do
+	while (( $# )); do
 		case "${1,,}" in
 			-x|--exit|exit)	xt=1	;;
 			*)							msg.die log "Bad command line argument '$1'!" ;;
@@ -433,11 +433,9 @@ declare -fx 'msg.debug'
 __msgx() {
 	local log="$1" msglevel="$2" verbose="$3"
 	shift 3
-	if [[ "${log}" == 'log' ]]; then
-		systemd-cat -t "$PRG" -p ${msglevel} echo "$@"
-	fi
-	if ((verbose)); then
-    if ((_ent_COLOR)); then nc=color$msglevel; echo -ne "${!nc}"; fi
+	[[ ${log} == 'log' ]] && systemd-cat -t "$PRG" -p ${msglevel} echo "$@"
+	if ((_ent_VERBOSE)); then
+		((_ent_COLOR)) && { nc=color$msglevel; echo -ne "${!nc}"; }
 		_printmsg "$@"
 		((_ent_COLOR)) && echo -ne "${colorreset}"
 	fi
@@ -488,7 +486,7 @@ declare -fx 'msg.sys'
 #X Example : msg.warn log "Pardon me, Sir." "Is this supposed to happen?"
 msg.warn() {
 	declare log="${1:-}"
-	[[ "${log}" == 'log' ]] && shift || log='X'
+	[[ ${log} == 'log' ]] && shift || log='X'
 	__msgx "$log" 'warning' "${_ent_VERBOSE:-0}" "$@"
 	return 0
 }
@@ -505,7 +503,7 @@ declare -fx 'msg.warn'
 #X Example  : msg.err log "Sir!" "I think you better come here."
 msg.err() {
 	declare log="${1:-}"
-	[[ "${log}" == 'log' ]] && shift
+	[[ ${log} == 'log' ]] && shift
 	__msgx >&2 "$log" 'err' '1' "$@"
 	return 0
 }
@@ -523,22 +521,23 @@ declare -fx 'msg.err'
 #X Example  : msg.die log "I'm sorry, Sir." "I give up." "There's nothing more I can do."
 msg.die() {
 	declare log="${1:-}"
-	[[ "${log}" == 'log' ]] && shift
+	[[ ${log} == 'log' ]] && shift
 	__msgx >&2 "$log" "crit" "1" "$@" 'Aborting.'
 	exit 1
 }
 declare -fx 'msg.die'
-	alias msgdie='msg.die' #X legacy X#
-	alias diemsg='msg.die' #X legacy X#
-	alias msgdir='msg.die' #X for butter fingers #X
+	alias msgdie='msg.die'	#X legacy X#
+	alias diemsg='msg.die'	#X legacy X#
+	alias msgdir='msg.die'	#X for butter fingers #X
+	alias msg.dir='msg.die'	#X for butter fingers #X
 
 #X Function : msg.crit
 #X Desc     : output a critical error message, with option to write to systemd journal.
 #X          : message is coloured red on terminals.
 #X          : immediately exit 1 from the script.
 #X Synopsis : msg.crit [log] string [string ...]
-#X          : 'log'   if specified, write log entry to journal err.
-#X          :  string  write string/s to stderr.
+#X          :   'log'    if specified, write log entry to journal err.
+#X          :   string   write string/s to stderr.
 #X Example  : msg.crit log "Good god!" "Oh, the Humanity..."
 msg.crit() {
 	declare log="${1:-}"
@@ -560,7 +559,7 @@ msg.line() {
 	local sx sz IFS=' '
 	sz=( $(stty size) )
 	if (( ${#sz[@]} )); then
-		sx=$(( (sz[1] - (TABSET * TABWIDTH)) - 1 ))
+		sx=$(( (sz[1] - (TABSET * TABWIDTH)) - 1))
 	else
 		sx=$(( (COLUMNS - (TABSET * TABWIDTH)) - 1))
 	fi
@@ -585,8 +584,8 @@ declare -fx 'msg.line'
 #X          : msg "current tab setting is $(tab.set)" 
 declare -ix TABWIDTH=4
 tab.width() {
-	if ((${#@})); then
-		TABWIDTH=$((${1}))
+	if (( $# )); then
+		TABWIDTH=$(( ${1} ))
 		((_ent_COLOR)) && tabs "$TABWIDTH"
 	else
 		echo -n "${TABWIDTH}"
@@ -597,7 +596,7 @@ declare -fx 'tab.width'
 
 declare -ix TABSET=0
 tab.set() {
-	if ((${#@})); then
+	if (( $# )); then
 		case "${1}" in
 			'0'|reset) 		TABSET=0;;
 			'++'|forward)	TABSET=$((TABSET+1))			;;
@@ -680,7 +679,7 @@ declare -fx 'is.root'
 #X Example  : ask.yn "Continue?" || msg.die 'Not Continuing.'
 ask.yn() {
 	((_ent_VERBOSE)) || return 0
-	is.tty || return 0
+	[ -t 0 ] || return 0
 	local question="${1:-}" yn=''
 	question=$(msg.warn "${question} (y/n)")
 	question="${question//$'\n'/ }"
@@ -701,7 +700,7 @@ declare -fx 'ask.yn'
 #X Synopsis : entities.help [function|globalvar|localvar|file] | [-s|--search searchstring] [-h|--help]
 #X Example  : entities.help ask.yn msg.info
 entities.help() {
-	"$ENTITIES/entities.help" "$@"
+	"${ENTITIES:-/lib/include/entities}/entities.help" "$@"
 	return $?
 }
 declare -fx 'entities.help'
@@ -713,7 +712,7 @@ declare -fx 'entities.help'
 #X					:	  -q|--quiet  do not print 'dependency-not-found' messages.
 #X Example  : (( check.dependencies dirname ln )) && msg.die "Dependencies missing."
 check.dependencies() {
-	((${#@})) || return 0
+	(( ${#@} )) || return 0
 	local needed_dep=''
 	local -a missing_deps=''
 	local -i missing=0
@@ -722,16 +721,16 @@ check.dependencies() {
 		shift
 	fi
 	for needed_dep in "${@}"; do
-  	if [[ ! -x "$needed_dep" ]]; then
+		if [[ ! -x "$needed_dep" ]]; then
 			if [[ ! -x $(which "$needed_dep") ]]; then
 				if ! declare -Fp "$needed_dep" >/dev/null 2>&1; then
-			    if ! hash "$needed_dep" >/dev/null 2>&1; then
-				    ((missing++))
+					if ! hash "$needed_dep" >/dev/null 2>&1; then
+						((missing++))
 						missing_deps+="$needed_dep "
 					fi
 				fi
 			fi
-  	fi
+		fi
 	done
 	((missing && _ent_VERBOSE)) && \
 			>&2 echo "These dependencies are missing: '$(trim "${missing_deps[@]}")'"
@@ -772,31 +771,31 @@ is.interactive() {
 	# look for positives first
 	if [[ -t 1 ]]; then 
 		isit=1
-    ((echoit)) && echo "${isit}: STDOUT is attached to TTY."
+		((echoit)) && echo "${isit}: STDOUT is attached to TTY."
 	fi
 
 	if [[ "${PS1+x}" == 'x' ]]; then
 		((echoit)) && echo "${isit}: PS1 is set. This is possibly an interactive shell."
-		if ((${#PS1} > 1)); then
+		if (( ${#PS1} > 1 )); then
 			isit=1
 			((echoit)) && echo "${isit}: PS1 is set and has a length -gt 1. This is very probably an interactive shell."
 		fi
 	fi
 	
-  if [[ "$-" == *"i"* ]]; then
+	if [[ "$-" == *"i"* ]]; then
 		isit=1
-  	((echoit)) && echo "${isit}: \$- = *i*"
+		((echoit)) && echo "${isit}: \$- = *i*"
 	fi
 
 	# look for negatives		
 	if [[ -p /dev/stdout ]]; then
 		isit=0
-    ((echoit)) && echo "${isit}: STDOUT is attached to a pipe."
+		((echoit)) && echo "${isit}: STDOUT is attached to a pipe."
 	fi
 
 	if [[ ! -t 1 && ! -p /dev/stdout ]]; then
 		isit=0
-    ((echoit)) && echo "${isit}: STDOUT is attached to a redirection."
+		((echoit)) && echo "${isit}: STDOUT is attached to a redirection."
 	fi
 	
 	# echo the result
@@ -814,7 +813,7 @@ declare -fx 'is.interactive'
 #X Desc    : prompt to exit script or continue.
 trap.breakp() { 
 	local b='' prompt=${1:-}
-	((${#prompt})) && prompt=" $prompt"
+	(( ${#prompt} )) && prompt=" $prompt"
 	read -e -n1 -p "breakpoint${prompt}: continue? y/n " b
 	[[ "${b,,}" == 'y' ]] || exit 1
 	return 0
@@ -823,27 +822,36 @@ declare -fx 'trap.breakp'
 	alias breakp='trap.breakp'
 
 #--_ent_MINIMAL if defined, then don't do this section
-if ((! ${_ent_MINIMAL:-0})); then
+shopt -s globstar
+if (( ! ${_ent_MINIMAL:-0} )); then
 #X File: IncludeModules 
-#X Desc: By default, all *.bash module files located in  
+#X Desc: By default, all '*.bash' module files located in
 #X     : $ENTITIES/entities.d/** are 
 #X     : automatically included in the entities.bash source file. 
 #X     :
-	if [[ -d "$ENTITIES/entities.d" ]]; then
+	if [[ -d "${ENTITIES:-/lib/include/entities}/entities.d" ]]; then
 		declare _e
-		shopt -s globstar
-		for _e in $ENTITIES/entities.d/**/*.bash; do
-			if [[ -r "$_e" ]] && [[ ! -L "$_e" ]] ; then
-				source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
+		declare -a _userbash=()
+		for _e in ${ENTITIES:-/lib/include/entities}/entities.d/**/*.bash; do
+			if [[ -r "$_e" ]]; then
+				if [[ ! -L "$_e" ]] ; then
+					_userbash+=( "${_e}" )
+				else
+					source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
+				fi
 			fi
 		done
-		unset _e
+		# do symlinks last (includes entities.d/user/*)
+		for _e in ${_userbash[@]}; do
+			source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
+		done
+		unset _e _userbash
 	fi
 	
 	#--check dependencies if not minimal
 	if ! check.dependencies \
 			basename dirname readlink mkdir ln cat \
-    	systemd-cat stty wget base64 seq tty find touch tree lynx; then
+			systemd-cat stty wget base64 seq tty find touch tree lynx; then
 		echo >&2 'Warning: Dependencies not found. Entities cannot run.'	
 	fi 
 fi

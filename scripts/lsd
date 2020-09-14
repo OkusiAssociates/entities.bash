@@ -1,11 +1,9 @@
 #!/bin/bash 
-#source entities || exit 1
-source "${ENTITIES:-/lib/include/entities}/entities.bash.min" || exit 1
+source "${ENTITIES:-/lib/include/entities}/entities.bash.min" || exit 2
 	trap.set on
 	strict.set off
-	version.set 0.95
+	version.set 0.96
 	verbose.set on
-	tab.width 4
 
 main() {
 	local -i Level=1
@@ -13,60 +11,49 @@ main() {
 	declare -a cmd=()
 	while (($#)); do
 		case "$1" in
-			--ls|-ls)							ls="-pugsD --timefmt=%y-%M-%dT%R";;
+			--ls|-ls)							ls='-pugsD --timefmt=%y-%M-%dT%R';;
 			-L|--levels|--level)	shift; Level=${1:-255};;
-			--nocolor|-n)					color.set off; cmd+=('-n');;
-			--color|-C)						color.set on;	cmd+=('-C');;
-			--manpage)						manpage=1; usage;;
-			-h|--help)						usage;;
+			-n|--nocolor)					color.set off; cmd+=('-n');;
+			-C|--color)						color.set on;	 cmd+=('-C');;
 			-V|--version)					printTitle; exit 0;;
+			-h|--help|--manpage)	usage;;
+			--)										shift; cmd+=( "$@" ); break;;
 			*)										cmd+=( "$1" ) ;;
 		esac
 		shift
 	done
 
 	while [ ! -x "$(which tree)" ]; do
-		ask.yn "The 'tree' program has not been installed. Install now?" \
-				|| msg.die "tree is not installed."
-		msg.info "Installing tree program..." ""
-		apt-get install tree || msg.die "Could not install tree."
+		ask.yn "$PRG: The 'tree' program has not been installed. Install now?" \
+				|| msg.die "$PRG: tree is not installed."
+		msg.info "$PRG: Installing tree program..." ""
+		apt-get -qq install tree || msg.die "$PRG: Could not install tree."
 	done
 	
-	/usr/bin/tree -d -L $Level $ls "${cmd[@]}"
+	$(which tree) -d -L $Level $ls "${cmd[@]}"
 	return 0
 }
 
 printTitle() { echo "$PRG vs $(version.set)"; }
 
 usage() {
-	printTitle
 	cat <<-eot
-	Display directory tree starting at {pathspec}.
-
-	Synopsis: $PRG [-ls] [--levels {num}] [-{treeopts...}] [{pathspec} ...] 
-	
-	If not specified, {pathspec} defaults to current directory.
-	
-	Options:
-	  --levels|-L {num} Traverse maximum {num} levels. Default 1, 0==255.
-	  --ls              Output file with ls type listing
-	  --nocolor|-n      Don't use color.
-	  --color|-C        Use color. (Default if terminal.)
-	  --version|-V      Print version information.
-	  --help|-h         Help.
-	  -{treeopts}       All other arguments/options are passed to the tree program.
-	                    See tree --help for additional options.
-
+	Script  : lsd
+	Version : $(version.set)
+	Desc    : Wrapper script for 'tree'. Display directory tree starting at {pathspec}.
+	Synopsis: $PRG [-ls] [--levels num] [--treeopts...] [pathspec ...] 
+	        : If not specified, {pathspec} defaults to current directory.
+	Options :
+	        :  -L|--levels num Traverse maximum num levels. Default 1,0=255.
+	        :  --ls            Output file with ls type listing
+	        :  --              Rest of arguments/options pass to 'tree'.
+	        :                  (See 'tree --help' for additional options.)
+	        :  -n|--nocolor    Don't use color.
+	        :  -C|--color      Use color. (Default if terminal.)
+	        :  -V|--version    Print version information.
+	        :  -h|--help       Help.
+	Depends : entities.bash tree
 	eot
-	if (( ${manpage:-} )); then cat <<-mp
-	
-	SEE ALSO
-	  entities.bash
-
-	AUTHOR: thesysadmin@garydean.id
-	mp
-	fi
-
 	exit 0
 }
 

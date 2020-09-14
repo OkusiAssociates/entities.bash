@@ -1,73 +1,73 @@
 #!/bin/bash
 _ent_MINIMAL=1
-declare -- PRG PRGDIR
+declare -- PRG PRGDIR 
 declare -x _ent_scriptstatus="\$0=$0|"
-if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
-p_="$(/bin/readlink -f "${0}")"
-_ent_scriptstatus+="is.script|\$p_=$p_|\n"
-if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
-_ent_scriptstatus+='is.execute|\n'
-__entities__=0
-while (($#)); do
-case "${1,,}" in
--h|--help)	entities.help "#@"
-echo 'tbd: entities execute help'
-break ;;
--*)					echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
-*)					echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
-esac
-shift
-done
-exit
-fi
-_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|\n"
-PRG="$(/usr/bin/basename "${p_}")"
-PRGDIR="$(/usr/bin/dirname "${p_}")"
-_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
-unset _p
-if (( ! $# )); then
-(( ${__entities__:-} )) && return 0
-fi
-
-else
-_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|\n"
-p_="$(/bin/readlink -f "${BASH_SOURCE[0]}")"
-PRG="$(/usr/bin/basename "${p_}")"
-PRGDIR="$(/usr/bin/dirname "${p_}")"
-_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
-unset _p
-if [[ -n "${ENTITIES:-}" ]]; then
-PATH="${PATH//\:${ENTITIES}/}"
-PATH="${PATH//\:\:/\:}"
-fi
-export ENTITIES="$PRGDIR"
-export PATH="${PATH}:${ENTITIES}"
-__entities__=0		# always reload when sourced from command line
-fi
-while (($#)); do
-case "${1,,}" in
-new) 									__entities__=0 ;;
-''|inherit|preserve)	__entities__=${__entities__:-0} ;;
-*)	break;;
-esac
-shift
-done
+	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
+		declare p_
+		p_="$(/bin/readlink -f "${0}")" || p_=''
+		_ent_scriptstatus+="is.script|\$p_=$p_|\n"
+		if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
+			_ent_scriptstatus+='is.execute|\n'
+			__entities__=0
+			while (( $# )); do
+				case "${1,,}" in
+					-h|--help)	"${ENTITIES:-/lib/include/entities}/entities.help" "#@"
+											break ;;
+					-*)					echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
+					*)					echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
+				esac
+				shift
+			done		
+			exit
+		fi
+		_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|\n"
+		PRG="$(/usr/bin/basename "${p_}")"
+		PRGDIR="$(/usr/bin/dirname "${p_}")"
+		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
+		unset _p
+		if (( ! $# )); then
+			(( ${__entities__:-0} )) && return 0
+		fi
+	
+	else
+		_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|\n"
+		p_="$(/bin/readlink -f "${BASH_SOURCE[0]}")"
+		PRG="$(/usr/bin/basename "${p_}")"
+		PRGDIR="$(/usr/bin/dirname "${p_}")"
+		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
+		unset _p
+		if [[ -n "${ENTITIES:-}" ]]; then
+			PATH="${PATH//\:${ENTITIES}/}"
+			PATH="${PATH//\:\:/\:}"
+		fi
+		export ENTITIES="$PRGDIR"
+		export PATH="${PATH}:${ENTITIES}"		
+		__entities__=0		# always reload when sourced from command line
+	fi
+	while (( $# )); do
+		case "${1,,}" in
+			new) 									__entities__=0 ;;
+			inherit|preserve)	__entities__=${__entities__:-0} ;;
+			*)	break;;
+		esac
+		shift
+	done
 ((__entities__)) && return 0;
 _ent_scriptstatus+="reloading|\n"
 set +o errexit +o nounset +o pipefail
 shopt -s extglob
-declare -x  LF=$'\n' CR=$'\r' CH9=$'\t'
-declare -x  OLDIFS="$IFS" IFS=$' \t\n'
-declare -nx OIFS="OLDIFS"
+declare -x	LF=$'\n' CR=$'\r' CH9=$'\t'
+declare -x	OLDIFS="$IFS" IFS=$' \t\n'
+declare -nx	OIFS="OLDIFS"
 onoff() {
-local o="${1:-0}"
-case "${o,,}" in
-on|1)			o=1;;
-off|0)		o=0;;
-*)        o=0; (( $# > 1 )) && o=$(( ${2} ));;
-esac
-echo -n $((o))
-return 0
+	local o="${1:-0}"
+	case "${o,,}" in
+		on|1)			o=1;;
+		off|0)		o=0;;
+		*)				o=0; (( $# > 1 )) && o=$(( ${2} ));; 
+	esac
+	echo -n $((o))
+	return 0
 }
 declare -fx onoff
 declare -ix _ent_VERBOSE
@@ -75,12 +75,12 @@ declare -ix _ent_VERBOSE
 verbose() { return $(( ! _ent_VERBOSE )); }
 declare -fx verbose
 verbose.set() {
-if ((${#@})); then
-_ent_VERBOSE=$(onoff "${1}")
-else
-echo -n ${_ent_VERBOSE}
-fi
-return 0
+	if (( ${#@} )); then
+		_ent_VERBOSE=$(onoff "${1}")
+	else
+		echo -n ${_ent_VERBOSE}
+	fi
+	return 0
 }
 declare -fx 'verbose.set'
 declare -ix _ent_COLOR=1
@@ -88,420 +88,428 @@ declare -ix _ent_COLOR=1
 color() { return $(( ! _ent_COLOR )); }
 declare -fx color
 color.set() {
-if ((${#@})); then
-if [[ $1 == 'auto' ]]; then
-is.tty && status=1 || status=0
-else
-status=$1
-fi
-_ent_COLOR=$(onoff "${status}" "${_ent_COLOR}")
-else
-echo -n "${_ent_COLOR}"
-fi
-return 0
+	if (( ${#@} )); then 
+		if [[ $1 == 'auto' ]]; then
+			is.tty && status=1 || status=0
+		else
+			status=$1
+		fi
+		_ent_COLOR=$(onoff "${status}" "${_ent_COLOR}")
+	else 
+		echo -n "${_ent_COLOR}"
+	fi
+	return 0
 }
 declare -fx 'color.set'
-alias colour.set='color.set'		# for the civilised world
-declare  -x colorreset="\x1b[0;39;49m"
-declare  -x color0="\x1b[0;39;49m"
-declare  -x colordebug="\x1b[35m"
-declare  -x colorinfo="\x1b[32m"
-declare  -x colornotice="\x1b[34m"
-declare  -x colorwarning="\x1b[33m"				; declare -nx colorwarn='colorwarning'
-declare  -x colorerr="\x1b[31m"						; declare -nx colorerror='colorerr'
-declare  -x colorcrit="\x1b[1;31m"				; declare -nx colorcritical='colorcrit'
-declare  -x coloralert="\x1b[1;33;41m"
-declare  -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
+	alias colour.set='color.set'		# for the civilised world
+declare -x colorreset="\x1b[0;39;49m"
+declare -x color0="\x1b[0;39;49m"
+declare -x colordebug="\x1b[35m"
+declare -x colorinfo="\x1b[32m"
+declare -x colornotice="\x1b[34m"
+declare -x colorwarning="\x1b[33m";					declare -nx colorwarn='colorwarning'
+declare -x colorerr="\x1b[31m";							declare -nx colorerror='colorerr'
+declare -x colorcrit="\x1b[1;31m";					declare -nx colorcritical='colorcrit'
+declare -x coloralert="\x1b[1;33;41m"
+declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 declare -x _ent_SCRIPT_VERSION='0.00 prealpha'
 version() { echo -n "$_ent_SCRIPT_VERSION"; return 0; }
 declare -fx version
 version.set() {
-if ((${#@})); then _ent_SCRIPT_VERSION="$1"
-else echo -n "${_ent_SCRIPT_VERSION}"
-fi
-return 0
+	if (( ${#@} )); then _ent_SCRIPT_VERSION="$1"
+								else echo -n "${_ent_SCRIPT_VERSION}"
+	fi
+	return 0
 }
 declare -fx 'version.set'
 declare -ix _ent_DRYRUN=0
-dryrun() { return $((! _ent_DRYRUN)); }
+dryrun() { return $(( ! _ent_DRYRUN )); }
 declare -fx dryrun
 dryrun.set() {
-if (($#)); then
-_ent_DRYRUN=$(onoff "${1}" "${_ent_DRYRUN}")
-else
-echo -n ${_ent_DRYRUN}
-fi
-return 0
+	if (( $# )); then 
+		_ent_DRYRUN=$(onoff "${1}" "${_ent_DRYRUN}")
+	else 
+		echo -n ${_ent_DRYRUN}
+	fi
+	return 0
 }
 declare -fx 'dryrun.set'
 declare -ix _ent_DEBUG=0
-debug() {	return $((! _ent_DEBUG)); }
+debug() {	return $(( ! _ent_DEBUG )); }
 declare -fx debug
 debug.set() {
-if (($#)); then 	_ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
-else							echo ${_ent_DEBUG}
-fi
-return 0
+	if (( $# )); then _ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
+	else							echo ${_ent_DEBUG}
+	fi
+	return 0
 }
 declare -fx 'debug.set'
 declare -ix _ent_STRICT=0
-strict() { return $((! _ent_STRICT)); }
+strict() { return $(( ! _ent_STRICT )); }
 declare -fx strict
 strict.set() {
-if (($#)); then
-local opt='+'
-_ent_STRICT=$(onoff "${1}" ${_ent_STRICT})
-((_ent_STRICT)) && opt='-'
-set ${opt}o errexit ${opt}o nounset ${opt}o pipefail #${opt}o noclobber
-else
-echo -n ${_ent_STRICT}
-fi
-return 0
+	if (( $# )); then
+	 	local opt='+'
+		_ent_STRICT=$(onoff "${1}" ${_ent_STRICT})
+		((_ent_STRICT)) && opt='-'
+		set ${opt}o errexit ${opt}o nounset ${opt}o pipefail #${opt}o noclobber
+	else
+		echo -n ${_ent_STRICT}
+	fi
+	return 0
 }
 declare -fx 'strict.set'
 declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? ${LINENO:-0}; }'
 trap.function() {
-if (($#));	then _ent_EXITTRAPFUNCTION="$1"
-else echo -n "$_ent_EXITTRAPFUNCTION"
-fi
-return 0
+	if (( $# ));	then _ent_EXITTRAPFUNCTION="$1" 
+							else echo -n "$_ent_EXITTRAPFUNCTION"
+	fi
+	return 0
 }
 declare -fx 'trap.function'
 declare -ix _ent_EXITTRAP=0
 trap.set() {
-if (($#)); then
-_ent_EXITTRAP=$(onoff "${1}" ${_ent_EXITTRAP})
-if ((_ent_EXITTRAP)); then
-trap "$_ent_EXITTRAPFUNCTION" EXIT
-else
-trap -- EXIT
-fi
-else
-echo -n $_ent_EXITTRAP
-fi
-return 0
+	if (( $# )); then
+		_ent_EXITTRAP=$(onoff "${1}" ${_ent_EXITTRAP})
+		if ((_ent_EXITTRAP)); then
+			trap "$_ent_EXITTRAPFUNCTION" EXIT
+		else
+			trap -- EXIT
+		fi
+	else
+		echo -n ${_ent_EXITTRAP}
+	fi
+	return 0
 }
 declare -fx 'trap.set'
 cleanup() {
-local -i exitcode=$?
-if (( exitcode )); then
-msg.err "script=$PRG:exit=$exitcode:line=${2:-}:1=${1:-}:f=${FUNCNAME[@]}:ln=${BASH_LINENO[@]}:s=${BASH_SOURCE[@]}}"
-if ((_ent_DEBUG)); then
-msg.info "$(set | grep "^_ent_" | grep -v "^_ent_LOCK")"
-msg.info "$(set | grep "^BASH"  | grep -v BASH_VERSINFO)"
-fi
-fi
-exit $exitcode
+	local -i exitcode=$?
+	if ((exitcode)); then
+		if ((_ent_DEBUG)); then
+			msg.info "Debug [$PRG]:"
+			msg.info "$(set | grep "^_ent_")"
+			msg.info "$(set | grep "^BASH"	| grep -v BASH_VERSINFO)"
+		fi
+		msg.err "script=$PRG: exit=$exitcode: line=${2:-}: \$1=${1:-}: fn=${FUNCNAME[*]}: ln=${BASH_LINENO[*]}: s=${BASH_SOURCE[*]}}"
+	fi
+	exit $exitcode
 }
 declare -fx cleanup
 synopsis() {
-local -i xt=0
-while (($#)); do
-case "${1,,}" in
--x|--exit|exit)	xt=1	;;
-*)							msg.die log "Bad command line argument '$1'!" ;;
-esac
-shift
-done
-cat <<-syn
-Usage: $PRG
-
-syn
-((xt)) && exit $xt
+	local -i xt=0
+	while (( $# )); do
+		case "${1,,}" in
+			-x|--exit|exit)	xt=1	;;
+			*)							msg.die log "Bad command line argument '$1'!" ;;
+		esac
+		shift
+	done
+	cat <<-syn
+	Usage: $PRG
+ 
+	syn
+	((xt)) && exit $xt
 }
 declare -fx synopsis
 msg() { ((_ent_VERBOSE)) && _printmsg "$@"; }
 declare -fx msg
 msg.debug() {
-((_ent_DEBUG)) || return 0
-declare log="${1:-}"
-[[ "${log,,}" == 'log' ]] && shift
-[[ -z "$log" ]] && log=X
-__msgx "$log" 'debug' "${_ent_VERBOSE}" "$@"
-return 0
+	((_ent_DEBUG)) || return 0
+	declare log="${1:-}"
+	[[ "${log,,}" == 'log' ]] && shift
+	[[ -z "$log" ]] && log=X
+	__msgx "$log" 'debug' "${_ent_VERBOSE}" "$@"
+	return 0
 }
 declare -fx 'msg.debug'
 __msgx() {
-local log="$1" msglevel="$2" verbose="$3"
-shift 3
-if [[ "${log}" == 'log' ]]; then
-systemd-cat -t "$PRG" -p ${msglevel} echo "$@"
-fi
-if ((verbose)); then
-if ((_ent_COLOR)); then nc=color$msglevel; echo -ne "${!nc}"; fi
-_printmsg "$@"
-((_ent_COLOR)) && echo -ne "${colorreset}"
-fi
-return 0
+	local log="$1" msglevel="$2" verbose="$3"
+	shift 3
+	[[ ${log} == 'log' ]] && systemd-cat -t "$PRG" -p ${msglevel} echo "$@"
+	if ((_ent_VERBOSE)); then
+		((_ent_COLOR)) && { nc=color$msglevel; echo -ne "${!nc}"; }
+		_printmsg "$@"
+		((_ent_COLOR)) && echo -ne "${colorreset}"
+	fi
+	return 0
 }
 declare -fx __msgx
 msg.info() {
-declare log="${1:-}"
-[[ "${log}" == 'log' ]] && shift
-[[ -z "$log" ]] && log=X
-__msgx "$log" 'info' "${_ent_VERBOSE}" "$@"
-return 0
+	declare log="${1:-}"
+	[[ "${log}" == 'log' ]] && shift
+	[[ -z "$log" ]] && log=X
+	__msgx "$log" 'info' "${_ent_VERBOSE}" "$@"
+	return 0
 }
 declare -fx 'msg.info'
-alias msginfo='msg.info' #X legacy X#
-alias infomsg='msg.info' #X legacy X#
+	alias msginfo='msg.info' #X legacy X#
+	alias infomsg='msg.info' #X legacy X#
 msg.sys() {
-declare log="${1:-}"
-[[ "${log}" == 'log' ]] && shift
-__msgx "$log" "notice" "${_ent_VERBOSE}" "$@"
-return 0
+	declare log="${1:-}"
+	[[ "${log}" == 'log' ]] && shift
+	__msgx "$log" "notice" "${_ent_VERBOSE}" "$@"
+	return 0
 }
 declare -fx 'msg.sys'
-alias msgsys='msg.sys' #X legacy X#
-alias sysmsg='msg.sys' #X legacy X#
+	alias msgsys='msg.sys' #X legacy X#
+	alias sysmsg='msg.sys' #X legacy X#
 msg.warn() {
-declare log="${1:-}"
-[[ "${log}" == 'log' ]] && shift || log='X'
-__msgx "$log" 'warning' "${_ent_VERBOSE:-0}" "$@"
-return 0
+	declare log="${1:-}"
+	[[ ${log} == 'log' ]] && shift || log='X'
+	__msgx "$log" 'warning' "${_ent_VERBOSE:-0}" "$@"
+	return 0
 }
 declare -fx 'msg.warn'
-alias msgwarn='msg.warn'	#X legacy X#
-alias warnmsg='msg.warn'	#X legacy X#
+	alias msgwarn='msg.warn'	#X legacy X#
+	alias warnmsg='msg.warn'	#X legacy X#
 msg.err() {
-declare log="${1:-}"
-[[ "${log}" == 'log' ]] && shift
-__msgx >&2 "$log" 'err' '1' "$@"
-return 0
+	declare log="${1:-}"
+	[[ ${log} == 'log' ]] && shift
+	__msgx >&2 "$log" 'err' '1' "$@"
+	return 0
 }
 declare -fx 'msg.err'
-alias msgerr='msg.err'	#X lecacy X#
-alias errmsg='msg.err'	#X legacy X#
+	alias msgerr='msg.err'	#X lecacy X#
+	alias errmsg='msg.err'	#X legacy X#
 msg.die() {
-declare log="${1:-}"
-[[ "${log}" == 'log' ]] && shift
-__msgx >&2 "$log" "crit" "1" "$@" 'Aborting.'
-exit 1
+	declare log="${1:-}"
+	[[ ${log} == 'log' ]] && shift
+	__msgx >&2 "$log" "crit" "1" "$@" 'Aborting.'
+	exit 1
 }
 declare -fx 'msg.die'
-alias msgdie='msg.die' #X legacy X#
-alias diemsg='msg.die' #X legacy X#
-alias msgdir='msg.die' #X for butter fingers #X
+	alias msgdie='msg.die'	#X legacy X#
+	alias diemsg='msg.die'	#X legacy X#
+	alias msgdir='msg.die'	#X for butter fingers #X
+	alias msg.dir='msg.die'	#X for butter fingers #X
 msg.crit() {
-declare log="${1:-}"
-[[ "${log}" == 'log' ]] && shift
-__msgx >&2 "$log" "emerg" "1" "$@" 'Call Sysadmin immediately.'
-exit 1
+	declare log="${1:-}"
+	[[ "${log}" == 'log' ]] && shift
+	__msgx >&2 "$log" "emerg" "1" "$@" 'Call Sysadmin immediately.'
+	exit 1
 }
 declare -fx 'msg.crit'
-alias msgcrit='msg.crit' #X legacy X#
-alias critmsg='msg.crit' #X legacy X#
+	alias msgcrit='msg.crit' #X legacy X#
+	alias critmsg='msg.crit' #X legacy X#
 msg.line() {
-((_ent_VERBOSE)) || return
-local sx sz IFS=' '
-sz=( $(stty size) )
-if (( ${#sz[@]} )); then
-sx=$(( (sz[1] - (TABSET * TABWIDTH)) - 1 ))
-else
-sx=$(( (COLUMNS - (TABSET * TABWIDTH)) - 1))
-fi
-IFS=$' \t\n'
-msg "$(printf '_%.0s' $(seq 1 "${sx:-1}") )"
-return 0
+	((_ent_VERBOSE)) || return
+	local sx sz IFS=' '
+	sz=( $(stty size) )
+	if (( ${#sz[@]} )); then
+		sx=$(( (sz[1] - (TABSET * TABWIDTH)) - 1))
+	else
+		sx=$(( (COLUMNS - (TABSET * TABWIDTH)) - 1))
+	fi
+	IFS=$' \t\n'
+	msg "$(printf '_%.0s' $(seq 1 "${sx:-1}") )"
+	return 0
 }
 declare -fx 'msg.line'
-alias msgline='msg.line'
+	alias msgline='msg.line'
 declare -ix TABWIDTH=4
 tab.width() {
-if ((${#@})); then
-TABWIDTH=$((${1}))
-((_ent_COLOR)) && tabs "$TABWIDTH"
-else
-echo -n "${TABWIDTH}"
-fi
-return 0
+	if (( $# )); then
+		TABWIDTH=$(( ${1} ))
+		((_ent_COLOR)) && tabs "$TABWIDTH"
+	else
+		echo -n "${TABWIDTH}"
+	fi
+	return 0
 }
 declare -fx 'tab.width'
 declare -ix TABSET=0
 tab.set() {
-if ((${#@})); then
-case "${1}" in
-'0'|reset) 		TABSET=0;;
-'++'|forward)	TABSET=$((TABSET+1))			;;
-'--'|back	 	)	TABSET=$((TABSET-1))			;;
-* 					)	if [[ "${1:0:1}" == '+' ]]; then
-TABSET=$(( TABSET + ${1:1} ))
-elif [[ "${1:0:1}" == '-' ]]; then
-TABSET=$(( TABSET - ${1:1} ))
-else
-TABSET=$(( ${1} ))
-fi
-;;
-esac
-(( TABSET < 0 )) &&	TABSET=0 # please, curb your enthusiasm.
-else
-echo -n "${TABSET}"
-fi
-return 0
+	if (( $# )); then
+		case "${1}" in
+			'0'|reset) 		TABSET=0;;
+			'++'|forward)	TABSET=$((TABSET+1))			;;
+			'--'|back	 	)	TABSET=$((TABSET-1))			;;
+			 * 					)	if [[ "${1:0:1}" == '+' ]]; then
+											TABSET=$(( TABSET + ${1:1} ))
+										elif [[ "${1:0:1}" == '-' ]]; then
+											TABSET=$(( TABSET - ${1:1} ))
+										else
+											TABSET=$(( ${1} ))						
+										fi
+									;;
+		esac
+		(( TABSET < 0 )) &&	TABSET=0 # please, curb your enthusiasm.
+	else
+		echo -n "${TABSET}"
+	fi
+	return 0
 }
 declare -fx	'tab.set'
 _printmsg() {
-local line IFS=$'\t\n' lf=''
-for line in "$@"; do
-[[ "${line}" == '-n' ]] && { lf='-n'; continue; }
-((TABSET)) && printf '\t%.0s' $(seq 1 ${TABSET})
-echo -e $lf "${line}"
-lf=''
-done
-return 0
+	local line IFS=$'\t\n' lf=''
+	for line in "$@"; do
+		[[ "${line}" == '-n' ]] && { lf='-n'; continue; }
+		((TABSET)) && printf '\t%.0s' $(seq 1 ${TABSET})
+		echo -e $lf "${line}"
+		lf=''
+	done
+	return 0
 }
 declare -fx	_printmsg
-trim()  {
-local v="$*"
-v="${v#"${v%%[![:space:]]*}"}"
-v="${v%"${v##*[![:space:]]}"}"
-echo -n "$v"
+trim()  { 
+	local v="$*"
+	v="${v#"${v%%[![:space:]]*}"}"
+	v="${v%"${v##*[![:space:]]}"}"
+	echo -n "$v"
 }
 ltrim() {
-local v="$*"
-v="${v#"${v%%[![:space:]]*}"}"
-echo -n "$v"
+	local v="$*"
+	v="${v#"${v%%[![:space:]]*}"}"
+	echo -n "$v"
 }
 rtrim() {
-local v="$*"
-v="${v%"${v##*[![:space:]]}"}"
-echo -n "$v"
+	local v="$*"
+	v="${v%"${v##*[![:space:]]}"}"
+	echo -n "$v"
 }
 declare -fx trim rtrim ltrim
 exit_if_not_root() {
-is.root || msg.die "$PRG can only be executed by root user."
-return 0
+	is.root || msg.die "$PRG can only be executed by root user."
+	return 0
 }
 declare -fx exit_if_not_root
 is.root() {
-[[ "$(whoami)" == 'root' || $EUID == 0 ]] && return 0
-return 1
+	[[ "$(whoami)" == 'root' || $EUID == 0 ]] && return 0
+	return 1
 }
 declare -fx 'is.root'
-
+	
 ask.yn() {
-((_ent_VERBOSE)) || return 0
-is.tty || return 0
-local question="${1:-}" yn=''
-question=$(msg.warn "${question} (y/n)")
-question="${question//$'\n'/ }"
-while true; do
-read -e -n1 -r -p "${question}" yn
-case "${yn,,}" in
-[y]* ) return 0;;
-[n]* ) return 1;;
-* ) echo "Please answer yes or no.";;
-esac
-done
+	((_ent_VERBOSE)) || return 0
+	[ -t 0 ] || return 0
+	local question="${1:-}" yn=''
+	question=$(msg.warn "${question} (y/n)")
+	question="${question//$'\n'/ }"
+	while true; do
+		read -e -n1 -r -p "${question}" yn
+		case "${yn,,}" in
+			[y]* ) return 0;;
+			[n]* ) return 1;;
+			* ) echo "Please answer yes or no.";;
+		esac
+	done
 }
 declare -fx 'ask.yn'
-alias askyn='ask.yn' #X legacy X#
+	alias askyn='ask.yn' #X legacy X#
 entities.help() {
-"$ENTITIES/entities.help" "$@"
-return $?
+	"${ENTITIES:-/lib/include/entities}/entities.help" "$@"
+	return $?
 }
 declare -fx 'entities.help'
 check.dependencies() {
-((${#@})) || return 0
-local needed_dep=''
-local -a missing_deps=''
-local -i missing=0
-if [[ "$1" == "--quiet" || "$1" == '-q' ]]; then
-local -i _ent_VERBOSE=0
-shift
-fi
-for needed_dep in "${@}"; do
-if [[ ! -x "$needed_dep" ]]; then
-if [[ ! -x $(which "$needed_dep") ]]; then
-if ! declare -Fp "$needed_dep" >/dev/null 2>&1; then
-if ! hash "$needed_dep" >/dev/null 2>&1; then
-((missing++))
-missing_deps+="$needed_dep "
-fi
-fi
-fi
-fi
-done
-((missing && _ent_VERBOSE)) && \
->&2 echo "These dependencies are missing: '$(trim "${missing_deps[@]}")'"
-return $missing
+	(( ${#@} )) || return 0
+	local needed_dep=''
+	local -a missing_deps=''
+	local -i missing=0
+	if [[ "$1" == "--quiet" || "$1" == '-q' ]]; then
+		local -i _ent_VERBOSE=0 
+		shift
+	fi
+	for needed_dep in "${@}"; do
+		if [[ ! -x "$needed_dep" ]]; then
+			if [[ ! -x $(which "$needed_dep") ]]; then
+				if ! declare -Fp "$needed_dep" >/dev/null 2>&1; then
+					if ! hash "$needed_dep" >/dev/null 2>&1; then
+						((missing++))
+						missing_deps+="$needed_dep "
+					fi
+				fi
+			fi
+		fi
+	done
+	((missing && _ent_VERBOSE)) && \
+			>&2 echo "These dependencies are missing: '$(trim "${missing_deps[@]}")'"
+	return $missing
 }
 declare -fx 'check.dependencies'
 is.tty() {
-tty --quiet	# [[ -t 0 ]] is this the same??
-return $?
+	tty --quiet	# [[ -t 0 ]] is this the same??
+	return $?
 }
 declare -fx 'is.tty'
-alias is_tty='is.tty'
-
+	alias is_tty='is.tty'
+	
 is.interactive() {
-declare report=${1:-}
-declare -i isit=0 echoit=0
-if [[ -n $report ]]; then
-case "${1:-}" in
-report)		echoit=1;;
-noreport)	echoit=0;;
-esac
-fi
-
-if [[ -t 1 ]]; then
-isit=1
-((echoit)) && echo "${isit}: STDOUT is attached to TTY."
-fi
-if [[ "${PS1+x}" == 'x' ]]; then
-((echoit)) && echo "${isit}: PS1 is set. This is possibly an interactive shell."
-if ((${#PS1} > 1)); then
-isit=1
-((echoit)) && echo "${isit}: PS1 is set and has a length -gt 1. This is very probably an interactive shell."
-fi
-fi
-
-if [[ "$-" == *"i"* ]]; then
-isit=1
-((echoit)) && echo "${isit}: \$- = *i*"
-fi
-if [[ -p /dev/stdout ]]; then
-isit=0
-((echoit)) && echo "${isit}: STDOUT is attached to a pipe."
-fi
-if [[ ! -t 1 && ! -p /dev/stdout ]]; then
-isit=0
-((echoit)) && echo "${isit}: STDOUT is attached to a redirection."
-fi
-
-if ((echoit)); then
-((isit)) && echo '1: is interactive' || echo '0: is not interactive'
-fi
-return $(( ! isit ))
+	declare report=${1:-}
+	declare -i isit=0 echoit=0
+	if [[ -n $report ]]; then
+		case "${1:-}" in
+			report)		echoit=1;;
+			noreport)	echoit=0;;
+		esac
+	fi
+	
+	if [[ -t 1 ]]; then 
+		isit=1
+		((echoit)) && echo "${isit}: STDOUT is attached to TTY."
+	fi
+	if [[ "${PS1+x}" == 'x' ]]; then
+		((echoit)) && echo "${isit}: PS1 is set. This is possibly an interactive shell."
+		if (( ${#PS1} > 1 )); then
+			isit=1
+			((echoit)) && echo "${isit}: PS1 is set and has a length -gt 1. This is very probably an interactive shell."
+		fi
+	fi
+	
+	if [[ "$-" == *"i"* ]]; then
+		isit=1
+		((echoit)) && echo "${isit}: \$- = *i*"
+	fi
+	if [[ -p /dev/stdout ]]; then
+		isit=0
+		((echoit)) && echo "${isit}: STDOUT is attached to a pipe."
+	fi
+	if [[ ! -t 1 && ! -p /dev/stdout ]]; then
+		isit=0
+		((echoit)) && echo "${isit}: STDOUT is attached to a redirection."
+	fi
+	
+	if ((echoit)); then
+		((isit)) && echo '1: is interactive' || echo '0: is not interactive'
+	fi
+	return $(( ! isit ))
 }
 declare -fx 'is.interactive'
-alias is_interactive='is.interactive'
-trap.breakp() {
-local b='' prompt=${1:-}
-((${#prompt})) && prompt=" $prompt"
-read -e -n1 -p "breakpoint${prompt}: continue? y/n " b
-[[ "${b,,}" == 'y' ]] || exit 1
-return 0
+	alias is_interactive='is.interactive'
+trap.breakp() { 
+	local b='' prompt=${1:-}
+	(( ${#prompt} )) && prompt=" $prompt"
+	read -e -n1 -p "breakpoint${prompt}: continue? y/n " b
+	[[ "${b,,}" == 'y' ]] || exit 1
+	return 0
 }
 declare -fx 'trap.breakp'
-alias breakp='trap.breakp'
-if ((! ${_ent_MINIMAL:-0})); then
-if [[ -d "$ENTITIES/entities.d" ]]; then
-declare _e
+	alias breakp='trap.breakp'
 shopt -s globstar
-for _e in $ENTITIES/entities.d/**/*.bash; do
-if [[ -r "$_e" ]] && [[ ! -L "$_e" ]] ; then
-source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
-fi
-done
-unset _e
-fi
-
-if ! check.dependencies \
-basename dirname readlink mkdir ln cat \
-systemd-cat stty wget base64 seq tty find touch tree lynx; then
-echo >&2 'Warning: Dependencies not found. Entities cannot run.'
-fi
+if (( ! ${_ent_MINIMAL:-0} )); then
+	if [[ -d "${ENTITIES:-/lib/include/entities}/entities.d" ]]; then
+		declare _e
+		declare -a _userbash=()
+		for _e in ${ENTITIES:-/lib/include/entities}/entities.d/**/*.bash; do
+			if [[ -r "$_e" ]]; then
+				if [[ ! -L "$_e" ]] ; then
+					_userbash+=( "${_e}" )
+				else
+					source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
+				fi
+			fi
+		done
+		for _e in ${_userbash[@]}; do
+			source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
+		done
+		unset _e _userbash
+	fi
+	
+	if ! check.dependencies \
+			basename dirname readlink mkdir ln cat \
+			systemd-cat stty wget base64 seq tty find touch tree lynx; then
+		echo >&2 'Warning: Dependencies not found. Entities cannot run.'	
+	fi 
 fi
 declare -xig __entities__=1
 declare -xng _ent_LOADED='__entities__'
@@ -509,621 +517,626 @@ shopt -s expand_aliases # Enables alias expansion.
 _ent_scriptstatus+="entities loaded|\n"
 declare -ax CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
 clntempfiles() {
-(( ${#CLNTEMPFILES[@]} )) || CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
-local PRG=cln
-usage() {
-echo "Usage: ${PRG} [--maxdepth|-m depth] [--dryrun|-n||--notdryrun|-N] [--quiet|-q||--verbose|-v] [dirspec]..."
-echo "Desc : Recursively remove all temporary files defined in CLNTEMPFILES[] ( ${CLNTEMPFILES[@]} )"
-echo '     : Defaults: maxdepth 2, verbose enabled, dryrun enabled'
-echo '     : More than one dirspec can be specified. Default is current directory.'
-echo "     : Envvar CLNTEMPFILES[] defines temporary files, default is ( '*~' '~*' '.~*' )"
-echo "     : If not defined, CLNTEMPFILES[] defaults to ( '*~' '~*' '.~*' )"
-}
-local -i maxdepth=2 verbose=1 dryrun=1 filecount=0
-local tmpfc="$( [[ -w /run ]] && echo '/run' || echo '/tmp' )/${PRG}-${RANDOM}"
-local -a aDir
-while (($#)); do
-case $1 in
--h|--help)			usage; return ;;
--n|--dryrun)		dryrun=1 ;;
--N|--notdryrun)	dryrun=0 ;;
--m|--maxdepth)	shift; maxdepth=${1:- 2} ;;
--v|--verbose)		verbose=1 ;;
--q|--quiet)			verbose=0 ;;
-*)							aDir+=( "$1" ) ;;
-esac
-shift
-done
-((${#aDir[@]})) || aDir=( $(readlink -f "$(pwd)") )
-maxdepth=$((maxdepth)) || return $?
-((maxdepth < 1)) && maxdepth=1
-local TempExpr=''
-for r in "${CLNTEMPFILES[@]}"; do
-TempExpr+="$( [[ -z $TempExpr ]] || echo '-o ')-name '$r' -type f "
-done
-local dir
-echo -n '0' > $tmpfc # zero file-filecounter
-for dir in "${aDir[@]}"; do
-dir="$(/bin/readlink -f "$dir")"
-if [[ -d "$dir" ]]; then
-((verbose)) && echo "$PRG: Searching directory [${dir}], maxdepth=$maxdepth"
-eval "/usr/bin/find "$dir" -maxdepth ${maxdepth:- 1} $TempExpr" \
-| while read -r line; do
-((verbose)) && echo "$PRG:   $( ((dryrun)) && echo '- would remove' || echo '- removing') $line"
-((dryrun)) || rm "$line"
-(( $? )) || echo -n $(( $(cat $tmpfc) + 1 )) > $tmpfc; # increment file-filecounter
-done
-else
-echo >&2 "$PRG: Directory [${dir}] not found!"
-fi
-done
-filecount=$(cat $tmpfc); rm $tmpfc # file-filecounter no longer needed
-if ((verbose)); then
-if ((filecount)); then
-echo "$PRG: $filecount file$( ((filecount==1)) || echo 's' ) $( ((dryrun)) && echo 'would be ')deleted"
-else
-echo "$PRG: No temporary files found."
-fi
-fi
-if ((verbose && dryrun && filecount > 0)) && [ -t 0 ]; then
-read -t 0.2 -n 1024 # clear typeahead buffer
-read -n1 -p "$PRG: Delete all these files? (y/N) " line
-echo ''
-if [[ ${line,,} == 'y' ]]; then
-clntempfiles  --notdryrun --maxdepth ${maxdepth} $( ((verbose)) && echo '--verbose' || echo '--quiet' ) "${aDir[@]}"
-return $?
-fi
-fi
-
-return 0
+	(( ${#CLNTEMPFILES[@]} )) || CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
+	local PRG=cln
+	usage() {
+		echo "Usage: ${PRG} [--maxdepth|-m depth] [--dryrun|-n||--notdryrun|-N] [--quiet|-q||--verbose|-v] [dirspec]..."
+		echo "Desc : Recursively remove all temporary files defined in CLNTEMPFILES[] ( ${CLNTEMPFILES[@]} )"
+		echo '     : Defaults: maxdepth 2, verbose enabled, dryrun enabled'
+		echo '     : More than one dirspec can be specified. Default is current directory.'
+		echo "     : Envvar CLNTEMPFILES[] defines temporary files, default is ( '*~' '~*' '.~*' )"
+		echo "     : If not defined, CLNTEMPFILES[] defaults to ( '*~' '~*' '.~*' )"
+	}
+	local -i maxdepth=2 verbose=1 dryrun=1 filecount=0
+	local tmpfc="$( [[ -w /run ]] && echo '/run' || echo '/tmp' )/${PRG}-${RANDOM}"
+	local -a aDir
+	while (($#)); do
+		case $1 in
+			-h|--help)			usage; return ;;
+			-n|--dryrun)		dryrun=1 ;;
+			-N|--notdryrun)	dryrun=0 ;;
+			-m|--maxdepth)	shift; maxdepth=${1:- 2} ;;
+			-v|--verbose)		verbose=1 ;;
+			-q|--quiet)			verbose=0 ;;
+			*)							aDir+=( "$1" ) ;;
+		esac
+		shift
+	done
+	((${#aDir[@]})) || aDir=( $(readlink -f "$(pwd)") )
+	maxdepth=$((maxdepth)) || return $?
+	((maxdepth < 1)) && maxdepth=1
+	local TempExpr=''
+	for r in "${CLNTEMPFILES[@]}"; do
+		TempExpr+="$( [[ -z $TempExpr ]] || echo '-o ')-name '$r' -type f "
+	done
+	local dir
+	echo -n '0' > $tmpfc # zero file-filecounter
+	for dir in "${aDir[@]}"; do
+		dir="$(/bin/readlink -f "$dir")"
+		if [[ -d "$dir" ]]; then 
+			((verbose)) && echo "$PRG: Searching directory [${dir}], maxdepth=$maxdepth"
+			eval "/usr/bin/find "$dir" -maxdepth ${maxdepth:- 1} $TempExpr" \
+					| while read -r line; do 
+							((verbose)) && echo "$PRG:   $( ((dryrun)) && echo '- would remove' || echo '- removing') $line"
+							((dryrun)) || rm "$line"
+							(( $? )) || echo -n $(( $(cat $tmpfc) + 1 )) > $tmpfc; # increment file-filecounter
+						done
+		else
+			echo >&2 "$PRG: Directory [${dir}] not found!"
+		fi
+	done
+	filecount=$(cat $tmpfc); rm $tmpfc # file-filecounter no longer needed
+	if ((verbose)); then
+		if ((filecount)); then
+			echo "$PRG: $filecount file$( ((filecount==1)) || echo 's' ) $( ((dryrun)) && echo 'would be ')deleted"
+		else
+			echo "$PRG: No temporary files found."
+		fi
+	fi
+	if ((verbose && dryrun && filecount > 0)) && [ -t 0 ]; then
+		read -t 0.2 -n 1024 # clear typeahead buffer
+		read -n1 -p "$PRG: Delete all these files? (y/N) " line
+		echo ''
+		if [[ ${line,,} == 'y' ]]; then
+			clntempfiles  --notdryrun --maxdepth ${maxdepth} $( ((verbose)) && echo '--verbose' || echo '--quiet' ) "${aDir[@]}"
+			return $?
+		fi
+	fi
+	
+	return 0
 }
 declare -fx clntempfiles
 declare -gx _ent_EDITOR
-_ent_EDITOR="$(which joe 2>/dev/null) -tab 2 -autoindent --wordwrap"
-declare -gx EDITOR
-if [[ -z "${EDITOR:-}" ]]; then
-[[ -n "${_ent_EDITOR:-}" ]] && EDITOR="${_ent_EDITOR}"
-if [[ -n "${SUDO_EDITOR:-}" ]]; then
-EDITOR="${SUDO_EDITOR}"
-elif [[ -n "${SELECTED_EDITOR:-}" ]]; then
-EDITOR="${SELECTED_EDITOR}"
-elif [[ -r "${HOME:-}/.selected_editor" ]]; then
-source "${HOME:-}/.selected_editor"
-[[ -n "${SELECTED_EDITOR:-}" ]] && EDITOR="${SELECTED_EDITOR}"
-elif [[ -x /etc/alternatives/editor ]]; then
-EDITOR='/etc/alternatives/editor'
-fi
-fi
-declare _ed_
-_ed_="${EDITOR%% *}"
-_ed_="$(which "${_ed_}" 2>/dev/null)"
-if [[ ! -x "${_ed_}" ]]; then
-echo >&2 "Editor [${EDITOR}] not found!"
-EDITOR="${_ent_EDITOR}"
-else
-[[ $EDITOR != *' '* ]] && EDITOR=''
-EDITOR="${_ed_} ${EDITOR#* }"
-fi
-unset _ed_
-export EDITOR _ent_EDITOR
+	_ent_EDITOR="$(which joe 2>/dev/null) -tab 2 -autoindent --wordwrap"
+	declare -gx EDITOR
+	if [[ -z "${EDITOR:-}" ]]; then
+		[[ -n "${_ent_EDITOR:-}" ]] && EDITOR="${_ent_EDITOR}"
+		if [[ -n "${SUDO_EDITOR:-}" ]]; then
+			EDITOR="${SUDO_EDITOR}"
+		elif [[ -n "${SELECTED_EDITOR:-}" ]]; then
+			EDITOR="${SELECTED_EDITOR}"
+		elif [[ -r "${HOME:-}/.selected_editor" ]]; then
+			source "${HOME:-}/.selected_editor"
+			[[ -n "${SELECTED_EDITOR:-}" ]] && EDITOR="${SELECTED_EDITOR}"
+		elif [[ -x /etc/alternatives/editor ]]; then
+			EDITOR='/etc/alternatives/editor'
+		fi
+	fi
+	declare _ed_
+	_ed_="${EDITOR%% *}"
+	_ed_="$(which "${_ed_}" 2>/dev/null)"
+	if [[ ! -x "${_ed_}" ]]; then
+		echo >&2 "Editor [${EDITOR}] not found!"
+		EDITOR="${_ent_EDITOR}"
+	else
+		[[ $EDITOR != *' '* ]] && EDITOR='' 
+		EDITOR="${_ed_} ${EDITOR#* }"
+	fi
+	unset _ed_
+	export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -x _ent_VERSION='0.9.420.220.0'
 cdd() {
-(( $# )) || return 0
-local dirspec="${1}" pwd=''
-
-if [[ -d $dirspec ]]; then
-cd "$dirspec"; pwd="$(pwd)"
-elif [[ -d "../../../$dirspec" ]]; then
-cd "../../../$dirspec"; pwd="$(pwd)"
-elif [[ -d "../../$dirspec" ]]; then
-cd "../../$dirspec"; pwd="$(pwd)"
-elif [[ -d "../$dirspec" ]]; then
-cd "../$dirspec"; pwd="$(pwd)"
-elif [[ -d "/$dirspec" ]]; then
-cd "/$dirspec"; pwd="$(pwd)"
-else
-msg "Searching PATH"
-local -a apath=( "${PATH//:/$'\n'}" )
-local path='' base=''
-for path in ${apath[@]}; do
-base="$(basename "$path")"
-if [[ $base == $dirspec ]]; then
-if [[ -d "$path" ]]; then
-cd "$path"; pwd="$(pwd)"
-break
-fi
-fi
-done
-if [[ $pwd == '' ]]; then
-msg "Finding"
-declare -a find=( $( find ../.. -name "${dirspec}*" -type d ) )
-(( ${#find[@]} == 0 )) && find=( $( find ../../.. -name "${dirspec}*" -type d ) )
-if (( ${#find[@]} == 1)); then
-cd "${find[0]}"
-pwd="$(pwd)"
-else
-select d in ${find[@]}; do
-cd "$d"
-pwd="$(pwd)"
-done
-((${#pwd})) || msg.err "$dirspec not found"
-fi
-fi
-fi
-[[ $pwd ]] && msg "$pwd"
+	(( $# )) || return 0
+	local dirspec="${1}" pwd=''
+	
+	if [[ -d $dirspec ]]; then
+		cd "$dirspec"; pwd="$(pwd)"
+	elif [[ -d "../../../$dirspec" ]]; then
+		cd "../../../$dirspec"; pwd="$(pwd)"
+	elif [[ -d "../../$dirspec" ]]; then
+		cd "../../$dirspec"; pwd="$(pwd)"
+	elif [[ -d "../$dirspec" ]]; then
+		cd "../$dirspec"; pwd="$(pwd)"
+	elif [[ -d "/$dirspec" ]]; then
+		cd "/$dirspec"; pwd="$(pwd)"
+	else
+		msg "Searching PATH"
+		local -a apath=( "${PATH//:/$'\n'}" )
+		local path='' base=''
+		for path in ${apath[@]}; do
+			base="$(basename "$path")"
+			if [[ $base == $dirspec ]]; then
+				if [[ -d "$path" ]]; then
+					cd "$path"; pwd="$(pwd)"
+					break
+				fi
+			fi
+		done	
+		if [[ $pwd == '' ]]; then
+			msg "Finding"
+			declare -a find=( $( find ../.. -name "${dirspec}*" -type d ) )
+			(( ${#find[@]} == 0 )) && find=( $( find ../../.. -name "${dirspec}*" -type d ) )
+			if (( ${#find[@]} == 1)); then
+					cd "${find[0]}"
+					pwd="$(pwd)"
+			else 	
+				select d in ${find[@]}; do
+					cd "$d"
+					pwd="$(pwd)"
+				done
+				((${#pwd})) || msg.err "$dirspec not found"
+			fi
+		fi
+	fi
+	[[ $pwd ]] && msg "$pwd"
 }
 exit_if_already_running() {
-(($#)) && _ent_LOCKTIMEOUT="$1"
-local lockfile="/run/lock/${PRG}.lock"
-if [[ -f "$lockfile" ]]; then
-if lockfiles.timeout $lockfile; then
-trap.set off	# we don't want to exit through the cleanup() function or we will clobber the .lock file.
-msg.die "$0 is currently running!" "Duplicate instances of this program are not permitted."
-fi
-msg.warn log "Lock file '$lockfile' is more than ${_ent_LOCKTIMEOUT} seconds old." "Relocking and Proceeding..."
-touch $lockfile
-else
-lockfiles.add "${lockfile}" ${_ent_LOCKTIMEOUT}
-fi
+	(($#)) && _ent_LOCKTIMEOUT="$1"
+	local lockfile="/run/lock/${PRG}.lock"
+	if [[ -f "$lockfile" ]]; then
+		if lockfiles.timeout $lockfile; then
+			trap.set off	# we don't want to exit through the cleanup() function or we will clobber the .lock file.
+			msg.die "$0 is currently running!" "Duplicate instances of this program are not permitted."
+		fi
+		msg.warn log "Lock file '$lockfile' is more than ${_ent_LOCKTIMEOUT} seconds old." "Relocking and Proceeding..."
+		touch $lockfile
+	else
+		lockfiles.add "${lockfile}" ${_ent_LOCKTIMEOUT}
+	fi
 }
 declare -fx exit_if_already_running
-
 editorsyntaxstring() {
-local FileName="${1:-}"
-local FileType="${2:-text}"
-local editor
-editor="${3:-${EDITOR}}"
-local opt=''
-editor="$(basename "${editor%% *}")"
-case "$FileType" in
-html)		FileType=php;;
-bash)		FileType=sh;;
-esac
-case "$editor" in
-joe) 	if [[ ! -f "/usr/share/joe/syntax/$FileType.jsf" ]]; then
-msg.warn "joe: Syntax file [$FileType].jsf not found for [$FileName]"
-FileType=text
-opt=''
-else
-opt="-syntax $FileType"
-fi
-;;
-nano)
-opt-"--syntax=$FileType"
-;;
-*)
-msg.err "Editor [$editor] not found."
-;;
-esac
-echo $EDITOR $opt $FileName
+	local FileType="${1:-text}"
+	local FileName="${2:-}"
+	local editor
+	editor="${3:-${EDITOR}}"
+	local opt=''
+	editor="$(basename "${editor%% *}")"
+	case "$FileType" in
+		html)		FileType=php;;
+		bash)		FileType=sh;;		
+	esac
+	case "$editor" in
+		joe) 	[[ $FileType == 'text' ]] && FileType='sh'
+					if [[ ! -f "/usr/share/joe/syntax/$FileType.jsf" ]]; then 
+						echo >&2 "joe: Syntax file [$FileType].jsf not found for [$FileName]"
+						FileType=text
+						opt=''
+					else
+						opt="-syntax $FileType"			
+					fi
+					;;
+		nano)
+					opt-"--syntax=$FileType"
+					;;
+		*)
+					msg.err "Editor [$editor] not found."
+					;;
+	esac
+	echo $EDITOR $opt $FileName
 }
 declare -fx editorsyntaxstring
-declare -Ax _ent_TextFileTypes=(
-['ASCII text']='text'
-['Bourne-Again shell script']='bash'
-['XML 1.0 document']='xml'
-['HTML document']='html'
-['POSIX shell script']='sh'
-['PHP script']='php'
-['C source']='c'
-['SMTP mail']='smtp'
-['exported SGML document']='sgml'
-['Windows WIN.INI']='ini'
-['TeX document']='tex'
-['Python script']='python'
-['Non-ISO extended-ASCII text']='text'
-['Perl5 module source']='perl'
-['BSD makefile script']='bsdmake'
-)
+declare -Ax _ent_TextFileTypes=(	
+			['ASCII text']='text'
+			['Bourne-Again shell script']='bash'
+			['XML 1.0 document']='xml'
+			['HTML document']='html'
+			['POSIX shell script']='sh'
+			['PHP script']='php'
+			['C source']='c'
+			['SMTP mail']='smtp'
+			['exported SGML document']='sgml'
+			['Windows WIN.INI']='ini'
+			['TeX document']='tex'
+			['Python script']='python'
+			['Non-ISO extended-ASCII text']='text'
+			['Perl5 module source']='perl'
+			['BSD makefile script']='bsdmake'
+		)
 textfiletype() {
-local testfile
-local File FileType
-
-while (($#)); do
-testfile="${1:-}"
-[[ ! -f "$testfile" ]]	&& { shift; continue; }
-
-File=$(trim "$(file "$testfile" 2>/dev/null | grep ' text' | cut -d':' -f2)")
-[[ -z $File ]] && { shift; continue; }
-File=${File%%,*}
-[[ -z $File ]] && File='text'
-if [[ "${!_ent_TextFileTypes[@]}" == *"$File"* ]]; then
-FileType="${_ent_TextFileTypes[$File]}"
-[[ -z $FileType ]] && FileType='text'
-else
-h=$(head -n1 "$testfile")
-if 	 [[ $h =~ ^\#\!.*\/bash.* ]];	then	FileType='bash'
-elif [[ $h =~ ^\#\!.*\/sh.*   ]];	then	FileType='sh'
-elif [[ $h =~ ^\#\!.*\/php.*  \
-|| ${h:0:2} == '<?' ]];	then	FileType='php'
-fi
-fi
-if [[ $FileType == '' || $FileType == 'text' ]]; then
-ext=${testfile##*\.}
-case $ext in
-php)				FileType=php;;
-htm|html)		FileType=html;;
-sh)					FileType=sh;;
-bash|conf)	FileType=bash;;
-c|h)				FileType=c;;
-xml)				FileType=xml;;
-''|*)				FileType=text;;
-esac
-fi
-
-echo -e "$testfile\t${FileType}\t"
-
-shift
-done
+	local testfile=''
+	local -i typeonly=0
+	local File='' FileType=text
+	while (( $# )); do
+		testfile="${1}"
+		if [[ $testfile == '-t' ]]; then
+			typeonly=1
+			shift
+			continue
+		fi
+		if [[ -f "$testfile" ]]; then
+			File=$(trim "$(file "$testfile" 2>/dev/null | grep ' text' | cut -d':' -f2)")
+			[[ -z $File ]] && { shift; continue; }
+			File=${File%%,*}
+			[[ -z $File ]] && File='text'
+			if [[ "${!_ent_TextFileTypes[@]}" == *"$File"* ]]; then
+				FileType="${_ent_TextFileTypes[$File]}"
+				[[ -z $FileType ]] && FileType='text'
+			else
+				h=$(head -n1 "$testfile")
+				if 	 [[ $h =~ ^\#\!.*\/bash.* ]];	then	FileType='bash'
+				elif [[ $h =~ ^\#\!.*\/sh.*   ]];	then	FileType='sh'
+				elif [[ $h =~ ^\#\!.*\/php.*  \
+									|| ${h:0:2} == '<?' ]];	then	FileType='php'
+				fi
+			fi
+		fi
+		
+		if [[ $FileType == '' || $FileType == 'text' ]]; then
+			ext=${testfile##*\.}
+			case "$ext" in
+				php)				FileType=php;;
+				htm|html)		FileType=html;;
+				sh|conf)		FileType=sh;;
+				bash|cnf)		FileType=bash;;
+				c|h)				FileType=c;;
+				xml)				FileType=xml;;
+				''|*)				FileType=text;;
+			esac
+		fi
+		
+		((typeonly)) && echo "${FileType:-text}" \
+				|| echo "${FileType}" "${testfile}"
+		shift
+	done
 }
 declare -fx textfiletype
 declare -x  _ent_LOCKFILE=''
 declare -ax _ent_LOCKFILES=()
 declare -ix _ent_LOCKTIMEOUT=86400
 lockfile() {
-if ((${#@})); then lockfile.add "$1"
-else echo -n "${_ent_LOCKFILE}"
-fi
+	if ((${#@})); then lockfile.add "$1"
+								else echo -n "${_ent_LOCKFILE}"
+	fi
 }
 declare -fx lockfile
 lockfiles() {
-echo -n "${_ent_LOCKFILES[@]}"
+	echo -n "${_ent_LOCKFILES[@]}"
 }
 declare -fx lockfiles
 lockfiles.add() {
-if (( ${#@} == 0 )); then
-lockfiles.add "/run/lock/$PRG.$RANDOM" "${_ent_LOCKTIMEOUT}"
-return
-elif (( ${#@} % 2 )); then
-lockfiles.add "$@" "${_ent_LOCKTIMEOUT}"
-return
-fi
-declare -a newlockfiles=($@)
-local -i j i
-local lk='' to=''
-for ((i=0; i < ${#newlockfiles[@]}; i+=2)); do
-j=$((i+1))
-lk="${newlockfiles[$i]}"
-to="${newlockfiles[$j]}"
-ts=$(date +'%s')
-to=$((ts+_ent_LOCKTIMEOUT))
-mkdir -p $(dirname "${lk}")
-cat > "$lk" <<-eot
-declare _LockingScript="$0"
-declare -i _LockCreated=${ts} # $(date +'%F %T' -d @${ts})
-declare -i _LockExpire=${to}  # $(date +'%F %T' -d @${to})
-eot
-_ent_LOCKFILE="$lk"
-_ent_LOCKFILES+=("${_ent_LOCKFILE}")
-done
-return 0
+	if (( ${#@} == 0 )); then
+		lockfiles.add "/run/lock/$PRG.$RANDOM" "${_ent_LOCKTIMEOUT}"
+		return
+	elif (( ${#@} % 2 )); then
+		lockfiles.add "$@" "${_ent_LOCKTIMEOUT}"
+		return
+	fi
+	declare -a newlockfiles=($@)
+	local -i j i
+	local lk='' to=''
+	for ((i=0; i < ${#newlockfiles[@]}; i+=2)); do
+		j=$((i+1))
+		lk="${newlockfiles[$i]}"
+		to="${newlockfiles[$j]}"
+		ts=$(date +'%s')
+		to=$((ts+_ent_LOCKTIMEOUT))
+		mkdir -p $(dirname "${lk}")
+		cat > "$lk" <<-eot
+			declare _LockingScript="$0"
+			declare -i _LockCreated=${ts} # $(date +'%F %T' -d @${ts})
+			declare -i _LockExpire=${to}  # $(date +'%F %T' -d @${to})
+		eot
+		_ent_LOCKFILE="$lk"
+		_ent_LOCKFILES+=("${_ent_LOCKFILE}")
+	done
+	return 0
 }
 declare -fx lockfiles.add
 lockfiles.delete() {
-if ((${#@})); then
-local lk lf
-for lk in ${@}; do
-rm -f "${lk}"
-_ent_LOCKFILES=( ${_ent_LOCKFILES[@]/$lk} )
-lf=${#_ent_LOCKFILES[@]}; ((lf+=-1))
-if ((lf>=0)); then _ent_LOCKFILE="${_ent_LOCKFILES[$lf]}"
-else _ent_LOCKFILE=''
-fi
-done
-else
-[[ ${_ent_LOCKFILE} ]] && lockfiles.delete "${_ent_LOCKFILE}"
-fi
+	if ((${#@})); then
+		local lk lf
+		for lk in ${@}; do
+			rm -f "${lk}"
+			_ent_LOCKFILES=( ${_ent_LOCKFILES[@]/$lk} )
+			lf=${#_ent_LOCKFILES[@]}; ((lf+=-1))
+			if ((lf>=0)); then _ent_LOCKFILE="${_ent_LOCKFILES[$lf]}"
+										else _ent_LOCKFILE=''
+			fi
+		done
+	else
+		[[ ${_ent_LOCKFILE} ]] && lockfiles.delete "${_ent_LOCKFILE}"
+	fi
 }
 declare -fx lockfiles.delete
 lockfiles.delete.all() {
-((${#_ent_LOCKFILES[@]})) && lockfiles.delete "${_ent_LOCKFILES[@]}"
-_ent_LOCKFILES=()
-_ent_LOCKFILE=''
+	((${#_ent_LOCKFILES[@]})) && lockfiles.delete "${_ent_LOCKFILES[@]}"
+	_ent_LOCKFILES=()
+	_ent_LOCKFILE=''
 }
 declare -fx lockfiles.delete.all
 lockfiles.timeout() {
-if ((${#@})); then
-source "$1" || msg.die log "log file $1 not found, or not a entities log file!"
-return "$(( $(date +'%s') < _LockExpire ))"
-else
-lockfiles.timeout "${_ent_LOCKFILE}"
-fi
+	if ((${#@})); then
+		source "$1" || msg.die log "log file $1 not found, or not a entities log file!"
+		return "$(( $(date +'%s') < _LockExpire ))"
+	else
+		lockfiles.timeout "${_ent_LOCKFILE}"
+	fi
 }
 declare -fx lockfiles.timeout
 mktempfile() {
-local TmpDir TmpFile
-TmpDir="${TMPDIR:-/tmp}/${1:-entities}"
-mkdir --mode=0770 -p "${TmpDir}" || { echo ''; return; }
-TmpFile="$(mktemp "${TmpDir}/${PRG:-$(basename "$0")}_XXXX")"
-echo "$TmpFile"
-return 0
+	local TmpDir TmpFile
+	TmpDir="${TMPDIR:-/tmp}/${1:-entities}"
+	mkdir --mode=0770 -p "${TmpDir}" || { echo ''; return; }
+	TmpFile="$(mktemp "${TmpDir}/${PRG:-$(basename "$0")}_XXXX")"
+	echo "$TmpFile"
+	return 0
 }
 declare -fx mktempfile
 declare -x TMPDIR="${TMPDIR:-/tmp}"
 tmpdir.set() {
-if (( $# )); then
-tmp="${1}"
-mkdir -p "$tmp" && cd "$tmp" && TMPDIR="$(pwd)" && cd -
-fi
-echo "$TMPDIR:-/tmp"
+	if (( $# )); then
+		tmp="${1}"
+		mkdir -p "$tmp" && cd "$tmp" && TMPDIR="$(pwd)" && cd -
+	fi
+	echo "$TMPDIR:-/tmp"
 }
 declare -fx tmpdir.set
 path-add() {
-local cmd=()
-local -i prepend=0 export_path=1 test_dir=1
-while (($#)); do
-case "$1" in
--r|--prepend)			prepend=1	;;
--o|--postpend)		prepend=0 ;;
--n|--no-export)		export_path=0 ;;
--t|--no-test-dir)	test_dir=0;;
-*)								cmd+=( "$1" ) ;;
-esac
-shift
-done
-path-delete "${cmd[@]}" /dev/null
-for p in ${cmd[@]}; do
-[[ "$test_dir" == "1" && ! -d "$p" ]] && return 1
-if ((prepend)); then
-PATH="${p}:${PATH}"
-else
-PATH="${PATH}:${p}"
-fi
-done
-((export_path)) && export PATH
-return 0
+	local cmd=()
+	local -i prepend=0 export_path=1 test_dir=1
+	while (($#)); do
+		case "$1" in
+			-r|--prepend)			prepend=1	;;
+			-o|--postpend)		prepend=0 ;;
+			-n|--no-export)		export_path=0 ;;
+			-t|--no-test-dir)	test_dir=0;;
+			*)								cmd+=( "$1" ) ;;
+		esac
+		shift
+	done
+	path-delete "${cmd[@]}" /dev/null
+	for p in ${cmd[@]}; do
+		[[ "$test_dir" == "1" && ! -d "$p" ]] && return 1
+		if ((prepend)); then
+			PATH="${p}:${PATH}"
+		else
+			PATH="${PATH}:${p}"
+		fi
+	done
+	((export_path)) && export PATH
+	return 0
 }
 declare -fx path-add
 path-delete() {
-local newpath='' IFS=':'
-while ((${#@})); do
-for p in ${PATH}; do
-[[ "$p" == "$1" || "$p" == '' ]] && continue
-newpath+="${p}:"
-done
-shift
-done
-while [[ "${newpath:0:1}" == ':' ]]; do newpath="${newpath:1}"; 		done
-while [[ "${newpath: -1}" == ':' ]]; do newpath="${newpath:0: -1}"; done
-PATH="$newpath"
-return 0
+	local newpath='' IFS=':'
+	while ((${#@})); do
+		for p in ${PATH}; do
+			[[ "$p" == "$1" || "$p" == '' ]] && continue
+			newpath+="${p}:"
+		done
+		shift
+	done
+	while [[ "${newpath:0:1}" == ':' ]]; do newpath="${newpath:1}"; 		done
+	while [[ "${newpath: -1}" == ':' ]]; do newpath="${newpath:0: -1}"; done
+	PATH="$newpath"
+	return 0
 }
 declare -fx path-delete
 declare -ix _slog_count=0
 slog() {
-for log in "${@}"; do
-((++_slog_count))
-echo "$(slog.prefix.eval) ${log}" >> $(slog.file)
-done
+	for log in "${@}"; do
+		((++_slog_count))
+		echo "$(slog.prefix.eval) ${log}" >> $(slog.file)
+	done
 }
 declare -x _slog_file=''
 slog.file() {
-if ((${#@})); then
-_slog_file="$1"
-_slog_count=0
-else
-[[ -z "$_slog_file" ]] && _slog_file="$PRGDIR/$PRG.log"
-echo -n "$_slog_file"
-fi
+	if ((${#@})); then
+		_slog_file="$1"
+		_slog_count=0
+	else
+		[[ -z "$_slog_file" ]] && _slog_file="$PRGDIR/$PRG.log"
+		echo -n "$_slog_file"
+	fi
 }
 declare -x _slog_prefix=''
 slog.prefix() {
-if ((${#@})); then
-if [[ "$1" == '--long' ]]; then
-_slog_prefix="$(date -Ins) $USER"
-elif [[ "$1" == '--short' ]]; then
-_slog_prefix='$(date +"%s.%N")'
-else
-_slog_prefix="$1"
-fi
-else
-[[ -z "$_slog_prefix" ]] && _slog_prefix="$(date -Ins) $USER"
-echo -n "$_slog_prefix"
-fi
+	if ((${#@})); then
+		if [[ "$1" == '--long' ]]; then
+			_slog_prefix="$(date -Ins) $USER"
+		elif [[ "$1" == '--short' ]]; then
+			_slog_prefix='$(date +"%s.%N")'
+		else
+			_slog_prefix="$1"
+		fi
+	else
+		[[ -z "$_slog_prefix" ]] && _slog_prefix="$(date -Ins) $USER"
+		echo -n "$_slog_prefix"
+	fi
 }
 slog.prefix.eval() {
-eval "echo -n $(slog.prefix)"
+	eval "echo -n $(slog.prefix)"
 }
 slog.truncate() {
-_slog_count=0
-> "$(slog.file)"
+	_slog_count=0
+	> "$(slog.file)"
 }
 addslashes() {
-read line;
-while [[ "$line" != "" ]]; do
-echo "$line" | sed "s/'/\\\\'/g; s/\"/\\\\\"/g;"
-read line
-done
-return 0
+	read line; 
+	while [[ "$line" != "" ]]; do 
+		echo "$line" | sed "s/'/\\\\'/g; s/\"/\\\\\"/g;"
+		read line
+	done
+	return 0
 }
 declare -fx addslashes
 elipstr() {
-local str=${1:-} pd=''
-str=$(echo $str | head -n1)
-local -i width=${2:-0}
-local -i strlen=${#str} sx=0
-((width)) || width=$(( $(tput cols) - 1 ))
-((width<6)) && width=78
-((strlen <= width)) && { echo $str; return; }
-sx=$(((width-2) / 2))
-((((sx*2)+2) < width)) && pd='.'
-echo "${str:0:$sx}${pd}..${str: -$sx}"
+	local str=${1:-} pd=''
+	str=$(echo $str | head -n1)
+	local -i width=${2:-0} 
+	local -i strlen=${#str} sx=0
+	((width)) || width=$(( $(tput cols) - 1 ))
+	((width<6)) && width=78
+	((strlen <= width)) && { echo $str; return; }
+	sx=$(((width-2) / 2))
+	((((sx*2)+2) < width)) && pd='.'
+	echo "${str:0:$sx}${pd}..${str: -$sx}"
 }
 declare -fx elipstr
 is.number() {
-[[ ${1:-} =~ ^[-+]?[0-9]+$ ]] && return 0 || return 1
+	[[ ${1:-} =~ ^[-+]?[0-9]+$ ]] && return 0 || return 1
 }
 declare -fx is.number
 shopt -s extglob
 post_slug() {
-local str="${1:-}" repl="${2:--}" preserve_case="${3:-0}"
-if ((preserve_case)); then
-str="$(echo "${str}"   | iconv -f UTF-8 -t ASCII//TRANSLIT )"
-else
-str="$(echo "${str,,}" | iconv -f UTF-8 -t ASCII//TRANSLIT )"
-fi
-str="${str//[^[:alnum:]]/${repl}}"
-str="${str//+([${repl}])/${repl}}"
-[[ ${str:0:1} == "$repl" ]] && str="${str:1}"
-[[ ${str: -1} == "$repl" ]] && str="${str:0: -1}"
-echo -n "$str"
+	local str="${1:-}" repl="${2:--}" preserve_case="${3:-0}"
+	if ((preserve_case)); then
+		str="$(echo "${str}"   | iconv -f UTF-8 -t ASCII//TRANSLIT )"
+	else 
+		str="$(echo "${str,,}" | iconv -f UTF-8 -t ASCII//TRANSLIT )"
+	fi
+	str="${str//[^[:alnum:]]/${repl}}"
+	str="${str//+([${repl}])/${repl}}"
+	[[ ${str:0:1} == "$repl" ]] && str="${str:1}"
+	[[ ${str: -1} == "$repl" ]] && str="${str:0: -1}"
+	echo -n "$str"
 }
 remove_accents() {
-echo -n "${1:-}" | iconv -c -f UTF-8 -t ASCII//TRANSLIT//IGNORE
+	echo -n "${1:-}" | iconv -c -f UTF-8 -t ASCII//TRANSLIT//IGNORE
 }
-remsp2() {
-local -i incblank=0
-if (($#)); then
-if [[ $1 == '-b' ]]; then
-incblank=1
-shift
-fi
-fi
-
-if (($#)); then
-if ((incblank)); then
-trim "${1//+( )/ }"; echo
-else
-trim "${1//+([[:blank:]])/ }"; echo
-fi
-return $?
-fi
-local l
-if ((incblank)); then
-while read -r l; do trim "${l//+([[:blank:]])/ }"; echo; done
-else
-while read -r l; do trim "${l//+( )/ }"; echo; done
-fi
-return $?
+remsp2() { 
+	local -i incblank=0
+	if (($#)); then
+		if [[ $1 == '-b' ]]; then
+			incblank=1
+			shift
+		fi
+	fi
+	
+	if (($#)); then 
+		if ((incblank)); then
+			trim "${1//+( )/ }"; echo
+		else
+			trim "${1//+([[:blank:]])/ }"; echo
+		fi
+		return $?
+	fi
+	local l
+	if ((incblank)); then
+		while read -r l; do trim "${l//+([[:blank:]])/ }"; echo; done
+	else
+		while read -r l; do trim "${l//+( )/ }"; echo; done
+	fi
+	return $?
 }
 declare -nx remsp2
 s() {	(( ${1} == 1 )) || echo -n 's'; }
 declare -fx s
 str_str() {
-local str
-str="${1#*${2}}"
-str="${str%%${3}*}"
-echo -n "$str"
+	local str
+	str="${1#*${2}}"
+ 	str="${str%%${3}*}"
+ 	echo -n "$str"
 }
 declare -fx str_str
 calcfp() { echo "$*" | bc -l; }
 declare -Aix HRint=( [b]=1 [k]=1024 [m]=1024000 [g]=1024000000 [t]=1024000000000 [p]=1024000000000000 \
-[B]=1 [K]=1000 [M]=1000000 [G]=1000000000 [T]=1000000000000 [P]=1000000000000000 )
+										 [B]=1 [K]=1000 [M]=1000000 [G]=1000000000 [T]=1000000000000 [P]=1000000000000000 )
 hr2int() {
-local num='' h=''
-while (($#)); do
-num=${1:-0}
-h=${num: -1}
-if [[ 'bBkKmMgGtTpP' == *"$h"* ]]; then
-echo $(( ${HRint[$h]} * ${num:0:-1})) || return 1
-else
-echo $(( num )) || return 1
-fi
-shift 1
-done
-return 0
+	local num='' h=''
+	while (($#)); do
+		num=${1:-0} 
+ 		h=${num: -1}
+		if [[ 'bBkKmMgGtTpP' == *"$h"* ]]; then
+			echo $(( ${HRint[$h]} * ${num:0:-1})) || return 1
+		else
+			echo $(( num )) || return 1
+		fi
+		shift 1
+	done
+	return 0
 }
 int2hr() {
-local -i num=0
-local h=''
-while (($#)); do
-num=$(( ${1:-0} )) || return 1
-h=${2:-b}
-if [[ 'bBkKmMgGtTpP' == *"$h"* ]]; then
-echo "$((num / ${HRint[$h]}))${h}" || return 1
-else
-echo >&2 "Invalid hr code [$h]"; return 1
-fi
-shift 1
-(($#)) && shift 1
-done
-return 0
+	local -i num=0
+	local h=''
+	while (($#)); do
+		num=$(( ${1:-0} )) || return 1 
+ 		h=${2:-b}
+		if [[ 'bBkKmMgGtTpP' == *"$h"* ]]; then
+			echo "$((num / ${HRint[$h]}))${h}" || return 1
+		else
+			echo >&2 "Invalid hr code [$h]"; return 1
+		fi
+		shift 1
+		(($#)) && shift 1
+	done
+	return 0	
 }
-
 pause() { read -n1 -p "${1:-*Pause*}"; echo; }
 declare -fx pause
 declare -x perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"
 perrno() {
-(($#)) || return 0
-local OS=${2:-}
-[[ ! -f $perrnoListFile ]] && _perrno_gen_errors
-grep -i "$OS ${1}\:" "$perrnoListFile"
-return 0
+	(($#)) || return 0 
+	local OS=${2:-}
+	[[ ! -f $perrnoListFile ]] && _perrno_gen_errors
+	grep -i "$OS ${1}\:" "$perrnoListFile"
+	return 0
 }
-_perrno_gen_errors() {
-(
-local -i i=0
-local t IFS=$'\n'
-if [[ ! -d $(dirname "$perrnoListFile") ]]; then
-mkdir -p "$(dirname "$perrnoListFile")"
-fi
-> "$perrnoListFile"
-while ((i<500)); do
-t="$(perror $i)"
-t="${t// error code/}"
-t="${t/  / }"
-[[ -n "$t" ]] && echo "$t" >> "$perrnoListFile"
-((i++))
-done
-) &>/dev/null
-return 0
-}
+	_perrno_gen_errors() {
+		(
+		local -i i=0
+		local t IFS=$'\n'
+		if [[ ! -d $(dirname "$perrnoListFile") ]]; then
+			mkdir -p "$(dirname "$perrnoListFile")"
+		fi
+		> "$perrnoListFile"
+		while ((i<500)); do 
+			t="$(perror $i)"
+			t="${t// error code/}"
+			t="${t/  / }"
+			[[ -n "$t" ]] && echo "$t" >> "$perrnoListFile"
+			((i++))
+		done
+		) &>/dev/null
+		return 0
+	}
 declare -fx perrno
-rtfm() {
-if [[ -z ${1:-} || ${1:-} == '-h' || ${1:-} == '--help' ]]; then
-echo 'rtfm - read the fucking manual'
-echo "Searches command in 'help', 'man', 'entities.help', then tries to google it."
-echo "See 'entities.help rtfm', or 'rtfm rtfm'"
-return 1
-fi
-builtin help -m "$@" 2>/dev/null && return 0
-
-$(which man) 		"$@" 2>/dev/null && return 0
-entities.help 	"$@" 2>/dev/null && return 0
-${BROWSER:-$(which w3m || which lynx)} "http://www.google.com/search?q=linux+bash+%2B$@" && return 0
+rtfm() { 
+	if [[ -z ${1:-} || ${1:-} == '-h' || ${1:-} == '--help' ]]; then
+		echo 'rtfm - read the fucking manual'
+		echo "Searches command in 'help', 'man', 'entities.help', then tries to google it."
+		echo "See 'entities.help rtfm', or 'rtfm rtfm'"
+		return 1
+	fi
+	builtin help -m "$@" 2>/dev/null && return 0
+	
+	$(which man) 		"$@" 2>/dev/null && return 0
+	entities.help 	"$@" 2>/dev/null && return 0 
+	${BROWSER:-$(which w3m || which lynx)} "http://www.google.com/search?q=linux+bash+%2B$@" && return 0
 }
 declare -fx rtfm
 urldecode() { echo -e "$(sed 's/+/ /g;s/%\(..\)/\\x\1/g;')"; }
 declare -fx urldecode
 urlencode() {
-local LC_ALL=C encoded='' c
-local -i i strlen=${#1}
-for (( i=0 ; i<strlen ; i++ )); do
-c="${1:$i:1}"
-case "$c" in
-[A-Za-z0-9/_.~-])	encoded="${encoded}$c";;
-*)								printf -v encoded "%s%%%02x" "$encoded" "'${c}";;
-esac
-done
-echo -n "$encoded"
+	local LC_ALL=C encoded='' c
+	local -i i strlen=${#1}
+	for (( i=0 ; i<strlen ; i++ )); do
+		 c="${1:$i:1}"
+		 case "$c" in
+				[A-Za-z0-9/_.~-])	encoded="${encoded}$c";;
+				*)								printf -v encoded "%s%%%02x" "$encoded" "'${c}";;
+		 esac
+	done
+	echo -n "$encoded"
 }
 declare -fx urlencode
-urlpayload_encode() {
-echo -n "$( urlencode "$(payload_encode "${1}")" )"
-return 0
+urlpayload_encode() {	
+	echo -n "$( urlencode "$(payload_encode "${1}")" )" 
+	return 0
 }
 declare -fx urlpayload_encode
-payload_encode() {
-echo -n "$( echo -n "${1:-}" | gzip 2>/dev/null | base64 -w0 2>/dev/null)"
-return 0
+payload_encode() { 
+	echo -n "$( echo -n "${1:-}" | gzip 2>/dev/null | base64 -w0 2>/dev/null)" 
+	return 0
 }
-declare -fx payload_encode
+declare -fx payload_encode 
 payload_decode() {
-local str="${1}" bstr='' gzipid="$(echo -e "\x1f\x8b")"
-[[ -z "$str" ]] && { echo -n ''; return 0; }
-bstr="$(echo "$str" | base64 -d -i 2> /dev/null | tr -d '\r\n\0')"
-if ((! ${#bstr})); then
-echo -n "$str"
-return 0
-fi
-if [[ "${bstr:0:2}" == "$gzipid" ]]; then
-echo -n "$( echo -n "${str}" | base64 -d | gzip -d)"
-else
-echo -n "${bstr}"
-fi
-unset str bstr
-return 0
+	local str="${1}" bstr='' gzipid="$(echo -e "\x1f\x8b")" 
+	[[ -z "$str" ]] && { echo -n ''; return 0; }
+  bstr="$(echo "$str" | base64 -d -i 2> /dev/null | tr -d '\r\n\0')"
+  if ((! ${#bstr})); then
+		echo -n "$str"
+		return 0
+	fi
+	if [[ "${bstr:0:2}" == "$gzipid" ]]; then
+		echo -n "$( echo -n "${str}" | base64 -d | gzip -d)"
+	else
+		echo -n "${bstr}"
+	fi
+	unset str bstr
+	return 0
 }
 declare -fx payload_decode

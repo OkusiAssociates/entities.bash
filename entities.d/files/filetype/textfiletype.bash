@@ -33,10 +33,10 @@
 #      1 a /bin/env -i /bin/bash script
 
 #X Function: editorsyntaxstring
-#X Usage   : editorsyntaxstring filename filetype
+#X Usage   : editorsyntaxstring filetype filename
 editorsyntaxstring() {
-	local FileName="${1:-}"
-	local FileType="${2:-text}"
+	local FileType="${1:-text}"
+	local FileName="${2:-}"
 	local editor
 	editor="${3:-${EDITOR}}"
 	local opt=''
@@ -50,8 +50,9 @@ editorsyntaxstring() {
 	esac
 
 	case "$editor" in
-		joe) 	if [[ ! -f "/usr/share/joe/syntax/$FileType.jsf" ]]; then 
-						msg.warn "joe: Syntax file [$FileType].jsf not found for [$FileName]"
+		joe) 	[[ $FileType == 'text' ]] && FileType='sh'
+					if [[ ! -f "/usr/share/joe/syntax/$FileType.jsf" ]]; then 
+						echo >&2 "joe: Syntax file [$FileType].jsf not found for [$FileName]"
 						FileType=text
 						opt=''
 					else
@@ -87,45 +88,53 @@ declare -Ax _ent_TextFileTypes=(
 			['BSD makefile script']='bsdmake'
 		)
 textfiletype() {
-	local testfile
-	local File FileType
-	
-	while (($#)); do
-		testfile="${1:-}"
-		[[ ! -f "$testfile" ]]	&& { shift; continue; }
-		
-		File=$(trim "$(file "$testfile" 2>/dev/null | grep ' text' | cut -d':' -f2)")
-		[[ -z $File ]] && { shift; continue; }
-		File=${File%%,*}
-		[[ -z $File ]] && File='text'
-		if [[ "${!_ent_TextFileTypes[@]}" == *"$File"* ]]; then
-			FileType="${_ent_TextFileTypes[$File]}"
-			[[ -z $FileType ]] && FileType='text'
-		else
-			h=$(head -n1 "$testfile")
-			if 	 [[ $h =~ ^\#\!.*\/bash.* ]];	then	FileType='bash'
-			elif [[ $h =~ ^\#\!.*\/sh.*   ]];	then	FileType='sh'
-			elif [[ $h =~ ^\#\!.*\/php.*  \
-								|| ${h:0:2} == '<?' ]];	then	FileType='php'
+	local testfile=''
+	local -i typeonly=0
+	local File='' FileType=text
+	while (( $# )); do
+		testfile="${1}"
+		# for type only
+		if [[ $testfile == '-t' ]]; then
+			typeonly=1
+			shift
+			continue
+		fi
+#		[[ -d "$testfile" ]] && { shift; continue; }
+		if [[ -f "$testfile" ]]; then
+			# get file descriptions from file command		
+			File=$(trim "$(file "$testfile" 2>/dev/null | grep ' text' | cut -d':' -f2)")
+			[[ -z $File ]] && { shift; continue; }
+			File=${File%%,*}
+			[[ -z $File ]] && File='text'
+			if [[ "${!_ent_TextFileTypes[@]}" == *"$File"* ]]; then
+				FileType="${_ent_TextFileTypes[$File]}"
+				[[ -z $FileType ]] && FileType='text'
+			else
+				h=$(head -n1 "$testfile")
+				if 	 [[ $h =~ ^\#\!.*\/bash.* ]];	then	FileType='bash'
+				elif [[ $h =~ ^\#\!.*\/sh.*   ]];	then	FileType='sh'
+				elif [[ $h =~ ^\#\!.*\/php.*  \
+									|| ${h:0:2} == '<?' ]];	then	FileType='php'
+				fi
 			fi
 		fi
-
+		
 		# still equals text, so check file extension
 		if [[ $FileType == '' || $FileType == 'text' ]]; then
 			ext=${testfile##*\.}
-			case $ext in
+			case "$ext" in
 				php)				FileType=php;;
 				htm|html)		FileType=html;;
-				sh)					FileType=sh;;
-				bash|conf)	FileType=bash;;
+				sh|conf)		FileType=sh;;
+				bash|cnf)		FileType=bash;;
 				c|h)				FileType=c;;
 				xml)				FileType=xml;;
 				''|*)				FileType=text;;
 			esac
 		fi
 		
-		echo -e "$testfile\t${FileType}\t"
-	
+		((typeonly)) && echo "${FileType:-text}" \
+				|| echo "${FileType}" "${testfile}"
 		shift
 	done
 }

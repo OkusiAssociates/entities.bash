@@ -1,7 +1,7 @@
 #!/bin/bash
 # set entities location to this.script directory
-ENTITIES="$(dirname "$(readlink -f "$0")")"
-source "$ENTITIES/entities.bash" || exit 127
+ENTITIES="$(dirname "$(readlink -f "$0")")" || exit 2
+source "$ENTITIES/entities.bash" || exit 2
 strict.set on
 
 declare entities_file="$ENTITIES/entities.bash"
@@ -46,24 +46,37 @@ main() {
 	local -a templates=( "$ENTITIES/entities.bash" )
 	# get all .bash files in entities.d/
 	[[ ! -d "$ENTITIES/entities.d" ]] && msg.die log "[$ENTITIES/entities.d] not found!"
+
 	local _e
+	local -a _userbash=()
 	shopt -s globstar
 	for _e in $ENTITIES/entities.d/**/*.bash; do
 		if [[ -r "$_e" ]]; then
-			templates+=( "$_e" )
+			if [[ ! -L "$_e" ]] ; then
+				_userbash+=( "${_e}" )
+			else
+				templates+=( "${_e}" )
+#				source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
+			fi
 		fi
 	done
-	unset _e
+	# do symlinks last
+	for _e in ${_userbash[@]}; do
+		templates+=( "${_e}" )
+#		source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
+	done
+	unset _e _userbash
 
 	# merge all bash files into one minimal file
-	local template tx
+	local template 
+	local -a tx=()
 	for template in ${templates[@]}; do
-		[[ ! -f "${template}" ]] && msg.err log "${template} not found!"
+		[[ ! -f "${template}" ]] && msg.err "${template} not found!"
 		# remove blank lines, and #comment lines that begin with space*#
-		tx=$(grep -v '^$' "$template" | grep -v '^[[:space:]]*#')
 		# make the minimal version of entities.bash
-		(	local IFS=$'\n'
-			for ln in $tx; do	trim "$ln";	echo;	done
+		(	tx=( "$(grep -v '^$\|^[[:space:]]*#' "$template" )" )
+			local IFS=$'\n'
+			for ln in "${tx[@]}"; do	trim "$ln";	echo;	done
 		) >> "$entities_min_tmp"
 	done
 	unset template templates tx
@@ -80,7 +93,7 @@ main() {
 			|| msg.die log "File touch $entities_min failed!"
 
 	# check permissions
-	chmod 644 "$entities_min"	\
+	chmod 755 "$entities_min"	\
 			|| msg.die log "Could not chmod $entities_min!"
 
 	msg.info log "$entities_min created."

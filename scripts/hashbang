@@ -1,113 +1,154 @@
 #!/bin/bash
-declare _x_
-_x_="$(readlink -f "$0")"
-PRGDIR="$(dirname "${_x_}")"
-PRG="$(basename "${_x_}")"
-unset _x_
+source entities || exit 2
+	strict.set on
 
-# hbpattern='#!*bash'
-# f=../cleanakfiles.bash
-# hd="$(head -n1 $f 2>/dev/null)"
-# [[ "$hd" == $hbpattern ]] && echo 1
-
-hb_EXCLUDE=( '*~' '~*' '.gudang/' 'gudang/' '.old' '.bak' 'dev/'  )
-
-declare -i verbose=1
+	if [[ -z "${hb_EXCLUDE[@]:-}" ]]; then
+		declare -ax hb_EXCLUDE
+		hb_EXCLUDE=( '*~' '~*' '.gudang/' 'gudang/' '.old' '.bak' 'dev/' '*.png' '*.jpg' )
+	fi
 
 hashbang_main() {
-	version.set '0.9'
-	local dir='' search='' hashbang="#!$(which bash)" prefix='' suffix='' LF=$'\n'
+	version.set '0.93'
+	local dir='' search='' hashbang='bash' prefix='' suffix='' LF=$'\n'
 	local -a gcmd=()
-	local -i ccc=0
-	while (($#)); do
+	local -i ccc=0 hbExclude=0
+	while (( $# )); do
 		if [[ "${1:0:1}" == '-' ]]; then
 			case "$1" in
-				-h|--help)			usage	;;
-				-v|--verbose)		verbose=1 ;;
-				-q|--quiet)			verbose=0 ;;
 				-s|--search)		shift; search="${1:-}" ;;
 				-p|--prefix)		shift; prefix="${1:-} " ;;
-				-x|--suffix)		shift; suffix="${1:-}" ;;
-				-l|--nolf)			LF='' ;;
+				-x|--suffix)		shift; suffix=" ${1:-}" ;;
+				-X|--hb-exclude)
+												hbExclude=1;;
+				-Y|--no-hb-exclude)
+												hbExclude=0;;
+				-e|--exclude)		shift; hb_EXCLUDE+=( "$1" ); hbExclude=1;;
 				-b|--hashbang)	shift
-												hashbang="$(which "${1:-junkfilex}")"
-												if [[ -z "$hashbang" ]]; then
-													hashbang="${1:-}"
-													msg "# **Program [${1:-}] was not found. Using [${1:-}] as head search."
-												else
-													hashbang="#!${hashbang}"
-												fi
+												hashbang=${1:-bash}
+#												hashbang="$(which "${1:-junkfilex}")"
+#												if [[ -z "$hashbang" ]]; then
+#													hashbang="${1:-}"
+#													msg "# **Program [${1:-}] was not found. Using [${1:-}] as head search."
+#												else
+#													hashbang="#!${hashbang}"
+#												fi
 												;;
-				*)							gcmd+=("$1") ;;
+				-l|--nolf)			LF='' ;;
+				-v|--verbose)		verbose.set on ;;
+				-vv|-v2|--D|--debug)
+												debug.set on ;;
+				-q|--quiet)			verbose.set off; debug.set off;;
+				-V|--version)		printTitle; return 0;;
+				-h|--help)			usage	;;
+				--)							shift
+												gcmd+=( "$@" )
+												break;;
+				*)							gcmd+=( "$1" ) ;;
 			esac
 		else
 			if (( ! ${#dir} )); then
 				dir="$1"
 			else
-				gcmd+=("$1")
+				gcmd+=( "$1" )
 			fi				
 		fi
 		shift
 	done
-	((${#dir}))		|| dir='.'
-	((${#gcmd}))	|| gcmd+=("-l")
-	((verbose))		|| gcmd+=("-s")
+	
+	[[ -z "${dir}" ]] 		&& dir='.'
+	[[ -z "${gcmd[@]}" ]]	|| gcmd+=( '-l' )
+	verbose								|| gcmd+=( '-s' )
 	
 	# report
-	((${#prefix})) && printf '$s\n' "$hashbang"
+#	(( ${#prefix} )) 		&& printf '%s\n' "$hashbang"
 	msg "# $PRG $dir --hashbang '$hashbang'"
-	((${#search}))	&& msg " --search '$search'"
-	((${#gcmd[@]}))	&& msg " --grep ${gcmd[*]}"
-	((${#prefix}))	&& msg " --prefix '${prefix}'"
-	((${#suffix}))	&& msg " --suffix '${suffix}'"
-	((! ${#LF}))		&& msg " --nolf"
+	(( ${#search} ))		&& msg " --search '$search'"
+	(( ${#gcmd[@]} ))		&& msg " --grep ${gcmd[*]}"
+	(( hbExclude ))			&& msg " --hb-exclude"
+	(( ${#prefix} ))		&& msg " --prefix '${prefix}'"
+	(( ${#suffix} ))		&& msg " --suffix '${suffix}'"
+	(( ! ${#LF} ))			&& msg " --nolf"
 	msg '\n'
 	
+	if ((hbExclude)) && [[ -z ${hb_EXCLUDE[@]} ]]; then
+		verbose && msg.warn "hb_EXCLUDE array envvar has not been set."
+		hbExclude=0
+	fi
+
 	# execute
-	files=( $(find "${dir}" -type f) )
-	for f in ${files[@]}; do
-		if [[ "$(head -n1 "$f" 2>/dev/null)" == "$hashbang" ]]; then
-			((${#search})) && f="$(grep ${gcmd[@]} "$search" "$f")"
-			((${#f})) && { ((ccc++)); printf '%s%s%s %s' "${prefix}" "${f}" "${suffix}" "$LF"; }
+	files=( $(find ${dir} -type f) )
+	local file='' e
+	local -i incl=1
+	for file in ${files[@]:-}; do
+		# exclude files
+		if ((hbExclude)); then
+			for e in ${hb_EXCLUDE[@]}; do
+				if [[ "$file" == *"${e}"* ]]; then
+					debug && msg.warn "Excluded [$file] because of [$e]"
+					incl=0
+					break
+				fi
+			done 
+			(( ! incl )) && { incl=1; continue; }
+		fi
+		
+		# head/type examination
+		ft=$(textfiletype -t "$file")
+		[[ $ft == 'sh' ]] && ft='bash'
+		if [[ "$ft" == "$hashbang" ]]; then
+		#if [[ "$(head -n1 "$file" 2>/dev/null)" == "$hashbang" ]]; then
+			if (( ${#search} )); then
+				file="$(grep ${gcmd[@]:-} "$search" "$file")" || file=''
+			fi
+			if [[ -n ${file} ]]; then
+				((++ccc))
+				printf '%s%s%s %s' "${prefix}" "${file}" "${suffix}" "$LF"
+			fi
 		fi
 	done
-	((! ${#LF})) && msg '\n'
+	(( ! ${#LF} )) && printf '\n'
 	msg "# ${ccc} file$( ((ccc!=1)) && echo 's') found\n"
 	return 0
 }
-
-make_find_exclude_file() {
-
-	return 0
+cleanup() {
+	local -i err=${1:-}
+	exit $err
 }
 
 msg() {
-	((verbose)) && echo -en "${1:-}" 
+	verbose && echo -en "${1:-}" 
 	return 0
 }
-
-declare -x _ent_SCRIPT_VERSION=''
-version.set () { 
-	if (($#)); then
-		_ent_SCRIPT_VERSION="$1";
-	else
-		echo -n "${_ent_SCRIPT_VERSION}";
-	fi;
-	return 0
+msg.warn() {
+	echo >&2 -e "$PRG: $*"
 }
 
-printTitle() { echo "$(basename $0) vs $(version.set)" ; return 0; }
+printTitle() { echo "$(basename "$0") vs $(version.set)" ; return 0; }
 usage() {
-	local PRG=$(basename "$0")
-	printTitle
-	echo "Desc    : search directory recursively for files with \$!/bin/bash header."
-	echo "Synopsis: $PRG dir [--search 'str'] [--hashbang bash|php|*]"
-	echo "        :     [--verbose|-v] [--quiet|-q]"
-	echo "        :     [--nolf|-l] [--quiet|-q]"
-	echo "        :     [--prefix|-p outputprefix] [--suffix|-x outputsuffix]"
-	echo "Examples: $PRG                    # print bash filename"
-	echo "        : $PRG . -s '^verbose'    # print matching bash file"
-	echo "        : $PRG . -s '^verbose' -H # print matching bash file with context"
+	local PRG
+	PRG="$(basename "$0")"
+	cat <<-ETX
+	Script  : hashbang
+	Version : $(version.set)
+	Desc    : Search directory recursively for files with #!/bin/bash header.
+	Synopsis: hashbang ["dir"]             Directory to start search (.)
+	        :   [-s|--search "str"]        String to find in found files.
+	        :   [-b|--hashbang bash|php|*] Hashbang to search for (#!/bin/bash)
+	        :   [-X|--hb-exclude]          Exclude using hb_EXCLUDE array.
+	        :   [-Y|--no-hb-exclude]       Do not use hb-exclude.
+	        :   [-e|--exclude 'expr']      Add 'expr' to hb_EXCLUDE and enable -X. 
+	        :   [-p|--prefix "prefix"]     Prefix found files with "prefix".
+	        :   [--suffix|-x "suffix"]     Suffix found files with "suffix".
+	        :   [-l|--nolf]                Do not emit LF.
+	        :   [-v|--verbose]             Verbose (default).
+	        :   [-D|--debug]               Increase verbosity (for debugging).
+	        :   [-q|--quiet]               Just the facts, mam.
+	        :   [--|--grep]                Pass all remaining parameters to grep.
+	        : Note: All non-hashbang options are passed onto grep.
+	 Example: hashbang                   # print bash script filenames
+	        : hashbang . -s '^whereisit' # print bash filenames matching pattern
+	        : hashbang . -s '^findit' -H # print bash filesnames with context
+	ETX
 	exit 1
 }
 

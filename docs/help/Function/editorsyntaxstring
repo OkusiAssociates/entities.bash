@@ -1,5 +1,5 @@
 #-Function--editorsyntaxstring
   Function: editorsyntaxstring
-  Synopsis: editorsyntaxstring filename filetype
+  Synopsis: editorsyntaxstring filetype filename
     Source: /usr/share/okusi/entities/entities.d/files/exit_if_already_running.bash
 #-Function--editorsyntaxstring------------------------------------------------

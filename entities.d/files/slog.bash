@@ -1,3 +1,4 @@
+#!/bin/bash
 #X Function : slog slog.file slog.prefix slog.prefix.eval slog.truncate
 #X Desc     : Write strings to user log file
 #X Synopsis : slog string [...]
