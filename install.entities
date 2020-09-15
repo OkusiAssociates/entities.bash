@@ -64,19 +64,15 @@ useage() {
 	declare env_entities
 	env_entities="$(cat <<-eot
 	
-			# Entities for Bash
-			#   * Add '${ENTITIES}' path to PATH
-			#   * export ENTITIES='${ENTITIES}'
-			# Installed by $(readlink -f "$0")
-			#   on $(date +'%F %T').420 by ${USER:-}@${HOSTNAME}
-			# https://github.com/OkusiAssociates/entities.bash
+			#X Entities for Bash
+			#X   * export ENTITIES='${ENTITIES}'
+			#X Installed by $(readlink -f "$0")
+			#X   on $(date +'%F %T').420 by ${USER:-}@${HOSTNAME}
+			#X https://github.com/OkusiAssociates/entities.bash
 			ENTITIES="${ENTITIES}"
 			export ENTITIES
-			if [[ ":\${PATH}:" != *":\${ENTITIES}:"* ]]; then
-			  PATH="\${PATH}:\${ENTITIES}"
-			  export PATH
-			fi
-		
+			#X entities.bash end
+
 		eot
 		)"
 
@@ -130,8 +126,9 @@ main() {
 	$PRGDIR/entities.make.minimal --auto	|| msg.die "[PRGDIR=$PRGDIR] make entities.bash.min failed!"
 
 	makeprofile
-	((userprofiles)) && makeuserprofiles
+	#((userprofiles)) && makeuserprofiles
 	makeenvirnonment
+
 	install
 
 	testit
