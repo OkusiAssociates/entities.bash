@@ -1,8 +1,5 @@
 #!/bin/bash
-# shellcheck disable=SC2035
-# shellcheck disable=SC2154
-# shellcheck disable=SC1090
-# shellcheck disable=SC2086
+##! shellcheck disable=SC2035,SC2154,SC1090,SC2086,2068
 
 # Bash only
 #libfunc1() { ...; }
@@ -551,20 +548,40 @@ declare -fx 'msg.crit'
 	alias critmsg='msg.crit' #X legacy X#
 
 #X Function : msg.line 
-#X Desc     : print an underline from current cursor position to end of screen
-#X Synopsis : msg.line
+#X Desc     : Print a line of replicated characters (default underline) 
+#X          : from current cursor position to end of screen.
+#X Synopsis : msg.line [repchar [iterations]]
+#X          : Default repchar is '_'.
+#X          : Default iterations is number of screen columns - 1.
 #X Example  : msg.line
+#X          : msg.line '+'
+#X          : msg.line '=' 42
 msg.line() {
 	((_ent_VERBOSE)) || return
-	local sx sz IFS=' '
-	sz=( $(stty size) )
-	if (( ${#sz[@]} )); then
-		sx=$(( (sz[1] - (TABSET * TABWIDTH)) - 1))
-	else
-		sx=$(( (COLUMNS - (TABSET * TABWIDTH)) - 1))
+	local -i  width=78 screencols=0
+	local --  repchar='_'	
+	if (( $# )); then
+		repchar="${1:0:1}"
+		shift
+		[[ -n "${1:-}" ]] && screencols=$1
 	fi
-	IFS=$' \t\n'
-	msg "$(printf '_%.0s' $(seq 1 "${sx:-1}") )"
+
+	if (( ! screencols )); then
+		local -- IFS=' '
+		local -ai sz 
+		sz=( $(stty size) )
+		if (( ${#sz[@]} )); then
+			screencols=$(( ${sz[1]} ))
+		else
+			screencols=$(( COLUMNS ))
+		fi
+		IFS=$' \t\n'
+	fi
+	width=$(( (screencols - (TABSET * TABWIDTH)) - 1))
+
+  msg "$(head -c $width < /dev/zero | tr '\0' $repchar)"
+
+	#msg "$(printf "${repchar}%.0s" $(seq 1 "${width}") )"
 	return 0
 }
 declare -fx 'msg.line'

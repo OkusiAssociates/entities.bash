@@ -1,4 +1,5 @@
 #!/bin/bash
+#!	shellcheck disable=SC2086
 	source entities || { echo >&2 "Could not open entities.bash!"; exit 1; }
 #	source $OKROOT/entities/entities.bash new || { echo >&2 "Could not open entities.bash!"; exit 1; }
 #	source entities.bash new || { echo >&2 "Could not open entities.bash!"; exit 1; }
@@ -96,8 +97,17 @@ main() {
 		fi
 	fi
 
-	if ((shellcheck)); then
-		$(which shellcheck) "$file"
+	if ((shellcheck)) && [[ $ftype == 'sh' ]] ; then
+		if [[ -f "$file" ]]; then
+			local -- scdisable
+			scdisable="$( grep -m 1 '^#\![[:blank:]]*shellcheck[[:blank:]]*disable=' "$file" 2>/dev/null )"
+			if [[ -n $scdisable ]]; then
+				scdisable=${scdisable#*=}
+				scdisable=${scdisable//,/ }
+				scdisable="--exclude ${scdisable// /,}"
+			fi
+			$(which shellcheck) --shell=bash ${scdisable} "$file"
+		fi
 	fi
 
 	if ((execute && !syntaxerr)); then

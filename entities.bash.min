@@ -293,15 +293,26 @@ declare -fx 'msg.crit'
 	alias critmsg='msg.crit' #X legacy X#
 msg.line() {
 	((_ent_VERBOSE)) || return
-	local sx sz IFS=' '
-	sz=( $(stty size) )
-	if (( ${#sz[@]} )); then
-		sx=$(( (sz[1] - (TABSET * TABWIDTH)) - 1))
-	else
-		sx=$(( (COLUMNS - (TABSET * TABWIDTH)) - 1))
+	local -i  width=78 screencols=0
+	local --  repchar='_'	
+	if (( $# )); then
+		repchar="${1:0:1}"
+		shift
+		[[ -n "${1:-}" ]] && screencols=$1
 	fi
-	IFS=$' \t\n'
-	msg "$(printf '_%.0s' $(seq 1 "${sx:-1}") )"
+	if (( ! screencols )); then
+		local -- IFS=' '
+		local -ai sz 
+		sz=( $(stty size) )
+		if (( ${#sz[@]} )); then
+			screencols=$(( ${sz[1]} ))
+		else
+			screencols=$(( COLUMNS ))
+		fi
+		IFS=$' \t\n'
+	fi
+	width=$(( (screencols - (TABSET * TABWIDTH)) - 1))
+  msg "$(head -c $width < /dev/zero | tr '\0' $repchar)"
 	return 0
 }
 declare -fx 'msg.line'
@@ -587,7 +598,7 @@ clntempfiles() {
 }
 declare -fx clntempfiles
 declare -gx _ent_EDITOR
-	_ent_EDITOR="$(which joe 2>/dev/null) -tab 2 -autoindent --wordwrap"
+	_ent_EDITOR="$(which nano 2>/dev/null)"
 	declare -gx EDITOR
 	if [[ -z "${EDITOR:-}" ]]; then
 		[[ -n "${_ent_EDITOR:-}" ]] && EDITOR="${_ent_EDITOR}"
@@ -606,7 +617,7 @@ declare -gx _ent_EDITOR
 	_ed_="${EDITOR%% *}"
 	_ed_="$(which "${_ed_}" 2>/dev/null)"
 	if [[ ! -x "${_ed_}" ]]; then
-		echo >&2 "Editor [${EDITOR}] not found!"
+		echo >&2 "Editor [${EDITOR}] not found! Using [${_ent_EDITOR}]"
 		EDITOR="${_ent_EDITOR}"
 	else
 		[[ $EDITOR != *' '* ]] && EDITOR='' 

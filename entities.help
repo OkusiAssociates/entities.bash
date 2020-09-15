@@ -79,7 +79,9 @@ display_tree() {
 	if [[ ! -f "$HelpFilesDir/$htmfile" ]]; then
 		msg.info "Creating [$htmfile]..."
 		cd "$HelpFilesDir" || msg.die "Could not cd into $HelpFilesDir."
-		/usr/bin/tree --noreport -H ./ -T 'entities.bash help files' "$(pwd)" > "$htmfile"
+
+		/usr/bin/tree --dirsfirst --noreport -H ./ -T 'entities.bash help files' "$(pwd)" > "$htmfile"
+		
 		# clean up html output
 		tmp=$(cat "$htmfile")
 		tmp="${tmp//<!--/}" 

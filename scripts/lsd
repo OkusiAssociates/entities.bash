@@ -30,7 +30,8 @@ main() {
 		apt-get -qq install tree || msg.die "$PRG: Could not install tree."
 	done
 	
-	$(which tree) -d -L $Level $ls "${cmd[@]}"
+	$(which tree) -d -L $Level $ls --dirsfirst "${cmd[@]}"
+
 	return 0
 }
 

@@ -1,7 +1,12 @@
 #-Function--msg.line
   Function: msg.line
-      Desc: print an underline from current cursor position to end of screen
-  Synopsis: msg.line
+      Desc: Print a line of replicated characters (default underline)
+          : from current cursor position to end of screen.
+  Synopsis: msg.line [repchar [iterations]]
+          : Default repchar is '_'.
+          : Default iterations is number of screen columns - 1.
    Example: msg.line
+          : msg.line '+'
+          : msg.line '=' 42
     Source: /usr/share/okusi/entities/entities.bash
 #-Function--msg.line----------------------------------------------------------

@@ -12,8 +12,8 @@
 #X ENV   : EDITOR SUDO_EDITOR SELECTED_EDITOR _ent_EDITOR
 declare -gx _ent_EDITOR
 	# explicit LCD editor
-#	_ent_EDITOR="$(which nano 2>/dev/null)"
-	_ent_EDITOR="$(which joe 2>/dev/null) -tab 2 -autoindent --wordwrap"
+	_ent_EDITOR="$(which nano 2>/dev/null)"
+#	_ent_EDITOR="$(which joe 2>/dev/null) -tab 2 -autoindent --wordwrap"
 	declare -gx EDITOR
 	if [[ -z "${EDITOR:-}" ]]; then
 		# default bottom line editor, in the absense of all others
@@ -38,7 +38,7 @@ declare -gx _ent_EDITOR
 	_ed_="${EDITOR%% *}"
 	_ed_="$(which "${_ed_}" 2>/dev/null)"
 	if [[ ! -x "${_ed_}" ]]; then
-		echo >&2 "Editor [${EDITOR}] not found!"
+		echo >&2 "Editor [${EDITOR}] not found! Using [${_ent_EDITOR}]"
 		EDITOR="${_ent_EDITOR}"
 	else
 		[[ $EDITOR != *' '* ]] && EDITOR='' 

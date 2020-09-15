@@ -1,19 +1,16 @@
 #!/bin/bash
 useage() {
-	echo "$(basename $0)"
-	echo 'Entities installation script'
-	[[ "${USER:-}" == 'root' || $EUID == 0 ]] \
-			|| { echo ''; echo "Requires root to install. Current user is [${USER:-}]."; }
-	echo ''
-	echo "Synopsis: $(basename $0) [--auto|-y] [--dev] [--nouserprofiles|-n]"
-	echo '                [--install|-i] [--help|-h]'
-	echo ''
+	echo "$(basename "$0"): Entities installation script"
+	if [[ "${USER:-}" -ne 'root' ]] || ((EUID > 0)); then
+		echo >&2 "Requires root to install. Current user is [${USER:-}]."
+	fi
+	echo "Usage: $(basename $0) [-y|--auto] [-n|--nouserprofiles] [-i|--install] [--dev]"
 	exit ${1:-0}
 }
 	# cries for help.
 	[[ "$@" == "" || "$@" == *"--help"* || "$@" == *"/?"* || "$@" == *-h* ]] && useage 0
 	# not root say bye
-	[[ "${USER:-}" == 'root' || $EUID==0 ]] || useage 1
+	[[ "${USER:-}" == 'root' || $EUID == 0 ]] || useage 1
 
 	declare -i production=0
 	declare -i autoinstall=0
@@ -27,8 +24,8 @@ useage() {
 	echo "You will be prompted before installation proceeds."
 
 	# make absolutely certain we have identified the canonical entities.bash script
-	PRG="$(basename $(/bin/readlink -f "${0:-}"))"
-	PRGDIR="$(/usr/bin/dirname $(/bin/readlink -f "${0:-}"))"
+	PRG="$(basename "$(/bin/readlink -f "${0:-}")")"
+	PRGDIR="$(/usr/bin/dirname "$(/bin/readlink -f "${0:-}")")"
 	if [[ -f "$PRGDIR/entities.bash" ]]; then	# located in the same directory as this script.
 		canonical="$PRGDIR/entities.bash"
 		echo "Reference entities is $canonical"
@@ -91,7 +88,7 @@ useage() {
 #	cat $SyncExclude > ttt
 			
 main() {
-	while (($#)); do
+	while (( $# )); do
 		case "$1" in
 			--dev|-p|--production)	production=1;;
 			-y|--auto)							autoinstall=1;;
@@ -110,7 +107,7 @@ main() {
 		msg.warn "A version of entities is already installed at $ENTITIES."
 	fi
 	
-	if ((autoinstall==0)); then
+	if (( ! autoinstall)); then
 		infotext
 		ask.yn 'Install entities.bash with these settings?' || msg.die 'Exiting...'
 		msg ''
@@ -129,7 +126,7 @@ main() {
 		#fi
 	fi
 	tab.set 1
-	msg.sys "Updating entities.bash.min"
+	msg.sys 'Updating entities.bash.min'
 	$PRGDIR/entities.make.minimal --auto	|| msg.die "[PRGDIR=$PRGDIR] make entities.bash.min failed!"
 
 	makeprofile
@@ -188,7 +185,7 @@ makeuserprofiles() {
 		inent=0
 		local IFS=$'\n'
 		profile="$(cat "$userfile")"	
-		for p in ${profile[@]}; do
+		for p in "${profile[@]}"; do
 			pp=$(trim "${p,,}" | tr -d '[:blank:]')
 			if ((inent)); then
 				[[ "${pp:0:19}" == 'exportentities' ]] && inent=0
@@ -197,7 +194,7 @@ makeuserprofiles() {
 			fi		
 		done
 
-		cat >$userfile <<-user-profile
+		cat >"$userfile" <<-user-profile
 			${oldprofile}
 
 			${env_entities}			
@@ -302,7 +299,7 @@ install() {
 	/usr/bin/rsync -avl --exclude-from "$SyncExclude" docs/*						"$ENTITIES/docs/" >/dev/null || exit 1
 
 	# make symlinks in $ENTITIES directory
-	msg.info "Make symlinks in $ENTITIES directory..."
+	msg.info "Make symlinks in [$ENTITIES] directory..."
 	cd "$ENTITIES" 																|| exit 2
 	# execute permissions on entities	
 	chmod 775 entities.bash entities.bash.min			|| exit $?
@@ -311,15 +308,19 @@ install() {
 	ln  -fs entities.bash.min entities.min		    || exit $?
 
 	# touch420 all files in $ENTITIES directory
-	msg.info "Fix owner/perms, touch420 all files in $ENTITIES directory..."
+	msg.info "Fix owner/perms, touch420 all files in [$ENTITIES] directory..."
 	cd "$ENTITIES" || exit 2
 	chown root:root ${ENTITIES}/* -R
 	declare IFS=$'\n'
 	for f in $(/usr/bin/find | grep -v ".g"); do 
-		[[ -d "$f" ]] && chmod 775 "$f" || chmod u+rw,g+rw,o+rw "$f"
+		if [[ -d "$f" ]]; then
+			chmod 775 "$f"
+		else 
+			chmod u+rw,g+rw,o+rw "$f"	#should this be 555??
+		fi
 		fd=$(stat "$f" -c '%y');
 		fd=${fd%% *} 
-		/usr/bin/touch -h -d "$(date +'%F 04:20:00' -d $fd)" "$f"
+		/usr/bin/touch -h -d "$(date +'%F 04:20:00' -d "$fd")" "$f"
 	done
 
 	# back to base	
@@ -337,7 +338,7 @@ testit() {
 }
 
 make.syncexclude() {
-	cat >$SyncExclude <<-EOT
+	cat >"$SyncExclude" <<-EOT
 		~*
 		.~*
 		*~
