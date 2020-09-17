@@ -39,7 +39,7 @@ useage() {
 
 	# ==========================================================================
 	# let's start
-	strict.set on
+	strict.set off
 	verbose.set on
 	debug.set off
 	trap.set on

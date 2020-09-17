@@ -1,6 +1,6 @@
 #!/bin/bash
 source entities || exit 2
-	strict.set on
+	strict.set off
 
 	if [[ -z "${hb_EXCLUDE[@]:-}" ]]; then
 		declare -ax hb_EXCLUDE

@@ -1,6 +1,6 @@
 #!/bin/bash
 source $(dirname "$0")/entities.bash new || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
-	strict.set on
+	strict.set off
 	trap.set on
 	
 	declare HelpFilesDir="$PRGDIR/docs/help"

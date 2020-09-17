@@ -304,8 +304,9 @@ msg.line() {
 		[[ -n "${1:-}" ]] && screencols=$1
 	fi
 	if (( ! screencols )); then
-		local -- IFS=' '
-		local -ai sz 
+		local -- IFS=' ' sx
+		local -ai sz
+		local -i plen 
 		sz=( $(stty size) )
 		if (( ${#sz[@]} )); then
 			screencols=$(( sz[1] ))
@@ -314,7 +315,10 @@ msg.line() {
 		fi
 		IFS=$' \t\n'
 	fi
-	width=$(( (screencols - ${#_ent_MSG_PRE} - (TABSET * TABWIDTH)) - 2))
+	
+	sx="${_ent_MSG_PRE[*]}" || sx=''
+	plen=${#sx}
+	width=$(( (screencols - plen - (TABSET * TABWIDTH)) - 2))
   msg "$(head -c $width < /dev/zero | tr '\0' "${repchar:-_}")"
 	return 0
 }
@@ -678,7 +682,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.95.420.454.14'
+_ent_VERSION='0.95.420.454.16'
 cdd() {
 	(( $# )) || return 0
 	local dirspec="${1}" pwd=''

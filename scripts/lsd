@@ -3,7 +3,7 @@
 #source "${OKROOT}/entities/entities.bash" || exit 2
 source entities
 	trap.set on
-	strict.set on
+	strict.set off
 	version.set 0.96
 	verbose.set on
 

@@ -10,16 +10,16 @@ source entities || exit 2
 	version.set '0.1'
 	verbose.set on
 	trap.set on
-	strict.set on
-
+	strict.set off
+	msg.prefix.set "$PRG"
+	
 main() {
-	declare -i i=0
-	declare -a args=()
+	local -a args=()
 	while (( $# )); do
 		case "$1" in
 			-v|--verbose)		verbose.set on;;
 			-q|--quiet)			verbose.set off;;
-			-V|--version)		msg "$PRG $(version.set)"; exit 0;;
+			-V|--version)		msg "$(version.set)"; return 0;;
 			-h|--help)			usage; return 0;;
 			-?|--*)					msg.err "Invalid option [$1]"; return 1;;
 			*)							args+=( "$1" );;
@@ -31,22 +31,23 @@ main() {
 	
 	
 	
+	
 }
-
 
 cleanup() {
 	local -i err=$?
 	[[ -z ${1:-} ]] && err=$1
-	exit $err
+	((err > 1)) && errno "$err"
+	exit "$err"
 }
 
 usage() {
 	cat <<-usage
-		Usage: $PRG 
-		         [-v|--verbose] [-q|--quiet] 
-		         [-h|--help]
+		Script  : 
+		Desc    : 
+		Synopsis: $PRG 
+		            [-v|--verbose] [-q|--quiet] 
 	usage
-	exit 1
 }
 
 main "$@"

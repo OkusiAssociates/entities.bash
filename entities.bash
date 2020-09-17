@@ -118,7 +118,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 
 _ent_scriptstatus+="reloading|\n"
 
-# turn off 'strict' while we run through the included functions! ('strict' is default)
+# turn off 'strict' by default)
 set +o errexit +o nounset +o pipefail
 
 # oh why not ...
@@ -572,8 +572,9 @@ msg.line() {
 	fi
 
 	if (( ! screencols )); then
-		local -- IFS=' '
-		local -ai sz 
+		local -- IFS=' ' sx
+		local -ai sz
+		local -i plen 
 		sz=( $(stty size) )
 		if (( ${#sz[@]} )); then
 			screencols=$(( sz[1] ))
@@ -582,7 +583,10 @@ msg.line() {
 		fi
 		IFS=$' \t\n'
 	fi
-	width=$(( (screencols - ${#_ent_MSG_PRE} - (TABSET * TABWIDTH)) - 2))
+	
+	sx="${_ent_MSG_PRE[*]}" || sx=''
+	plen=${#sx}
+	width=$(( (screencols - plen - (TABSET * TABWIDTH)) - 2))
 
   msg "$(head -c $width < /dev/zero | tr '\0' "${repchar:-_}")"
 

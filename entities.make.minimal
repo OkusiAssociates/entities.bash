@@ -2,7 +2,7 @@
 # set entities location to this.script directory
 ENTITIES="$(dirname "$(readlink -f "$0")")" || exit 2
 source "$ENTITIES/entities.bash" || exit 2
-strict.set on
+strict.set off
 msg.prefix.set "$(msg.prefix.set)$PRG"
 
 declare entities_file="$ENTITIES/entities.bash"
