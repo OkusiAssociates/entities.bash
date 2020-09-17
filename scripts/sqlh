@@ -12,7 +12,7 @@ source "$OKROOT/entities/entities.bash" new || exit 2
 	trap.set on
 	strict.set on
 	msg.prefix.set "$PRG"
-	msg.prefix.separator.set "> "
+	msg.prefix.separator.set '> '
 	
 	declare -xg Database='' DataTable='' DataCommand=''
 

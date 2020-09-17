@@ -8,7 +8,7 @@
           :   minorver  0
           :   420       constant
           :   day0      days since 2019-06-21 (454)
-          :   daybuild  this is build number on day0 (11)
-          : Current version is 0.95.420.454.11
+          :   daybuild  this is build number on day0 (13)
+          : Current version is 0.95.420.454.13
     Source: /usr/share/okusi/entities/entities.d/sys/urlencode.bash
 #---Global--_ent_VERSION------------------------------------------------------

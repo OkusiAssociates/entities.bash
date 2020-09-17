@@ -1,6 +1,6 @@
 #-Function--msg.prefix.separator.set
   Function: msg.prefix.separator.set
-      Desc: Set/Retrieve value of _ent_MSGPFXSEP for appending as a separator for msg.prefix.
+      Desc: Set/Retrieve value of _ent_MSG_PRE_SEP for appending as a separator for msg.prefix.
           : Default separator is ': '
   Synopsis: msg.prefix.separator.set ["separator"]
   See_Also: msg.prefix.set

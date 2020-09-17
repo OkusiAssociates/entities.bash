@@ -582,7 +582,7 @@ msg.line() {
 		fi
 		IFS=$' \t\n'
 	fi
-	width=$(( (screencols - ${#_ent_MSGPREFIX} - (TABSET * TABWIDTH)) - 2))
+	width=$(( (screencols - ${#_ent_MSG_PRE} - (TABSET * TABWIDTH)) - 2))
 
   msg "$(head -c $width < /dev/zero | tr '\0' "${repchar:-_}")"
 
@@ -641,7 +641,7 @@ tab.set() {
 declare -fx	'tab.set'
 
 #X Function: msg.prefix.separator.set
-#X Desc    : Set/Retrieve value of _ent_MSGPFXSEP for appending as a separator for msg.prefix.
+#X Desc    : Set/Retrieve value of _ent_MSG_PRE_SEP for appending as a separator for msg.prefix.
 #X         : Default separator is ': '
 #X Synopsis: msg.prefix.separator.set ["separator"]
 #X Example : # 0. set a msg prefix with '>' separator
@@ -649,13 +649,13 @@ declare -fx	'tab.set'
 #X         : msg.prefix.set "$PRG"
 #X         : msg 'Hello world.'
 #X See Also: msg.prefix.set
-declare -x _ent_MSGPFXSEP
-_ent_MSGPFXSEP=': '
+declare -x _ent_MSG_PRE_SEP
+_ent_MSG_PRE_SEP=': '
 msg.prefix.separator.set() {
 	if (( $# ));	then 
-		_ent_MSGPFXSEP="$1" 
+		_ent_MSG_PRE_SEP="$1" 
 	else 
-		echo -n "$_ent_MSGPFXSEP"
+		echo -n "$_ent_MSG_PRE_SEP"
 	fi
 	return 0
 }
@@ -663,7 +663,7 @@ msg.prefix.separator.set() {
 declare -fx msg.prefix.separator.set
 
 #X Function: msg.prefix.set
-#X Desc    : Set/Retrieve value of _ent_MSGPREFIX for prefixing a string 
+#X Desc    : Set/Retrieve value of _ent_MSG_PRE for prefixing a string 
 #X         : before every string output by the msg.* system.
 #X Synopsis: msg.prefix.set [-a] "msgprefix"
 #X         : -a  makes msgprefix additive to the existing msg prefix.
@@ -674,33 +674,33 @@ declare -fx msg.prefix.separator.set
 #X         : # 2. set additive msg prefix
 #X         : msg.prefix.set -a 'processing'
 #X See Also: msg.prefix.separator.set
-declare -ax _ent_MSGPREFIX
-_ent_MSGPREFIX=()
+declare -ax _ent_MSG_PRE
+_ent_MSG_PRE=()
 msg.prefix.set() {
 	if (( $# ));	then 
 		local -i add=0 sub=0
 		if   [[ $1 == '++' || $1 == '-a' ]]; then	shift; add=1;
 		elif [[ $1 == '--' || $1 == '-d' ]]; then shift; sub=1; 
 		else
-			_ent_MSGPREFIX=( $1 )
+			_ent_MSG_PRE=( "$1" )
 			return 0
 		fi
 		if ((add)); then
-			_ent_MSGPREFIX+=( "${1:-}" )
+			_ent_MSG_PRE+=( "${1:-}" )
 		elif ((sub)); then
-			if (( ${#_ent_MSGPREFIX[@]} )); then
-				_ent_MSGPREFIX=( ${_ent_MSGPREFIX[@]:0:${#_ent_MSGPREFIX[@]}-1} )
+			if (( ${#_ent_MSG_PRE[@]} )); then
+				_ent_MSG_PRE=( ${_ent_MSG_PRE[@]:0:${#_ent_MSG_PRE[@]}-1} )
 			else
-				_ent_MSGPREFIX=()
+				_ent_MSG_PRE=('')
 			fi
 		fi
 		return 0
 	fi
 
-	if [[ -n ${_ent_MSGPREFIX[@]:-} ]]; then
+	if [[ -n ${_ent_MSG_PRE[@]:-} ]]; then
 		local p
-		p=${_ent_MSGPREFIX[*]}
-    echo -n "${p//[[:blank:]]/${_ent_MSGPFXSEP}}${_ent_MSGPFXSEP}"
+		p=${_ent_MSG_PRE[*]}
+    echo -n "${p//[[:blank:]]/${_ent_MSG_PRE_SEP}}${_ent_MSG_PRE_SEP}"
 	else
 		echo -n ''
 	fi
@@ -713,11 +713,11 @@ _printmsg() {
 	local line IFS=$'\t\n' lf=''
 	for line in "$@"; do
 		[[ ${line} == '-n' ]] && { lf='-n'; continue; }
-		if (( ${#_ent_MSGPREFIX[*]} )); then
-			p=${_ent_MSGPREFIX[*]}
-			echo -n "${p//[[:blank:]]/${_ent_MSGPFXSEP}}${_ent_MSGPFXSEP}"
+		if (( ${#_ent_MSG_PRE[*]} )); then
+			p=${_ent_MSG_PRE[*]}
+			echo -n "${p//[[:blank:]]/${_ent_MSG_PRE_SEP}}${_ent_MSG_PRE_SEP}"
 		fi
-#		"${_ent_MSGPREFIX[*]}${_ent_MSGPFXSEP}"
+#		"${_ent_MSG_PRE[*]}${_ent_MSG_PRE_SEP}"
 		# shellcheck disable=SC2046
 		((TABSET)) && printf '\t%.0s' $(seq 1 ${TABSET})
 		echo -e $lf "${line}"
@@ -918,14 +918,14 @@ trap.breakp() {
 declare -fx 'trap.breakp'
 	alias breakp='trap.breakp'
 
-#--_ent_MINIMAL if defined, then don't do this section
-shopt -s globstar
+#--_ent_MINIMAL if defined, don't do this section.
 if (( ! ${_ent_MINIMAL:-0} )); then
 #X File: IncludeModules 
 #X Desc: By default, all '*.bash' module files located in
 #X     : $ENTITIES/entities.d/** are 
 #X     : automatically included in the entities.bash source file. 
 #X     :
+	shopt -s globstar
 	if [[ -d "${ENTITIES:-/lib/include/entities}/entities.d" ]]; then
 		declare _e
 		declare -a _userbash=()

@@ -4,7 +4,7 @@ useage() {
 	if [[ "${USER:-}" -ne 'root' ]] || ((EUID > 0)); then
 		echo >&2 "Requires root to install. Current user is [${USER:-}]."
 	fi
-	echo "Usage: $(basename "$0") [-y|--auto] [-n|--nouserprofiles] [-i|--install] [--dev]"
+	echo "Usage: $(basename "$0") [-y|--auto] [-i|--install] [--dev]"
 	exit ${1:-0}
 }
 	# cries for help.
@@ -17,7 +17,6 @@ useage() {
 	declare -i production=0
 	declare -i autoinstall=0
 	declare -i install=0
-	declare -i userprofiles=1
 	
 	declare etc_profile_d="/etc/profile.d/entities.env.sh"
 
@@ -41,10 +40,10 @@ useage() {
 	# ==========================================================================
 	# let's start
 	strict.set on
-	msg.prefix.set "entities.bash"
 	verbose.set on
 	debug.set off
 	trap.set on
+	msg.prefix.set 'entities.bash'
 	cd "$PRGDIR" || msg.die "Could not change into directory [$PRGDIR]"
 
 	msg.info "Source entities directory is [$canonical]"
@@ -66,6 +65,7 @@ useage() {
 	env_entities="$(cat <<-eot
 	
 			#X entities.bash begin
+			#X entities $_ent_VERSION
 			#X   * export ENTITIES='${ENTITIES}'
 			#X Installed by $(readlink -f "$0")
 			#X   on $(date +'%F %T').420 by ${USER:-}@${HOSTNAME}
@@ -88,7 +88,6 @@ main() {
 		case "$1" in
 			--dev|-p|--prod*)			production=1;;
 			-y|--auto)						autoinstall=1; install=1;;
-			-n|--nouserprofiles)	userprofiles=0;;
 			-i|--install)					install=1;;
 			-v|--verbose)					verbose.set on;;
 			-q|--quiet)						verbose.set off;;
@@ -141,7 +140,7 @@ main() {
 			#X          :   420       constant
 			#X          :   day0      days since 2019-06-21 ($dayssince)
 			#X          :   daybuild  this is build number on day0 (${_arr[4]})
-			#X          : Current version is ${_p// /.}
+			#X          : This entities.bash version is ${_p// /.}
 			declare -xg _ent_VERSION
 			_ent_VERSION='${_p// /.}'
 			#Xfin
@@ -160,8 +159,6 @@ main() {
 
 	makeprofile
 
-	#((userprofiles)) && makeuserprofiles
-
 	makeenvirnonment
 
 	install
@@ -170,7 +167,7 @@ main() {
 
 	msg.line '-'
 	msg '' \
-			'Entities has been installed.' \
+			"entities.bash ${_ent_VERSION} has been installed." \
 			'To use, log out of this bash session and log back in.'  \
 			'Entities will then be ready to use.' \
 			'' \
@@ -188,51 +185,6 @@ makeprofile() {
 	echo -e "${env_entities}"	> "$etc_profile_d"			
 	chmod 644 "$etc_profile_d" 				|| msg.die "could not chmod $etc_profile_d"
 	chown root:root "$etc_profile_d"	|| msg.die "could not chown $etc_profile_d"
-}
-
-# Dep: cat touch chmod chown
-# Env: HOME USER HOSTNAME
-makeuserprofiles() {
-	local bashuser user userfile oldprofile profile inent
-	msg.info "Making user's .profile ..."
-	bashuser=$(
-		for u in $(find /home -maxdepth 1 -type d); do 
-			user=$(basename "$u");
-			if [[ "$(getent passwd "$user" | cut -d: -f7)" == '/bin/bash' ]] ; then 
-				echo "$user"
-			fi
-		done | sort)
-
-	for user in $bashuser; do 
-		userfile="/home/$user/.profile"
-		msg.info "Making user profile $userfile..."
-		if [[ ! -f "$userfile" ]]; then
-			msg.warn "$userfile was not found. creating..."
-			/usr/bin/touch "$userfile"; chown "$user" "$userfile"; chmod 640 "$userfile"
-		fi	
-
-		oldprofile=''
-		inent=0
-		local IFS=$'\n'
-		profile="$(cat "$userfile")"	
-		for p in "${profile[@]}"; do
-			pp=$(trim "${p,,}" | tr -d '[:blank:]')
-			if ((inent)); then
-				[[ "${pp:0:19}" == 'exportentities' ]] && inent=0
-			else
-				[[ "${pp:0:16}" == '#entitiesforbash' ]] &&	inent=1 || oldprofile+="${p}${LF}"
-			fi		
-		done
-
-		cat >"$userfile" <<-user-profile
-			${oldprofile}
-
-			${env_entities}			
-
-		user-profile
-		chmod 640 "$userfile" 		|| exit 1
-		chown "$user" "$userfile" || exit 1
-	done
 }
 
 # Dep: /etc/environment cat

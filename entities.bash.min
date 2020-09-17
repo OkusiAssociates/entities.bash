@@ -314,7 +314,7 @@ msg.line() {
 		fi
 		IFS=$' \t\n'
 	fi
-	width=$(( (screencols - ${#_ent_MSGPREFIX} - (TABSET * TABWIDTH)) - 2))
+	width=$(( (screencols - ${#_ent_MSG_PRE} - (TABSET * TABWIDTH)) - 2))
   msg "$(head -c $width < /dev/zero | tr '\0' "${repchar:-_}")"
 	return 0
 }
@@ -354,43 +354,43 @@ tab.set() {
 	return 0
 }
 declare -fx	'tab.set'
-declare -x _ent_MSGPFXSEP
-_ent_MSGPFXSEP=': '
+declare -x _ent_MSG_PRE_SEP
+_ent_MSG_PRE_SEP=': '
 msg.prefix.separator.set() {
 	if (( $# ));	then 
-		_ent_MSGPFXSEP="$1" 
+		_ent_MSG_PRE_SEP="$1" 
 	else 
-		echo -n "$_ent_MSGPFXSEP"
+		echo -n "$_ent_MSG_PRE_SEP"
 	fi
 	return 0
 }
 declare -fx msg.prefix.separator.set
-declare -ax _ent_MSGPREFIX
-_ent_MSGPREFIX=()
+declare -ax _ent_MSG_PRE
+_ent_MSG_PRE=()
 msg.prefix.set() {
 	if (( $# ));	then 
 		local -i add=0 sub=0
 		if   [[ $1 == '++' || $1 == '-a' ]]; then	shift; add=1;
 		elif [[ $1 == '--' || $1 == '-d' ]]; then shift; sub=1; 
 		else
-			_ent_MSGPREFIX=( $1 )
+			_ent_MSG_PRE=( "$1" )
 			return 0
 		fi
 		if ((add)); then
-			_ent_MSGPREFIX+=( "${1:-}" )
+			_ent_MSG_PRE+=( "${1:-}" )
 		elif ((sub)); then
-			if (( ${#_ent_MSGPREFIX[@]} )); then
-				_ent_MSGPREFIX=( ${_ent_MSGPREFIX[@]:0:${#_ent_MSGPREFIX[@]}-1} )
+			if (( ${#_ent_MSG_PRE[@]} )); then
+				_ent_MSG_PRE=( ${_ent_MSG_PRE[@]:0:${#_ent_MSG_PRE[@]}-1} )
 			else
-				_ent_MSGPREFIX=()
+				_ent_MSG_PRE=('')
 			fi
 		fi
 		return 0
 	fi
-	if [[ -n ${_ent_MSGPREFIX[@]:-} ]]; then
+	if [[ -n ${_ent_MSG_PRE[@]:-} ]]; then
 		local p
-		p=${_ent_MSGPREFIX[*]}
-    echo -n "${p//[[:blank:]]/${_ent_MSGPFXSEP}}${_ent_MSGPFXSEP}"
+		p=${_ent_MSG_PRE[*]}
+    echo -n "${p//[[:blank:]]/${_ent_MSG_PRE_SEP}}${_ent_MSG_PRE_SEP}"
 	else
 		echo -n ''
 	fi
@@ -401,9 +401,9 @@ _printmsg() {
 	local line IFS=$'\t\n' lf=''
 	for line in "$@"; do
 		[[ ${line} == '-n' ]] && { lf='-n'; continue; }
-		if (( ${#_ent_MSGPREFIX[*]} )); then
-			p=${_ent_MSGPREFIX[*]}
-			echo -n "${p//[[:blank:]]/${_ent_MSGPFXSEP}}${_ent_MSGPFXSEP}"
+		if (( ${#_ent_MSG_PRE[*]} )); then
+			p=${_ent_MSG_PRE[*]}
+			echo -n "${p//[[:blank:]]/${_ent_MSG_PRE_SEP}}${_ent_MSG_PRE_SEP}"
 		fi
 		((TABSET)) && printf '\t%.0s' $(seq 1 ${TABSET})
 		echo -e $lf "${line}"
@@ -546,8 +546,8 @@ trap.breakp() {
 }
 declare -fx 'trap.breakp'
 	alias breakp='trap.breakp'
-shopt -s globstar
 if (( ! ${_ent_MINIMAL:-0} )); then
+	shopt -s globstar
 	if [[ -d "${ENTITIES:-/lib/include/entities}/entities.d" ]]; then
 		declare _e
 		declare -a _userbash=()
@@ -678,7 +678,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.95.420.454.12'
+_ent_VERSION='0.95.420.454.14'
 cdd() {
 	(( $# )) || return 0
 	local dirspec="${1}" pwd=''

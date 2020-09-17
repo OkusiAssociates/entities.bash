@@ -1,6 +1,6 @@
 #-Function--msg.prefix.set
   Function: msg.prefix.set
-      Desc: Set/Retrieve value of _ent_MSGPREFIX for prefixing a string
+      Desc: Set/Retrieve value of _ent_MSG_PRE for prefixing a string
           : before every string output by the msg.* system.
   Synopsis: msg.prefix.set [-a] "msgprefix"
           : -a  makes msgprefix additive to the existing msg prefix.
