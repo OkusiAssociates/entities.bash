@@ -4,13 +4,15 @@ useage() {
 	if [[ "${USER:-}" -ne 'root' ]] || ((EUID > 0)); then
 		echo >&2 "Requires root to install. Current user is [${USER:-}]."
 	fi
-	echo "Usage: $(basename $0) [-y|--auto] [-n|--nouserprofiles] [-i|--install] [--dev]"
+	echo "Usage: $(basename "$0") [-y|--auto] [-n|--nouserprofiles] [-i|--install] [--dev]"
 	exit ${1:-0}
 }
 	# cries for help.
-	[[ "$@" == "" || "$@" == *"--help"* || "$@" == *"/?"* || "$@" == *-h* ]] && useage 0
+	[[ "$@" == '' || "$@" == *"--help"* || "$@" == *"/?"* || "$@" == *-h* ]] && useage 0
 	# not root say bye
 	[[ "${USER:-}" == 'root' || $EUID == 0 ]] || useage 1
+
+	declare -ix MajorVer=1 MinorVer=0
 
 	declare -i production=0
 	declare -i autoinstall=0
@@ -19,39 +21,38 @@ useage() {
 	
 	declare etc_profile_d="/etc/profile.d/entities.env.sh"
 
-	# make an announcement
-	echo "This is the entities.bash installation script."
-	echo "You will be prompted before installation proceeds."
-
 	# make absolutely certain we have identified the canonical entities.bash script
 	PRG="$(basename "$(/bin/readlink -f "${0:-}")")"
 	PRGDIR="$(/usr/bin/dirname "$(/bin/readlink -f "${0:-}")")"
 	if [[ -f "$PRGDIR/entities.bash" ]]; then	# located in the same directory as this script.
 		canonical="$PRGDIR/entities.bash"
-		echo "Reference entities is $canonical"
 	else
-		echo >&2 "Could not find entities.bash in the [$PRGDIR] directory."
-		echo >&2 "Check that it has been installed properly."
+		echo >&2 "$PRG: Could not find entities.bash in the [$PRGDIR] directory."
+		echo >&2 "$PRG: Check that it has been installed properly."
 		exit 1
 	fi	
 	OPRG=$PRG; OPRGDIR=$PRGDIR
 	
 	OENTITIES=${ENTITIES:-}; ENTITIES=$PRGDIR 
-	source "$canonical" new || { echo >&2 "Could not open [$canonical]!"; exit 1; }
+	source "$canonical" new || { echo >&2 "$PRG: Could not open [$canonical]!"; exit 1; }
 	ENTITIES=$OENTITIES;
 	PRG=$OPRG; PRGDIR=$OPRGDIR
 
+	# ==========================================================================
 	# let's start
-	verbose.set on
 	strict.set on
-	debug.set on
+	msg.prefix.set "entities.bash"
+	verbose.set on
+	debug.set off
 	trap.set on
-	cd "$PRGDIR" || msg.die "Could not change into directory $PRGDIR!!"
+	cd "$PRGDIR" || msg.die "Could not change into directory [$PRGDIR]"
+
+	msg.info "Source entities directory is [$canonical]"
 
 	# set ENTITIES as the destination (production) directory
 	# 	ENTITIES in this case is the destination directory for the install
 	ENTITIES='/lib/include/entities'
-	mkdir -p "$ENTITIES"
+	mkdir -p "$ENTITIES" || exit 2
 	
 	# are we trying to install into the install directory?
 	[[ $ENTITIES == "$PRGDIR" ]] &&	msg.die "Cannot install over installation directory!"		
@@ -64,7 +65,7 @@ useage() {
 	declare env_entities
 	env_entities="$(cat <<-eot
 	
-			#X Entities for Bash
+			#X entities.bash begin
 			#X   * export ENTITIES='${ENTITIES}'
 			#X Installed by $(readlink -f "$0")
 			#X   on $(date +'%F %T').420 by ${USER:-}@${HOSTNAME}
@@ -81,39 +82,72 @@ useage() {
 	declare SyncExclude="/tmp/$PRG-exclusions-$RANDOM"
 	>"$SyncExclude"
 	declare _l; for _l in "${exclude[@]}"; do	echo "${_l}"; done >>"$SyncExclude"; unset _l
-#	cat $SyncExclude > ttt
 			
 main() {
 	while (( $# )); do
 		case "$1" in
-			--dev|-p|--production)	production=1;;
-			-y|--auto)							autoinstall=1;;
-			-n|--nouserprofiles)		userprofiles=0;;
-			-i|--install)						install=1; color.set off;;
-			-v|--verbose)						verbose.set on;;
-			-q|--quiet)							verbose.set off;;
-			-h|--help)							useage;;
-			*)											msg.die log "Bad command line argument '$1'";;
+			--dev|-p|--prod*)			production=1;;
+			-y|--auto)						autoinstall=1; install=1;;
+			-n|--nouserprofiles)	userprofiles=0;;
+			-i|--install)					install=1;;
+			-v|--verbose)					verbose.set on;;
+			-q|--quiet)						verbose.set off;;
+			-h|--help)						useage;;
+			*)										msg.err log "Bad command line argument '$1'"
+														return 1;;
 		esac
 		shift
 	done
-
-	msg.info "entities.bash shall be installed to $ENTITIES."
+	(( ! install )) && return 0
+	
+	msg.info "entities.bash shall be installed to [$ENTITIES]."
 	if [[ -f "$ENTITIES/entities.bash" ]]; then
-		msg.warn "A version of entities is already installed at $ENTITIES."
+		msg.warn "A version of entities.bash is already installed at [$ENTITIES]."
+		msg.warn "It shall be backed-up to [$ENTITIES/entities.bash.old]."
 	fi
 	
 	if (( ! autoinstall)); then
 		infotext
-		ask.yn 'Install entities.bash with these settings?' || msg.die 'Exiting...'
-		msg ''
+		ask.yn 'Install with these settings?' \
+				|| { msg 'Exiting'; return 0; }
+		msg 'Installing'
 	fi
 
 	if ((production)); then
 		msg.sys "Production: Updating help files..."
-		tab.set ++
-		msg.sys "Updating entities help files..."
-		$PRGDIR/entities.help.make --auto	|| msg.die "[PRGDIR=$PRGDIR] entities.help.make failed!"
+		"$PRGDIR/entities.help.make" --auto	|| msg.die "[PRGDIR=$PRGDIR] entities.help.make failed!"
+		# make new version file
+		declare _verfile="$PRGDIR/entities.d/entities.version.bash"
+		source "$_verfile" || msg.die "Could not source $_verfile!"
+
+		[[ -z ${_ent_VERSION:-} ]] && msg.die "Version has not been set. See $_verfile"
+		declare -ia _arr
+		_arr=( ${_ent_VERSION//./ } )
+		declare -i dayssince
+		dayssince=$(( ($(date +%s) - $(date +%s -d '2019-06-21')) / (60*60*24) ))
+		_arr[2]=420
+		(( _arr[3] == dayssince )) || _arr[3]=${dayssince} 
+		_arr[4]+=1
+		_p=${_arr[*]}
+		cat >"$_verfile" <<-etx
+			#!$(which bash)
+			#X Global   : _ent_VERSION 
+			#X Desc     : Return version/build of this entities.bash.
+			#X          : Returns string in form:
+			#X          :   majorver.minorver.420.day0.daybuild
+			#X          : Where:
+			#X          :   majorver  ${MajorVer}
+			#X          :   minorver  ${MinorVer}
+			#X          :   420       constant
+			#X          :   day0      days since 2019-06-21 ($dayssince)
+			#X          :   daybuild  this is build number on day0 (${_arr[4]})
+			#X          : Current version is ${_p// /.}
+			declare -xg _ent_VERSION
+			_ent_VERSION='${_p// /.}'
+			#Xfin
+		etx
+		source "$_verfile" || exit 2
+		unset _verfile _arr dayssince
 		#if [[ -x entities.scripts/_linkscripts2entities ]]; then
 		#	msg.info "Running linkscripts2entities"
 		#	cd entities.scripts || msg.die "could not cd into entities.scripts!"
@@ -121,19 +155,20 @@ main() {
 		#	cd "$PRGDIR" || msg.die "Could not change into directory $PRGDIR!"
 		#fi
 	fi
-	tab.set 1
-	msg.sys 'Updating entities.bash.min'
-	$PRGDIR/entities.make.minimal --auto	|| msg.die "[PRGDIR=$PRGDIR] make entities.bash.min failed!"
+
+	"$PRGDIR/entities.make.minimal" --auto	|| msg.die "[PRGDIR=$PRGDIR] make entities.bash.min failed!"
 
 	makeprofile
+
 	#((userprofiles)) && makeuserprofiles
+
 	makeenvirnonment
 
 	install
 
 	testit
 
-	tab.set 0
+	msg.line '-'
 	msg '' \
 			'Entities has been installed.' \
 			'To use, log out of this bash session and log back in.'  \
@@ -144,7 +179,7 @@ main() {
 			'' \
 			'  $ source entities new' \
 			''
-	rm "$SyncExclude"
+	rm -f "$SyncExclude"
 }
 
 makeprofile() {
@@ -172,9 +207,7 @@ makeuserprofiles() {
 		userfile="/home/$user/.profile"
 		msg.info "Making user profile $userfile..."
 		if [[ ! -f "$userfile" ]]; then
-			tab.set ++
 			msg.warn "$userfile was not found. creating..."
-			tab.set --
 			/usr/bin/touch "$userfile"; chown "$user" "$userfile"; chmod 640 "$userfile"
 		fi	
 
@@ -207,20 +240,17 @@ makeenvirnonment() {
 	envfile=/etc/environment
 	msg.info "Changing $envfile..."
 	tmpfile="$(mktemp --tmpdir 'ent-XXXX')"
-	(	cat "$envfile" | while read -r line; do
+
+	( while read -r line; do
 			env=${line%=*}
 			val=${line#*=}; val=${val//\"/}
 			case "$env" in
-				'')				continue;;
-				PATH)			val=${val//:${ENTITIES}/}
-									val=${val//${ENTITIES}:/}
-									val=${val//::/:}
-									echo "PATH=\"$val:$ENTITIES\"";;
-				ENTITIES) continue;;
-				*)				echo "${env}=\"${val}\"";;
+				'')					continue;;
+				'ENTITIES')	continue;;
+				*)					echo "${env}=\"${val}\"";;
 			esac
 		done
-	) > "$tmpfile"
+	) <"$envfile" >"$tmpfile"
 	echo "ENTITIES=\"$ENTITIES\"" >> "$tmpfile" 
 	cp -p "$envfile" "${envfile}~"	|| msg.die "Could not backup $envfile to ${envfile}~!"
 	chown root:root "$tmpfile"			|| msg.die "$tmpfile chown error!"
@@ -230,26 +260,17 @@ makeenvirnonment() {
 
 
 infotext() {
-	cat <<-info-text
-
-		entities.bash installation script shall do the following: 
-		  * Copy all script files to a common accessible direcory.
-		      Files will be copied to: $ENTITIES
-		  * Add a path to [PATH] for the Entities [include] directory.
-		      Include path is: $ENTITIES
-		  * Add Entities path to [/etc/profile.d].
-		      [profile.d] script name is: $etc_profile_d
-		  * Add Entities to [/home/*/.profile] of /home/users 
-		      Only where bash shell is specified.		
-
-		current environment:
-		  ENTITIES=[$ENTITIES]
-		  BASH_SOURCE=[$BASH_SOURCE]
-		  PRG=[$PRG]
-		  PRGDIR=[$PRGDIR]
-		  \$0=[$0]
-		  
-	info-text
+	tab.set ++
+	msg "This entities.bash installation script shall do the following: " \
+	 "  * Copy all script files to directory [$ENTITIES]" \
+	 "  * Add Entities path to /etc/profile.d [$etc_profile_d]" \
+	 "Current environment:" \
+	 "  ENTITIES=[$ENTITIES]" \
+	 "  BASH_SOURCE=[$BASH_SOURCE]" \
+	 "  PRG=[$PRG]" \
+	 "  PRGDIR=[$PRGDIR]" \
+	 "  \$0=[$0]"
+	tab.set --
 }
 
 # Dep: mkdir cd rsync find ln touch cp
@@ -263,7 +284,6 @@ install() {
 
 	# do backup of existing $ENTITIES directory
 	msg.info "Doing backup of existing $ENTITIES directory..."
-	tab.set ++
 	if [[ -d "${ENTITIES}.old" ]]; then
 		if [[ -d "${ENTITIES}" ]]; then
 			msg.info "* Deleting $ENTITIES.old."
@@ -274,7 +294,6 @@ install() {
 		msg.info "* Renaming $ENTITIES to $ENTITIES.old."
 		mv "${ENTITIES}" "${ENTITIES}.old" || { msg.err "$(errno $?)" "Could not move [${ENTITIES}] to [${ENTITIES}.old]"; exit 1; }
 	fi
-	tab.set --
 
 	# start creating $ENTITIES
 	msg.info "Start creating $ENTITIES"
@@ -303,6 +322,14 @@ install() {
 	# in production, entities points to the min version
 	ln  -fs entities.bash.min entities				    || exit $?
 	ln  -fs entities.bash.min entities.min		    || exit $?
+
+
+	# MAIN EXECUTABLE in /usr/local/bin/ || /usr/bin
+	if [[ -d /usr/local/bin ]]; then
+		ln -fs "$ENTITIES/entities.bash" /usr/local/bin/entities
+	else
+		ln -fs "$ENTITIES/entities.bash" /usr/bin/entities
+	fi
 
 	# touch420 all files in $ENTITIES directory
 	msg.info "Fix owner/perms, touch420 all files in [$ENTITIES] directory..."

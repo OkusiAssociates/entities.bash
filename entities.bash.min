@@ -11,14 +11,16 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			__entities__=0
 			while (( $# )); do
 				case "${1,,}" in
-					-h|--help)	"${ENTITIES:-/lib/include/entities}/entities.help" "#@"
-											break ;;
-					-*)					echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
-					*)					echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
+					-h|--help|help)	
+								"${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
+								exit $?
+								break ;;
+					-*)		echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
+					*)		echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
 				esac
 				shift
 			done		
-			exit
+			exit $?
 		fi
 		_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|\n"
 		PRG="$(/usr/bin/basename "${p_}")"
@@ -56,6 +58,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 _ent_scriptstatus+="reloading|\n"
 set +o errexit +o nounset +o pipefail
 shopt -s extglob
+shopt -s globstar
 declare -x	LF=$'\n' CR=$'\r' CH9=$'\t'
 declare -x	OLDIFS="$IFS" IFS=$' \t\n'
 declare -nx	OIFS="OLDIFS"
@@ -139,7 +142,7 @@ debug() {	return $(( ! _ent_DEBUG )); }
 declare -fx debug
 debug.set() {
 	if (( $# )); then _ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
-	else							echo ${_ent_DEBUG}
+	else							echo "${_ent_DEBUG}"
 	fi
 	return 0
 }
@@ -154,7 +157,7 @@ strict.set() {
 		((_ent_STRICT)) && opt='-'
 		set ${opt}o errexit ${opt}o nounset ${opt}o pipefail #${opt}o noclobber
 	else
-		echo -n ${_ent_STRICT}
+		echo -n "${_ent_STRICT}"
 	fi
 	return 0
 }
@@ -177,7 +180,7 @@ trap.set() {
 			trap -- EXIT
 		fi
 	else
-		echo -n ${_ent_EXITTRAP}
+		echo -n "${_ent_EXITTRAP}"
 	fi
 	return 0
 }
@@ -225,7 +228,7 @@ declare -fx 'msg.debug'
 __msgx() {
 	local log="$1" msglevel="$2" verbose="$3"
 	shift 3
-	[[ ${log} == 'log' ]] && systemd-cat -t "$PRG" -p ${msglevel} echo "$@"
+	[[ ${log} == 'log' ]] && systemd-cat -t "$PRG" -p "${msglevel}" echo "$@"
 	if ((_ent_VERBOSE)); then
 		((_ent_COLOR)) && { nc=color$msglevel; echo -ne "${!nc}"; }
 		_printmsg "$@"
@@ -305,14 +308,14 @@ msg.line() {
 		local -ai sz 
 		sz=( $(stty size) )
 		if (( ${#sz[@]} )); then
-			screencols=$(( ${sz[1]} ))
+			screencols=$(( sz[1] ))
 		else
 			screencols=$(( COLUMNS ))
 		fi
 		IFS=$' \t\n'
 	fi
-	width=$(( (screencols - (TABSET * TABWIDTH)) - 1))
-  msg "$(head -c $width < /dev/zero | tr '\0' $repchar)"
+	width=$(( (screencols - ${#_ent_MSGPREFIX} - (TABSET * TABWIDTH)) - 2))
+  msg "$(head -c $width < /dev/zero | tr '\0' "${repchar:-_}")"
 	return 0
 }
 declare -fx 'msg.line'
@@ -351,10 +354,57 @@ tab.set() {
 	return 0
 }
 declare -fx	'tab.set'
+declare -x _ent_MSGPFXSEP
+_ent_MSGPFXSEP=': '
+msg.prefix.separator.set() {
+	if (( $# ));	then 
+		_ent_MSGPFXSEP="$1" 
+	else 
+		echo -n "$_ent_MSGPFXSEP"
+	fi
+	return 0
+}
+declare -fx msg.prefix.separator.set
+declare -ax _ent_MSGPREFIX
+_ent_MSGPREFIX=()
+msg.prefix.set() {
+	if (( $# ));	then 
+		local -i add=0 sub=0
+		if   [[ $1 == '++' || $1 == '-a' ]]; then	shift; add=1;
+		elif [[ $1 == '--' || $1 == '-d' ]]; then shift; sub=1; 
+		else
+			_ent_MSGPREFIX=( $1 )
+			return 0
+		fi
+		if ((add)); then
+			_ent_MSGPREFIX+=( "${1:-}" )
+		elif ((sub)); then
+			if (( ${#_ent_MSGPREFIX[@]} )); then
+				_ent_MSGPREFIX=( ${_ent_MSGPREFIX[@]:0:${#_ent_MSGPREFIX[@]}-1} )
+			else
+				_ent_MSGPREFIX=()
+			fi
+		fi
+		return 0
+	fi
+	if [[ -n ${_ent_MSGPREFIX[@]:-} ]]; then
+		local p
+		p=${_ent_MSGPREFIX[*]}
+    echo -n "${p//[[:blank:]]/${_ent_MSGPFXSEP}}${_ent_MSGPFXSEP}"
+	else
+		echo -n ''
+	fi
+	return 0
+}
+declare -fx msg.prefix.set
 _printmsg() {
 	local line IFS=$'\t\n' lf=''
 	for line in "$@"; do
-		[[ "${line}" == '-n' ]] && { lf='-n'; continue; }
+		[[ ${line} == '-n' ]] && { lf='-n'; continue; }
+		if (( ${#_ent_MSGPREFIX[*]} )); then
+			p=${_ent_MSGPREFIX[*]}
+			echo -n "${p//[[:blank:]]/${_ent_MSGPFXSEP}}${_ent_MSGPFXSEP}"
+		fi
 		((TABSET)) && printf '\t%.0s' $(seq 1 ${TABSET})
 		echo -e $lf "${line}"
 		lf=''
@@ -510,7 +560,7 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 				fi
 			fi
 		done
-		for _e in ${_userbash[@]}; do
+		for _e in "${_userbash[@]}"; do
 			source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
 		done
 		unset _e _userbash
@@ -627,7 +677,8 @@ declare -gx _ent_EDITOR
 	export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
-declare -x _ent_VERSION='0.9.420.220.0'
+declare -xg _ent_VERSION
+_ent_VERSION='0.95.420.454.12'
 cdd() {
 	(( $# )) || return 0
 	local dirspec="${1}" pwd=''
@@ -784,79 +835,6 @@ textfiletype() {
 	done
 }
 declare -fx textfiletype
-declare -x  _ent_LOCKFILE=''
-declare -ax _ent_LOCKFILES=()
-declare -ix _ent_LOCKTIMEOUT=86400
-lockfile() {
-	if ((${#@})); then lockfile.add "$1"
-								else echo -n "${_ent_LOCKFILE}"
-	fi
-}
-declare -fx lockfile
-lockfiles() {
-	echo -n "${_ent_LOCKFILES[@]}"
-}
-declare -fx lockfiles
-lockfiles.add() {
-	if (( ${#@} == 0 )); then
-		lockfiles.add "/run/lock/$PRG.$RANDOM" "${_ent_LOCKTIMEOUT}"
-		return
-	elif (( ${#@} % 2 )); then
-		lockfiles.add "$@" "${_ent_LOCKTIMEOUT}"
-		return
-	fi
-	declare -a newlockfiles=($@)
-	local -i j i
-	local lk='' to=''
-	for ((i=0; i < ${#newlockfiles[@]}; i+=2)); do
-		j=$((i+1))
-		lk="${newlockfiles[$i]}"
-		to="${newlockfiles[$j]}"
-		ts=$(date +'%s')
-		to=$((ts+_ent_LOCKTIMEOUT))
-		mkdir -p $(dirname "${lk}")
-		cat > "$lk" <<-eot
-			declare _LockingScript="$0"
-			declare -i _LockCreated=${ts} # $(date +'%F %T' -d @${ts})
-			declare -i _LockExpire=${to}  # $(date +'%F %T' -d @${to})
-		eot
-		_ent_LOCKFILE="$lk"
-		_ent_LOCKFILES+=("${_ent_LOCKFILE}")
-	done
-	return 0
-}
-declare -fx lockfiles.add
-lockfiles.delete() {
-	if ((${#@})); then
-		local lk lf
-		for lk in ${@}; do
-			rm -f "${lk}"
-			_ent_LOCKFILES=( ${_ent_LOCKFILES[@]/$lk} )
-			lf=${#_ent_LOCKFILES[@]}; ((lf+=-1))
-			if ((lf>=0)); then _ent_LOCKFILE="${_ent_LOCKFILES[$lf]}"
-										else _ent_LOCKFILE=''
-			fi
-		done
-	else
-		[[ ${_ent_LOCKFILE} ]] && lockfiles.delete "${_ent_LOCKFILE}"
-	fi
-}
-declare -fx lockfiles.delete
-lockfiles.delete.all() {
-	((${#_ent_LOCKFILES[@]})) && lockfiles.delete "${_ent_LOCKFILES[@]}"
-	_ent_LOCKFILES=()
-	_ent_LOCKFILE=''
-}
-declare -fx lockfiles.delete.all
-lockfiles.timeout() {
-	if ((${#@})); then
-		source "$1" || msg.die log "log file $1 not found, or not a entities log file!"
-		return "$(( $(date +'%s') < _LockExpire ))"
-	else
-		lockfiles.timeout "${_ent_LOCKFILE}"
-	fi
-}
-declare -fx lockfiles.timeout
 mktempfile() {
 	local TmpDir TmpFile
 	TmpDir="${TMPDIR:-/tmp}/${1:-entities}"

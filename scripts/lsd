@@ -1,5 +1,6 @@
 #!/bin/bash 
-source "${ENTITIES:-/lib/include/entities}/entities.bash.min" || exit 2
+#source "${ENTITIES:-/lib/include/entities}/entities.bash.min" || exit 2
+source "${OKROOT}/entities/entities.bash" || exit 2
 	trap.set on
 	strict.set off
 	version.set 0.96

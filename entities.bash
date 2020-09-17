@@ -55,15 +55,17 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			while (( $# )); do
 				# do options for execute
 				case "${1,,}" in
-					-h|--help)	"${ENTITIES:-/lib/include/entities}/entities.help" "#@"
-											break ;;
+					-h|--help|help)	
+								"${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
+								exit $?
+								break ;;
 					# all other passed parameters are ignored.
-					-*)					echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
-					*)					echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
+					-*)		echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
+					*)		echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
 				esac
 				shift
 			done		
-			exit
+			exit $?
 		fi
 		_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|\n"
 		PRG="$(/usr/bin/basename "${p_}")"
@@ -113,13 +115,15 @@ declare -x _ent_scriptstatus="\$0=$0|"
 #X         : already been loaded or not.
 #X Example : (("${__entities__:-}")) || { echo >&2 'entities.bash not loaded!'; exit; }
 ((__entities__)) && return 0;
-#echo 'reloading...'
+
 _ent_scriptstatus+="reloading|\n"
 
-# turn off strict while we run through the included functions! (strict is default)
+# turn off 'strict' while we run through the included functions! ('strict' is default)
 set +o errexit +o nounset +o pipefail
+
 # oh why not ...
 shopt -s extglob
+shopt -s globstar
 
 #X Global   : GlobalCharVars CH9 LF CR OLDIFS IFS
 #X Desc     : Constant global char values.
@@ -289,7 +293,7 @@ debug() {	return $(( ! _ent_DEBUG )); }
 declare -fx debug
 debug.set() {
 	if (( $# )); then _ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
-	else							echo ${_ent_DEBUG}
+	else							echo "${_ent_DEBUG}"
 	fi
 	return 0
 }
@@ -315,7 +319,7 @@ strict.set() {
 		((_ent_STRICT)) && opt='-'
 		set ${opt}o errexit ${opt}o nounset ${opt}o pipefail #${opt}o noclobber
 	else
-		echo -n ${_ent_STRICT}
+		echo -n "${_ent_STRICT}"
 	fi
 	return 0
 }
@@ -323,6 +327,7 @@ declare -fx 'strict.set'
 
 #X Function : trap.function
 #X Synopsis : trap.function [{ bash_exit_trap_function } ]
+# shellcheck disable=SC2016
 declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? ${LINENO:-0}; }'
 trap.function() {
 	if (( $# ));	then _ent_EXITTRAPFUNCTION="$1" 
@@ -346,7 +351,7 @@ trap.set() {
 			trap -- EXIT
 		fi
 	else
-		echo -n ${_ent_EXITTRAP}
+		echo -n "${_ent_EXITTRAP}"
 	fi
 	return 0
 }
@@ -430,7 +435,7 @@ declare -fx 'msg.debug'
 __msgx() {
 	local log="$1" msglevel="$2" verbose="$3"
 	shift 3
-	[[ ${log} == 'log' ]] && systemd-cat -t "$PRG" -p ${msglevel} echo "$@"
+	[[ ${log} == 'log' ]] && systemd-cat -t "$PRG" -p "${msglevel}" echo "$@"
 	if ((_ent_VERBOSE)); then
 		((_ent_COLOR)) && { nc=color$msglevel; echo -ne "${!nc}"; }
 		_printmsg "$@"
@@ -571,15 +576,15 @@ msg.line() {
 		local -ai sz 
 		sz=( $(stty size) )
 		if (( ${#sz[@]} )); then
-			screencols=$(( ${sz[1]} ))
+			screencols=$(( sz[1] ))
 		else
 			screencols=$(( COLUMNS ))
 		fi
 		IFS=$' \t\n'
 	fi
-	width=$(( (screencols - (TABSET * TABWIDTH)) - 1))
+	width=$(( (screencols - ${#_ent_MSGPREFIX} - (TABSET * TABWIDTH)) - 2))
 
-  msg "$(head -c $width < /dev/zero | tr '\0' $repchar)"
+  msg "$(head -c $width < /dev/zero | tr '\0' "${repchar:-_}")"
 
 	#msg "$(printf "${repchar}%.0s" $(seq 1 "${width}") )"
 	return 0
@@ -635,10 +640,85 @@ tab.set() {
 }
 declare -fx	'tab.set'
 
+#X Function: msg.prefix.separator.set
+#X Desc    : Set/Retrieve value of _ent_MSGPFXSEP for appending as a separator for msg.prefix.
+#X         : Default separator is ': '
+#X Synopsis: msg.prefix.separator.set ["separator"]
+#X Example : # 0. set a msg prefix with '>' separator
+#X         : msg.prefix.separator.set '>'
+#X         : msg.prefix.set "$PRG"
+#X         : msg 'Hello world.'
+#X See Also: msg.prefix.set
+declare -x _ent_MSGPFXSEP
+_ent_MSGPFXSEP=': '
+msg.prefix.separator.set() {
+	if (( $# ));	then 
+		_ent_MSGPFXSEP="$1" 
+	else 
+		echo -n "$_ent_MSGPFXSEP"
+	fi
+	return 0
+}
+# shellcheck disable=SC2154
+declare -fx msg.prefix.separator.set
+
+#X Function: msg.prefix.set
+#X Desc    : Set/Retrieve value of _ent_MSGPREFIX for prefixing a string 
+#X         : before every string output by the msg.* system.
+#X Synopsis: msg.prefix.set [-a] "msgprefix"
+#X         : -a  makes msgprefix additive to the existing msg prefix.
+#X Example : # 0. set a msg prefix
+#X         : msg.prefix.set "$PRG"
+#X         : # 1. retrieve current msgprefix
+#X         : oldprefix=$(msg.prefix.set)
+#X         : # 2. set additive msg prefix
+#X         : msg.prefix.set -a 'processing'
+#X See Also: msg.prefix.separator.set
+declare -ax _ent_MSGPREFIX
+_ent_MSGPREFIX=()
+msg.prefix.set() {
+	if (( $# ));	then 
+		local -i add=0 sub=0
+		if   [[ $1 == '++' || $1 == '-a' ]]; then	shift; add=1;
+		elif [[ $1 == '--' || $1 == '-d' ]]; then shift; sub=1; 
+		else
+			_ent_MSGPREFIX=( $1 )
+			return 0
+		fi
+		if ((add)); then
+			_ent_MSGPREFIX+=( "${1:-}" )
+		elif ((sub)); then
+			if (( ${#_ent_MSGPREFIX[@]} )); then
+				_ent_MSGPREFIX=( ${_ent_MSGPREFIX[@]:0:${#_ent_MSGPREFIX[@]}-1} )
+			else
+				_ent_MSGPREFIX=()
+			fi
+		fi
+		return 0
+	fi
+
+	if [[ -n ${_ent_MSGPREFIX[@]:-} ]]; then
+		local p
+		p=${_ent_MSGPREFIX[*]}
+    echo -n "${p//[[:blank:]]/${_ent_MSGPFXSEP}}${_ent_MSGPFXSEP}"
+	else
+		echo -n ''
+	fi
+	return 0
+}
+# shellcheck disable=SC2154
+declare -fx msg.prefix.set
+
 _printmsg() {
 	local line IFS=$'\t\n' lf=''
 	for line in "$@"; do
-		[[ "${line}" == '-n' ]] && { lf='-n'; continue; }
+		[[ ${line} == '-n' ]] && { lf='-n'; continue; }
+		if (( ${#_ent_MSGPREFIX[*]} )); then
+			p=${_ent_MSGPREFIX[*]}
+			echo -n "${p//[[:blank:]]/${_ent_MSGPFXSEP}}${_ent_MSGPFXSEP}"
+		fi
+#		"${_ent_MSGPREFIX[*]}${_ent_MSGPFXSEP}"
+		# shellcheck disable=SC2046
 		((TABSET)) && printf '\t%.0s' $(seq 1 ${TABSET})
 		echo -e $lf "${line}"
 		lf=''
@@ -859,7 +939,7 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 			fi
 		done
 		# do symlinks last (includes entities.d/user/*)
-		for _e in ${_userbash[@]}; do
+		for _e in "${_userbash[@]}"; do
 			source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
 		done
 		unset _e _userbash

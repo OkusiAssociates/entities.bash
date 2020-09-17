@@ -1,8 +1,9 @@
 #!/bin/bash
 source $(dirname "$0")/entities.bash new || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
 	strict.set off
+	msg.prefix.set "$(msg.prefix.set)$PRG"
 	trap.set on
-	
+		
 #	ENTITIES=$PRGDIR/entities
 #	export ENTITIES
 	declare EntitiesDir="$PRGDIR"
@@ -195,7 +196,6 @@ main() {
 	msg "$PRG finished"
 	return 0
 }
-
 	
 cleanup() {
 	[[ $1 == '' ]] && exitcode=$? || exitcode=$1
@@ -217,8 +217,7 @@ printlines() {
 
 usage() {
 	cat <<-usage
-		$PRG
-		Create entities help files.
+		$PRG - Create entities help files.
 		Usage: $PRG [--auto|-y] [--verbose|-v || --quiet|-q] [--help|-h]
 	usage
 	exit 1
