@@ -1,0 +1,8 @@
+#-Function--is.root
+  Function: is.root
+      Desc: Return error if not root user. Uses whoami and EUID.
+  Synopsis: is.root
+   Depends: whoami
+   Example: is.root || exit 1
+    Source: /usr/share/okusi/entities/entities.d/sys/perrno.bash
+#-Function--is.root-----------------------------------------------------------

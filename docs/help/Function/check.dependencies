@@ -1,9 +1,10 @@
 #-Function--check.dependencies
   Function: check.dependencies
-      Desc: check for script dependencies (programs, scripts, or functions).
+      Desc: check for script dependencies (programs, scripts, or functions in the environment).
   Synopsis: check.dependencies [-q|--quiet] name...
-          :   name        is the name of a program, script or function.
           :   -q|--quiet  do not print 'dependency-not-found' messages.
+          :   name        is a list of programs, scripts or functions.
+   Depends: which (not fatal if not found)
    Example: (( check.dependencies dirname ln )) && msg.die "Dependencies missing."
     Source: /usr/share/okusi/entities/entities.bash
 #-Function--check.dependencies------------------------------------------------

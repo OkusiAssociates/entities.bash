@@ -1,7 +1,4 @@
 #!/bin/bash
-#echo "EDITOR=$EDITOR"
-#source $OKROOT/entities/entities.d/editor.set.bash
-	
 # joe
 #   for f in /usr/share/joe/syntax/*.jsf; do basename -s '.jsf' "$f"; done
 # nano
@@ -25,7 +22,6 @@
 #      2 Non-ISO extended-ASCII text
 #      1 Perl5 module source
 #      1 BSD makefile script         
-
 #     38 a /usr/bin/env bats script
 #     11 a /usr/bin/php script
 #      3 a /usr/bin/env /bin/bash script
@@ -87,57 +83,64 @@ declare -Ax _ent_TextFileTypes=(
 			['Perl5 module source']='perl'
 			['BSD makefile script']='bsdmake'
 		)
+
 textfiletype() {
-	local testfile=''
+	local -- testfile='' ext
 	local -i typeonly=0
-	local File='' FileType=text
+	local -- File=''
+	local -- FileType='text'
 	while (( $# )); do
 		testfile="${1}"
-		# for type only
-		if [[ $testfile == '-t' ]]; then
-			typeonly=1
-			shift
-			continue
-		fi
-#		[[ -d "$testfile" ]] && { shift; continue; }
-		if [[ -f "$testfile" ]]; then
-			# get file descriptions from file command		
-			File=$(trim "$(file "$testfile" 2>/dev/null | grep ' text' | cut -d':' -f2)")
-			[[ -z $File ]] && { shift; continue; }
-			File=${File%%,*}
-			[[ -z $File ]] && File='text'
-			if [[ "${!_ent_TextFileTypes[@]}" == *"$File"* ]]; then
-				FileType="${_ent_TextFileTypes[$File]}"
-				[[ -z $FileType ]] && FileType='text'
-			else
+		# for typeonly option 
+		[[ $testfile == '-t' ]] && { typeonly=1; shift; continue; }
+
+		# why are you giving me a directory?
+		[[ -d "$testfile" ]] && { shift; continue; }
+
+		ext=${testfile##*\.}
+		case "$ext" in
+			php)				FileType=php;;
+			htm|html)		FileType=html;;
+			sh|conf)		FileType=sh;;
+			bash|cnf)		FileType=bash;;
+			c|h)				FileType=c;;
+			xml)				FileType=xml;;
+			*)					FileType=text;;
+		esac
+		
+		# still equals text, so check file command output
+		if [[ -z $FileType || $FileType == 'text' ]]; then
+			# the file exists therefore examine it.
+			if [[ -f "$testfile" ]]; then
+				# head examination
 				h=$(head -n1 "$testfile")
-				if 	 [[ $h =~ ^\#\!.*\/bash.* ]];	then	FileType='bash'
-				elif [[ $h =~ ^\#\!.*\/sh.*   ]];	then	FileType='sh'
-				elif [[ $h =~ ^\#\!.*\/php.*  \
-									|| ${h:0:2} == '<?' ]];	then	FileType='php'
+				if 	 [[ $h =~ ^\#\!.*\/bash.* ]];	then	
+					FileType='bash'
+				elif [[ $h =~ ^\#\!.*\/sh.*   ]];	then	
+					FileType='sh'
+				elif [[ $h =~ ^\#\!.*\/php.*  || ${h} == '<?' || ${h:0:5} == '<?php' ]];	then	
+					FileType='php'
+				else
+					# file command examination
+					File=$(trim "$(file "$testfile" | grep ' text' | cut -d':' -f2)")
+					[[ -z $File ]] && { shift; continue; }
+					File=${File%%,*}
+					[[ -z $File ]] && File='text'
+					if [[ "${!_ent_TextFileTypes[@]}" == *"$File"* ]]; then
+						FileType="${_ent_TextFileTypes[$File]}"
+						[[ -z $FileType ]] && FileType='text'
+					fi
 				fi
 			fi
 		fi
-		
-		# still equals text, so check file extension
-		if [[ $FileType == '' || $FileType == 'text' ]]; then
-			ext=${testfile##*\.}
-			case "$ext" in
-				php)				FileType=php;;
-				htm|html)		FileType=html;;
-				sh|conf)		FileType=sh;;
-				bash|cnf)		FileType=bash;;
-				c|h)				FileType=c;;
-				xml)				FileType=xml;;
-				''|*)				FileType=text;;
-			esac
+				
+		if ((typeonly)); then
+			echo "${FileType:-text}"
+		else
+			echo "${FileType} ${testfile}"
 		fi
-		
-		((typeonly)) && echo "${FileType:-text}" \
-				|| echo "${FileType}" "${testfile}"
 		shift
 	done
 }
 declare -fx textfiletype
-
 #fin

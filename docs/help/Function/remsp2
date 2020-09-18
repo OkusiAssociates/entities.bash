@@ -6,6 +6,7 @@
           :   -b  include tab characters as space.
    Depends: trim
    Example: str=" 123     456 789     0123   "
-          : str2=$(remsp "$str")
+          : str2=$(remsp2 "$str")
+          : echo "$str" | remsp2
     Source: /usr/share/okusi/entities/entities.d/string/post_slug.bash
 #-Function--remsp2------------------------------------------------------------

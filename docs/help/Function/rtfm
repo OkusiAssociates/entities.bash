@@ -7,5 +7,5 @@
           : For convenience In a terminal, set alias man='rtfm'
   Synopsis: rtfm "command"
    Depends: man entities.help w3m lynx
-    Source: /usr/share/okusi/entities/entities.d/sys/urldecode.bash
+    Source: /usr/share/okusi/entities/entities.d/sys/is.tty.bash
 #-Function--rtfm--------------------------------------------------------------

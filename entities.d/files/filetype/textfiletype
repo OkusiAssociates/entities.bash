@@ -2,17 +2,18 @@
 #	PRG="$(basename "$0")"
 #	PRGDIR="$(readlink -f "$(dirname "$0")")"
 source entities
-	strict.set on
-
+	strict.set off
 	source "./$PRG.bash"
 	
+	declare -a text
+
 	filename="$1"
 	echo "Filename: $filename"
+	textfiletype "$filename" 
 
 	text=( "$(textfiletype "$filename" 2>/dev/null)" )
-	echo "textfiletype: |${text[@]}|"
-	echo $text
-	echo ${text[0]}
+	echo "textfiletype: |${text[*]}|"
 		
 	editstr="editstr=$(editorsyntaxstring ${text[@]} 2>/dev/null)"
 	echo $editstr
+	

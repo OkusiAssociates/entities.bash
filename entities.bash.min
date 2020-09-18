@@ -2,8 +2,8 @@
 _ent_MINIMAL=1
 declare -- PRG PRGDIR 
 declare -x _ent_scriptstatus="\$0=$0|"
+	declare p_
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
-		declare p_
 		p_="$(/bin/readlink -f "${0}")" || p_=''
 		_ent_scriptstatus+="is.script|\$p_=$p_|\n"
 		if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
@@ -11,12 +11,12 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			__entities__=0
 			while (( $# )); do
 				case "${1,,}" in
-					-h|--help|help)	
+					/\?|-\?|-h|--help|help)	
 								"${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
 								exit $?
 								break;;
-					-*)		echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 22;;
-					*)		echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 22;;
+					-*)		echo >&2 "$0: Bad option [$1] in entities.bash";		exit 22;;
+					*)		echo >&2 "$0: Bad argument [$1] in entities.bash";	exit 22;;
 				esac
 				shift
 			done		
@@ -26,7 +26,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
 		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
-		unset _p
+		unset p_
 		if (( ! $# )); then
 			(( ${__entities__:-0} )) && return 0
 		fi
@@ -162,58 +162,6 @@ strict.set() {
 	return 0
 }
 declare -fx 'strict.set'
-declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? ${LINENO:-0}; }'
-trap.function() {
-	if (( $# ));	then _ent_EXITTRAPFUNCTION="$1" 
-							else echo -n "$_ent_EXITTRAPFUNCTION"
-	fi
-	return 0
-}
-declare -fx 'trap.function'
-declare -ix _ent_EXITTRAP=0
-trap.set() {
-	if (( $# )); then
-		_ent_EXITTRAP=$(onoff "${1}" ${_ent_EXITTRAP})
-		if ((_ent_EXITTRAP)); then
-			trap "$_ent_EXITTRAPFUNCTION" EXIT
-		else
-			trap -- EXIT
-		fi
-	else
-		echo -n "${_ent_EXITTRAP}"
-	fi
-	return 0
-}
-declare -fx 'trap.set'
-cleanup() {
-	local -i exitcode=$?
-	if ((exitcode)); then
-		if ((_ent_DEBUG)); then
-			msg.info "Debug [$PRG]:"
-			msg.info "$(set | grep "^_ent_")"
-			msg.info "$(set | grep "^BASH"	| grep -v BASH_VERSINFO)"
-		fi
-		msg.err "script=$PRG: exit=$exitcode: line=${2:-}: \$1=${1:-}: fn=${FUNCNAME[*]}: ln=${BASH_LINENO[*]}: s=${BASH_SOURCE[*]}}"
-	fi
-	exit $exitcode
-}
-declare -fx cleanup
-synopsis() {
-	local -i xt=0
-	while (( $# )); do
-		case "${1,,}" in
-			-x|--exit|exit)	xt=1	;;
-			*)							msg.die log "Bad command line argument '$1'!" ;;
-		esac
-		shift
-	done
-	cat <<-syn
-	Usage: $PRG
- 
-	syn
-	((xt)) && exit $xt
-}
-declare -fx synopsis
 msg() { ((_ent_VERBOSE)) && _printmsg "$@"; }
 declare -fx msg
 msg.debug() {
@@ -416,34 +364,11 @@ _printmsg() {
 	return 0
 }
 declare -fx	_printmsg
-trim()  { 
-	local v="$*"
-	v="${v#"${v%%[![:space:]]*}"}"
-	v="${v%"${v##*[![:space:]]}"}"
-	echo -n "$v"
-}
-ltrim() {
-	local v="$*"
-	v="${v#"${v%%[![:space:]]*}"}"
-	echo -n "$v"
-}
-rtrim() {
-	local v="$*"
-	v="${v%"${v##*[![:space:]]}"}"
-	echo -n "$v"
-}
-declare -fx trim rtrim ltrim
 exit_if_not_root() {
 	is.root || msg.die "$PRG can only be executed by root user."
 	return 0
 }
 declare -fx exit_if_not_root
-is.root() {
-	[[ "$(whoami)" == 'root' || $EUID == 0 ]] && return 0
-	return 1
-}
-declare -fx 'is.root'
-	
 ask.yn() {
 	((_ent_VERBOSE)) || return 0
 	[ -t 0 ] || return 0
@@ -462,16 +387,16 @@ ask.yn() {
 declare -fx 'ask.yn'
 	alias askyn='ask.yn' #X legacy X#
 entities.help() {
-	"${ENTITIES:-/lib/include/entities}/entities.help" "$@"
-	return $?
+	"${ENTITIES:-/lib/include/entities}/entities.help" "$@" || return $?
+	return 0
 }
 declare -fx 'entities.help'
 check.dependencies() {
 	(( ${#@} )) || return 0
-	local needed_dep=''
-	local -a missing_deps=''
+	local -- needed_dep=''
+	local -- missing_deps=''
 	local -i missing=0
-	if [[ "$1" == "--quiet" || "$1" == '-q' ]]; then
+	if [[ "${1:-}" == '--quiet' || "${1:-}" == '-q' ]]; then
 		local -i _ent_VERBOSE=0 
 		shift
 	fi
@@ -488,56 +413,10 @@ check.dependencies() {
 		fi
 	done
 	((missing && _ent_VERBOSE)) && \
-			echo >&2 "These dependencies are missing: '$(trim "${missing_deps[@]}")'"
+			echo >&2 "These dependencies are missing: ${missing_deps}"
 	return $missing
 }
 declare -fx 'check.dependencies'
-is.tty() {
-	tty --quiet	2>/dev/null	# [[ -t 0 ]] is this the same??
-	return $?
-}
-declare -fx 'is.tty'
-	alias is_tty='is.tty'
-	
-is.interactive() {
-	declare report=${1:-}
-	declare -i isit=0 echoit=0
-	if [[ -n $report ]]; then
-		case "${1:-}" in
-			report)		echoit=1;;
-			noreport)	echoit=0;;
-		esac
-	fi
-	if [[ -t 1 ]]; then 
-		isit=1
-		((echoit)) && echo "${isit}: STDOUT is attached to TTY."
-	fi
-	if [[ "${PS1+x}" == 'x' ]]; then
-		((echoit)) && echo "${isit}: PS1 is set. This is possibly an interactive shell."
-		if (( ${#PS1} > 1 )); then
-			isit=1
-			((echoit)) && echo "${isit}: PS1 is set and has a length -gt 1. This is very probably an interactive shell."
-		fi
-	fi
-	if [[ "$-" == *"i"* ]]; then
-		isit=1
-		((echoit)) && echo "${isit}: \$- = *i*"
-	fi
-	if [[ -p /dev/stdout ]]; then
-		isit=0
-		((echoit)) && echo "${isit}: STDOUT is attached to a pipe."
-	fi
-	if [[ ! -t 1 && ! -p /dev/stdout ]]; then
-		isit=0
-		((echoit)) && echo "${isit}: STDOUT is attached to a redirection."
-	fi
-	if ((echoit)); then
-		((isit)) && echo '1: is interactive' || echo '0: is not interactive'
-	fi
-	return $(( ! isit ))
-}
-declare -fx 'is.interactive'
-	alias is_interactive='is.interactive'
 trap.breakp() { 
 	local b='' prompt=${1:-}
 	(( ${#prompt} )) && prompt=" $prompt"
@@ -570,7 +449,7 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 	if ! check.dependencies \
 			basename dirname readlink mkdir ln cat \
 			systemd-cat stty wget base64 seq tty find touch tree lynx; then
-		echo >&2 'Warning: Dependencies not found. Entities cannot run.'	
+		echo >&2 'Warning: Dependencies not found. entities.bash may not run correctly.'	
 	fi 
 fi
 declare -xig __entities__=1
@@ -679,7 +558,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.95.420.455.8'
+_ent_VERSION='0.95.420.455.12'
 cdd() {
 	(( $# )) || return 0
 	local dirspec="${1}" pwd=''
@@ -789,49 +668,52 @@ declare -Ax _ent_TextFileTypes=(
 			['BSD makefile script']='bsdmake'
 		)
 textfiletype() {
-	local testfile=''
+	local -- testfile='' ext
 	local -i typeonly=0
-	local File='' FileType=text
+	local -- File=''
+	local -- FileType='text'
 	while (( $# )); do
 		testfile="${1}"
-		if [[ $testfile == '-t' ]]; then
-			typeonly=1
-			shift
-			continue
-		fi
-		if [[ -f "$testfile" ]]; then
-			File=$(trim "$(file "$testfile" 2>/dev/null | grep ' text' | cut -d':' -f2)")
-			[[ -z $File ]] && { shift; continue; }
-			File=${File%%,*}
-			[[ -z $File ]] && File='text'
-			if [[ "${!_ent_TextFileTypes[@]}" == *"$File"* ]]; then
-				FileType="${_ent_TextFileTypes[$File]}"
-				[[ -z $FileType ]] && FileType='text'
-			else
+		[[ $testfile == '-t' ]] && { typeonly=1; shift; continue; }
+		[[ -d "$testfile" ]] && { shift; continue; }
+		ext=${testfile##*\.}
+		case "$ext" in
+			php)				FileType=php;;
+			htm|html)		FileType=html;;
+			sh|conf)		FileType=sh;;
+			bash|cnf)		FileType=bash;;
+			c|h)				FileType=c;;
+			xml)				FileType=xml;;
+			*)					FileType=text;;
+		esac
+		
+		if [[ -z $FileType || $FileType == 'text' ]]; then
+			if [[ -f "$testfile" ]]; then
 				h=$(head -n1 "$testfile")
-				if 	 [[ $h =~ ^\#\!.*\/bash.* ]];	then	FileType='bash'
-				elif [[ $h =~ ^\#\!.*\/sh.*   ]];	then	FileType='sh'
-				elif [[ $h =~ ^\#\!.*\/php.*  \
-									|| ${h:0:2} == '<?' ]];	then	FileType='php'
+				if 	 [[ $h =~ ^\#\!.*\/bash.* ]];	then	
+					FileType='bash'
+				elif [[ $h =~ ^\#\!.*\/sh.*   ]];	then	
+					FileType='sh'
+				elif [[ $h =~ ^\#\!.*\/php.*  || ${h} == '<?' || ${h:0:5} == '<?php' ]];	then	
+					FileType='php'
+				else
+					File=$(trim "$(file "$testfile" | grep ' text' | cut -d':' -f2)")
+					[[ -z $File ]] && { shift; continue; }
+					File=${File%%,*}
+					[[ -z $File ]] && File='text'
+					if [[ "${!_ent_TextFileTypes[@]}" == *"$File"* ]]; then
+						FileType="${_ent_TextFileTypes[$File]}"
+						[[ -z $FileType ]] && FileType='text'
+					fi
 				fi
 			fi
 		fi
-		
-		if [[ $FileType == '' || $FileType == 'text' ]]; then
-			ext=${testfile##*\.}
-			case "$ext" in
-				php)				FileType=php;;
-				htm|html)		FileType=html;;
-				sh|conf)		FileType=sh;;
-				bash|cnf)		FileType=bash;;
-				c|h)				FileType=c;;
-				xml)				FileType=xml;;
-				''|*)				FileType=text;;
-			esac
+				
+		if ((typeonly)); then
+			echo "${FileType:-text}"
+		else
+			echo "${FileType} ${testfile}"
 		fi
-		
-		((typeonly)) && echo "${FileType:-text}" \
-				|| echo "${FileType}" "${testfile}"
 		shift
 	done
 }
@@ -956,9 +838,7 @@ elipstr() {
 	echo "${str:0:$sx}${pd}..${str: -$sx}"
 }
 declare -fx elipstr
-is.number() {
-	[[ ${1:-} =~ ^[-+]?[0-9]+$ ]] && return 0 || return 1
-}
+is.number() {	[[ ${1:-} =~ ^[-+]?[0-9]+$ ]] || return 1; }
 declare -fx is.number
 shopt -s extglob
 post_slug() {
@@ -985,7 +865,6 @@ remsp2() {
 			shift
 		fi
 	fi
-	
 	if (($#)); then 
 		if ((incblank)); then
 			trim "${1//+( )/ }"; echo
@@ -1012,7 +891,39 @@ str_str() {
  	echo -n "$str"
 }
 declare -fx str_str
+trim()  { 
+	local v="$*"
+	v="${v#"${v%%[![:space:]]*}"}"
+	v="${v%"${v##*[![:space:]]}"}"
+	echo -n "$v"
+}
+ltrim() {
+	local v="$*"
+	v="${v#"${v%%[![:space:]]*}"}"
+	echo -n "$v"
+}
+rtrim() {
+	local v="$*"
+	v="${v%"${v##*[![:space:]]}"}"
+	echo -n "$v"
+}
+declare -fx trim rtrim ltrim
 calcfp() { echo "$*" | bc -l; }
+cleanup() {
+	local -i exitcode=$?
+	if ((exitcode)); then
+		if ((_ent_DEBUG)); then
+			msg.info "Debug [$PRG]:"
+			msg.info "$(set | grep ^_ent_)"
+			msg.info "$(set | grep ^BASH	| grep -v BASH_VERSINFO)"
+		fi
+		if ((exitcode > 1)); then
+			msg.err "script=[$PRG] exit=[$exitcode] line=[${2:-}] \$1=$[{1:-}] fn[]=[${FUNCNAME[*]// /\|}] ln=[${BASH_LINENO[*]}] bs=[${BASH_SOURCE[*]}]"
+		fi
+	fi
+	exit $exitcode
+}
+declare -fx cleanup
 declare -Aix HRint=( [b]=1 [k]=1024 [m]=1024000 [g]=1024000000 [t]=1024000000000 [p]=1024000000000000 \
 										 [B]=1 [K]=1000 [M]=1000000 [G]=1000000000 [T]=1000000000000 [P]=1000000000000000 )
 hr2int() {
@@ -1045,6 +956,56 @@ int2hr() {
 	done
 	return 0	
 }
+is.interactive() {
+	declare report=${1:-}
+	declare -i isit=0 echoit=0
+	if [[ -n $report ]]; then
+		case "${1:-}" in
+			report)		echoit=1;;
+			noreport)	echoit=0;;
+		esac
+	fi
+	if [[ -t 1 ]]; then 
+		isit=1
+		((echoit)) && echo "${isit}: STDOUT is attached to TTY."
+	fi
+	if [[ "${PS1+x}" == 'x' ]]; then
+		((echoit)) && echo "${isit}: PS1 is set. This is possibly an interactive shell."
+		if (( ${#PS1} > 1 )); then
+			isit=1
+			((echoit)) && echo "${isit}: PS1 is set and has a length -gt 1. This is very probably an interactive shell."
+		fi
+	fi
+	if [[ "$-" == *"i"* ]]; then
+		isit=1
+		((echoit)) && echo "${isit}: \$- = *i*"
+	fi
+	if [[ -p /dev/stdout ]]; then
+		isit=0
+		((echoit)) && echo "${isit}: STDOUT is attached to a pipe."
+	fi
+	if [[ ! -t 1 && ! -p /dev/stdout ]]; then
+		isit=0
+		((echoit)) && echo "${isit}: STDOUT is attached to a redirection."
+	fi
+	if ((echoit)); then
+		((isit)) && echo '1: is interactive' || echo '0: is not interactive'
+	fi
+	return $(( ! isit ))
+}
+declare -fx 'is.interactive'
+	alias is_interactive='is.interactive'
+is.root() {
+	[[ "$(whoami)" == 'root' || $EUID == 0 ]] && return 0
+	return 1
+}
+declare -fx 'is.root'
+is.tty() { 
+	tty --quiet	2>/dev/null	|| return $?
+	return 0
+}
+declare -fx 'is.tty'
+	alias is_tty='is.tty'
 pause() { read -n1 -p "${1:-*Pause*}"; echo; }
 declare -fx pause
 declare -x perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"
@@ -1088,6 +1049,29 @@ rtfm() {
 	${BROWSER:-$(which w3m || which lynx)} "http://www.google.com/search?q=linux+bash+%2B$@" && return 0
 }
 declare -fx rtfm
+declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? ${LINENO:-0}; }'
+trap.function() {
+	if (( $# ));	then _ent_EXITTRAPFUNCTION="$1" 
+							else echo -n "$_ent_EXITTRAPFUNCTION"
+	fi
+	return 0
+}
+declare -fx 'trap.function'
+declare -ix _ent_EXITTRAP=0
+trap.set() {
+	if (( $# )); then
+		_ent_EXITTRAP=$(onoff "${1}" ${_ent_EXITTRAP})
+		if ((_ent_EXITTRAP)); then
+			trap "$_ent_EXITTRAPFUNCTION" EXIT
+		else
+			trap -- EXIT
+		fi
+	else
+		echo -n "${_ent_EXITTRAP}"
+	fi
+	return 0
+}
+declare -fx 'trap.set'
 urldecode() { echo -e "$(sed 's/+/ /g;s/%\(..\)/\\x\1/g;')"; }
 declare -fx urldecode
 urlencode() {

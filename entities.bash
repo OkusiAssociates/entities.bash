@@ -42,25 +42,25 @@ declare -- PRG PRGDIR
 
 declare -x _ent_scriptstatus="\$0=$0|"
 
+	declare p_
 	# Is entities.bash being executed as a script?
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
-		declare p_
 		p_="$(/bin/readlink -f "${0}")" || p_=''
 		_ent_scriptstatus+="is.script|\$p_=$p_|\n"
 		# Has entities.bash been executed?
 		if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
 			_ent_scriptstatus+='is.execute|\n'
 			__entities__=0
-			# do options for execute
+			# do options for execute mode
 			while (( $# )); do
 				case "${1,,}" in
-					-h|--help|help)	
+					/\?|-\?|-h|--help|help)	
 								"${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
 								exit $?
 								break;;
 					# All other passed parameters return error.
-					-*)		echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 22;;
-					*)		echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 22;;
+					-*)		echo >&2 "$0: Bad option [$1] in entities.bash";		exit 22;;
+					*)		echo >&2 "$0: Bad argument [$1] in entities.bash";	exit 22;;
 				esac
 				shift
 			done		
@@ -70,7 +70,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
 		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
-		unset _p
+		unset p_
 
 		# `entities` is already loaded, and no other parameters have 
 		# been given, so do not reload.
@@ -101,7 +101,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			# new load
 			new)			__entities__=0;;
 			# Does the calling script wish to inherit the current 
-			# Entities environment/functions?
+			# Entities.bash environment/functions?
 			# Inherit is the default. Can only inherit if called from a script.
 			inherit)	__entities__=${__entities__:-0};;
 			# all other passed parameters are ignored (possibly script parameters? 
@@ -126,7 +126,7 @@ set +o errexit +o nounset +o pipefail
 shopt -s extglob
 shopt -s globstar
 
-#X Global   : GlobalCharVars CH9 LF CR OLDIFS IFS
+#X Global   : CH9 LF CR OLDIFS IFS
 #X Desc     : Constant global char values.
 #X          : NOTE: IFS is 'normalised' on every full execution of entities.
 #X          :       OLDIFS retains the existing IFS
@@ -138,7 +138,6 @@ shopt -s globstar
 declare -x	LF=$'\n' CR=$'\r' CH9=$'\t'
 declare -x	OLDIFS="$IFS" IFS=$' \t\n'
 declare -nx	OIFS="OLDIFS"
-
 
 #X Function : onoff 
 #X Desc     : echo 1 if 'on', 0 if 'off'
@@ -156,7 +155,6 @@ onoff() {
 	return 0
 }
 declare -fx onoff
-
 
 #X Function : verbose.set 
 #X Desc     : Set global verbose status. For shell terminal verbose ON by default,
@@ -323,85 +321,6 @@ strict.set() {
 	return 0
 }
 declare -fx 'strict.set'
-
-#X Function : trap.function
-#X Synopsis : trap.function [{ bash_exit_trap_function } ]
-# shellcheck disable=SC2016
-declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? ${LINENO:-0}; }'
-trap.function() {
-	if (( $# ));	then _ent_EXITTRAPFUNCTION="$1" 
-							else echo -n "$_ent_EXITTRAPFUNCTION"
-	fi
-	return 0
-}
-declare -fx 'trap.function'
-
-#X Function : trap.set
-#X Synopsis : trap.set [[on|1] | [off|0]]
-declare -ix _ent_EXITTRAP=0
-trap.set() {
-	if (( $# )); then
-		_ent_EXITTRAP=$(onoff "${1}" ${_ent_EXITTRAP})
-		if ((_ent_EXITTRAP)); then
-			#-- SC2064: Use single quotes, otherwise this expands now rather than when signalled.
-			# shellcheck disable=SC2064
-			trap "$_ent_EXITTRAPFUNCTION" EXIT
-		else
-			trap -- EXIT
-		fi
-	else
-		echo -n "${_ent_EXITTRAP}"
-	fi
-	return 0
-}
-declare -fx 'trap.set'
-
-#X Function : cleanup
-#X Desc     : a call to this function is made in the trap EXIT command.
-#X          : on exiting the script this function will always be called.
-#X          : you should define your own cleanup function to delete temporary
-#X          : files and other detritus before terminating.
-#X          : if you are not using the exit_if_already_running function
-#X Synopsis : cleanup [exitcode] [_LINENO_]
-#X Example  : cleanup
-#X See Also : trap.set trap.function, exit_if_already_running
-cleanup() {
-	local -i exitcode=$?
-	if ((exitcode)); then
-		if ((_ent_DEBUG)); then
-			msg.info "Debug [$PRG]:"
-			msg.info "$(set | grep "^_ent_")"
-			msg.info "$(set | grep "^BASH"	| grep -v BASH_VERSINFO)"
-		fi
-		msg.err "script=$PRG: exit=$exitcode: line=${2:-}: \$1=${1:-}: fn=${FUNCNAME[*]}: ln=${BASH_LINENO[*]}: s=${BASH_SOURCE[*]}}"
-	fi
-	exit $exitcode
-}
-declare -fx cleanup
-
-
-#X Function : synopsis
-#X Desc     : display usage information for the script. optionally exit.
-#X          : calling script should define its own 'synopsis' function.
-#X Synopsis : synopsis [-x|--exit]
-#X Example  : synopsis --exit
-synopsis() {
-	local -i xt=0
-	while (( $# )); do
-		case "${1,,}" in
-			-x|--exit|exit)	xt=1	;;
-			*)							msg.die log "Bad command line argument '$1'!" ;;
-		esac
-		shift
-	done
-	cat <<-syn
-	Usage: $PRG
- 
-	syn
-	((xt)) && exit $xt
-}
-declare -fx synopsis
-
 
 #X Function : msg
 #X Desc     : if verbose.set is enabled, send strings to output.
@@ -730,30 +649,6 @@ _printmsg() {
 }
 declare -fx	_printmsg
 
-#X Function : trim ltrim rtrim
-#X Desc     : trim   strip string of leading and trailing space chars
-#X          : ltrim  strip string of leading space chars
-#X          : rtrim  strip string of trailing space chars
-#X Synopsis : trim string
-#X Example  : str=" 123 "; str=$(trim "$str")
-trim()  { 
-	local v="$*"
-	v="${v#"${v%%[![:space:]]*}"}"
-	v="${v%"${v##*[![:space:]]}"}"
-	echo -n "$v"
-}
-ltrim() {
-	local v="$*"
-	v="${v#"${v%%[![:space:]]*}"}"
-	echo -n "$v"
-}
-rtrim() {
-	local v="$*"
-	v="${v%"${v##*[![:space:]]}"}"
-	echo -n "$v"
-}
-declare -fx trim rtrim ltrim
-
 #X Function : exit_if_not_root
 #X Desc     : If not root user, print failure message and exit script.
 #X Synopsis : exit_if_not_root
@@ -763,13 +658,6 @@ exit_if_not_root() {
 }
 declare -fx exit_if_not_root
 
-is.root() {
-	[[ "$(whoami)" == 'root' || $EUID == 0 ]] && return 0
-	return 1
-}
-declare -fx 'is.root'
-
-	
 #X Function : ask.yn
 #X Desc     : Ask y/n question,d return 0/1 
 #X          : NOTE: if verbose() is disabled, or there is no tty, ask.yn will 
@@ -800,23 +688,24 @@ declare -fx 'ask.yn'
 #X Synopsis : entities.help [function|globalvar|localvar|file] | [-s|--search searchstring] [-h|--help]
 #X Example  : entities.help ask.yn msg.info
 entities.help() {
-	"${ENTITIES:-/lib/include/entities}/entities.help" "$@"
-	return $?
+	"${ENTITIES:-/lib/include/entities}/entities.help" "$@" || return $?
+	return 0
 }
 declare -fx 'entities.help'
 
 #X Function : check.dependencies
-#X Desc     : check for script dependencies (programs, scripts, or functions).
+#X Desc     : check for script dependencies (programs, scripts, or functions in the environment).
 #X Synopsis : check.dependencies [-q|--quiet] name...
-#X          : 	name        is the name of a program, script or function.
 #X					:	  -q|--quiet  do not print 'dependency-not-found' messages.
+#X          : 	name        is a list of programs, scripts or functions.
 #X Example  : (( check.dependencies dirname ln )) && msg.die "Dependencies missing."
+#X Depends  : which (not fatal if not found)
 check.dependencies() {
 	(( ${#@} )) || return 0
-	local needed_dep=''
-	local -a missing_deps=''
+	local -- needed_dep=''
+	local -- missing_deps=''
 	local -i missing=0
-	if [[ "$1" == "--quiet" || "$1" == '-q' ]]; then
+	if [[ "${1:-}" == '--quiet' || "${1:-}" == '-q' ]]; then
 		local -i _ent_VERBOSE=0 
 		shift
 	fi
@@ -833,74 +722,11 @@ check.dependencies() {
 		fi
 	done
 	((missing && _ent_VERBOSE)) && \
-			echo >&2 "These dependencies are missing: '$(trim "${missing_deps[@]}")'"
+			echo >&2 "These dependencies are missing: ${missing_deps}"
 	return $missing
 }
 declare -fx 'check.dependencies'
 
-
-#X Function : is.tty 
-#X Desc     : return 0 if tty available, otherwise 1.
-#X Synopsis : is.tty
-#X Example  : is.tty && ask.yn "Continue?"
-is.tty() {
-	tty --quiet	2>/dev/null	# [[ -t 0 ]] is this the same??
-	return $?
-}
-declare -fx 'is.tty'
-	alias is_tty='is.tty'
-	
-#X Function : is.interactive
-#X Desc     : return 0 if tty available, otherwise 1.
-#X Synopsis : is.interactive [report|noreport*]
-#X Example  : is.interactive && ask.yn "Continue?"
-is.interactive() {
-	declare report=${1:-}
-	declare -i isit=0 echoit=0
-	# echo results? default is no.
-	if [[ -n $report ]]; then
-		case "${1:-}" in
-			report)		echoit=1;;
-			noreport)	echoit=0;;
-		esac
-	fi
-	# look for positives first
-	if [[ -t 1 ]]; then 
-		isit=1
-		((echoit)) && echo "${isit}: STDOUT is attached to TTY."
-	fi
-	#
-	if [[ "${PS1+x}" == 'x' ]]; then
-		((echoit)) && echo "${isit}: PS1 is set. This is possibly an interactive shell."
-		if (( ${#PS1} > 1 )); then
-			isit=1
-			((echoit)) && echo "${isit}: PS1 is set and has a length -gt 1. This is very probably an interactive shell."
-		fi
-	fi
-	#	
-	if [[ "$-" == *"i"* ]]; then
-		isit=1
-		((echoit)) && echo "${isit}: \$- = *i*"
-	fi
-	# look for negatives		
-	if [[ -p /dev/stdout ]]; then
-		isit=0
-		((echoit)) && echo "${isit}: STDOUT is attached to a pipe."
-	fi
-	# 
-	if [[ ! -t 1 && ! -p /dev/stdout ]]; then
-		isit=0
-		((echoit)) && echo "${isit}: STDOUT is attached to a redirection."
-	fi
-	# echo the result
-	if ((echoit)); then
-		((isit)) && echo '1: is interactive' || echo '0: is not interactive'
-	fi
-	# return true/false
-	return $(( ! isit ))
-}
-declare -fx 'is.interactive'
-	alias is_interactive='is.interactive'
 
 #X Function: trap.breakp
 #X Synopsis: trap.breakp [msg]
@@ -946,7 +772,7 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 	if ! check.dependencies \
 			basename dirname readlink mkdir ln cat \
 			systemd-cat stty wget base64 seq tty find touch tree lynx; then
-		echo >&2 'Warning: Dependencies not found. Entities cannot run.'	
+		echo >&2 'Warning: Dependencies not found. entities.bash may not run correctly.'	
 	fi 
 fi
 #^^_ent_MINIMAL

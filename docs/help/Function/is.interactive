@@ -3,5 +3,5 @@
       Desc: return 0 if tty available, otherwise 1.
   Synopsis: is.interactive [report|noreport*]
    Example: is.interactive && ask.yn "Continue?"
-    Source: /usr/share/okusi/entities/entities.bash
+    Source: /usr/share/okusi/entities/entities.d/sys/is.root.bash
 #-Function--is.interactive----------------------------------------------------

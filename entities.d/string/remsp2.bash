@@ -5,7 +5,8 @@
 #X Usage   : remsp [-b] "string"
 #X         :   -b  include tab characters as space.
 #X Example : str=" 123     456 789     0123   "
-#X         : str2=$(remsp "$str") 
+#X         : str2=$(remsp2 "$str") 
+#X         : echo "$str" | remsp2
 #X Depends : trim
 remsp2() { 
 	local -i incblank=0
@@ -15,7 +16,6 @@ remsp2() {
 			shift
 		fi
 	fi
-	
 	if (($#)); then 
 		if ((incblank)); then
 			trim "${1//+( )/ }"; echo
@@ -24,7 +24,6 @@ remsp2() {
 		fi
 		return $?
 	fi
-
 	local l
 	if ((incblank)); then
 		while read -r l; do trim "${l//+([[:blank:]])/ }"; echo; done
@@ -35,4 +34,3 @@ remsp2() {
 }
 declare -nx remsp2
 #fin
-

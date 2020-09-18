@@ -8,5 +8,5 @@
   Synopsis: cleanup [exitcode] [_LINENO_]
   See_Also: trap.set trap.function, exit_if_already_running
    Example: cleanup
-    Source: /usr/share/okusi/entities/entities.bash
+    Source: /usr/share/okusi/entities/entities.d/sys/zippayload.bash
 #-Function--cleanup-----------------------------------------------------------

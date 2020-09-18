@@ -31,8 +31,8 @@ hashbang_main() {
 				-vv|-v2|--D|--debug)
 												debug.set on ;;
 				-q|--quiet)			verbose.set off; debug.set off;;
-				-V|--version)		printTitle; return 0;;
-				-h|--help)			usage	;;
+				-V|--version)		printTitle; return 0 ;;
+				-h|--help)			usage; return 0	;;
 				--)							shift
 												gcmd+=( "$@" )
 												break;;
@@ -88,7 +88,7 @@ hashbang_main() {
 		# head/type examination
 		ft=$(textfiletype -t "$file")
 		[[ $ft == 'sh' ]] && ft='bash'
-		if [[ "$ft" == "$hashbang" ]]; then
+		if [[ $ft == "$hashbang" ]]; then
 			if (( ${#search} )); then
 				grep -m1 ${gcmd[@]:-} "$search" "$file" >/dev/null || file=''
 			fi
@@ -116,6 +116,7 @@ msg.warn() {
 }
 
 printTitle() { echo "$(basename "$0") vs $(version.set)" ; return 0; }
+
 usage() {
 	local PRG
 	PRG="$(basename "$0")"
@@ -143,10 +144,9 @@ usage() {
 	        : # 1. print bash filenames matching pattern
 	        : hashbang . -s '^whereisit' 
 	        : # 2. print bash filenames containing string 'varname'
-	        : # using format "p filename -s"
-	        : hashbang . -s 'varname'  -p 'p' -x '-s' >editfiles
+	        : #    in format "p filename -s"
+	        : hashbang . -s 'some_var_name' -p 'p' -x '-s' >editfiles
 	ETX
-	exit 1
 }
 
 hashbang_main "$@"

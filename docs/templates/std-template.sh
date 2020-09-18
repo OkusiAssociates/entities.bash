@@ -21,9 +21,9 @@ main() {
 			-q|--quiet)			verbose.set off;;
 			-V|--version)		msg "$(version.set)"; return 0;;
 			-h|--help)			usage; return 0;;
-			-?|--*)					msg.err "Invalid option [$1]"; return 1;;
+			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
 			*)							args+=( "$1" );;
-											#msg.err "Invalid argument [$1]"; return 1;;
+											#msg.err "Invalid argument [$1]"; return 22;;
 		esac
 		shift
 	done
@@ -34,11 +34,12 @@ main() {
 	
 }
 
+# shellcheck disable=SC2086
 cleanup() {
 	local -i err=$?
 	[[ -z ${1:-} ]] && err=$1
-	((err > 1)) && errno "$err"
-	exit "$err"
+	((err > 1)) && errno $err
+	exit $err
 }
 
 usage() {
@@ -48,6 +49,7 @@ usage() {
 		Synopsis: $PRG 
 		            [-v|--verbose] [-q|--quiet] 
 	usage
+	return 0
 }
 
 main "$@"
