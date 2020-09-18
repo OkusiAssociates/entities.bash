@@ -1,7 +1,7 @@
 #---Global--__entities__
     Global: __entities__
-      Desc: __entities__ global indicated whether entities.bash has
-          : already been loaded or not.
-   Example: (("${__entities__:-}")) || { echo >&2 'entities.bash not loaded!'; exit; }
+      Desc: __entities__ global flags whether entities.bash has
+          : already been loaded or not.  If it has, then exit straight away.
+   Example: (( ${__entities__:-0} )) || { echo >&2 'entities.bash not loaded!'; exit; }
     Source: /usr/share/okusi/entities/entities.bash
 #---Global--__entities__------------------------------------------------------

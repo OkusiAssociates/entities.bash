@@ -1,10 +1,11 @@
 #-Function--version.set
   Function: version.set
-      Desc: set or return version of the script.
-  Synopsis: version.set verstring
+      Desc: Set or return version number of the current script.
+  Synopsis: version.set "verstring"
           : $(version.set)
-  Defaults: '0.00 prealpha'
-   Example: version.set '4.20 beta'
-          : ver=$(version.set)
+  Defaults: '0.0.0'
+   Example: version.set '4.20'  # set script version.
+          : version.set         # print current script version.
+          : ver=$(version.set)  # store current version setting to variable.
     Source: /usr/share/okusi/entities/entities.bash
 #-Function--version.set-------------------------------------------------------

@@ -1,8 +1,0 @@
-#-----File--IncludeModules
-      File: IncludeModules
-      Desc: By default, all '*.bash' module files located in
-          : $ENTITIES/entities.d/** are
-          : automatically included in the entities.bash source file.
-          : #X     :
-    Source: /usr/share/okusi/entities/entities.bash
-#-----File--IncludeModules----------------------------------------------------

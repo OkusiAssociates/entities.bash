@@ -1,5 +1,5 @@
 #!/bin/bash
-##! shellcheck disable=SC2035,SC2154,SC1090,SC2086,2068
+# # s h e llcheck disable = SC2035,SC2154,SC1090,SC2086,2068
 
 # Bash only
 #libfunc1() { ...; }
@@ -12,7 +12,7 @@
 #X Desc     : Entities Functions/Globals/Local Declarations and Initialisations.
 #X          : entities.bash is a light-weight Bash function library for systems
 #X          : programmers and administrators.
-#X          : __entities__=is set if entities has been successfully loaded.
+#X          : __entities__ is set if entities.bash has been successfully loaded.
 #X          : PRG=basename of current script. 
 #X          : PRGDIR=directory location of current script, with softlinks 
 #X          : resolved to actual location.
@@ -20,10 +20,10 @@
 #X          : 'inherit' status when loading entities.bash.
 #X Depends  : basename dirname readlink mkdir ln cat systemd-cat stty
 
-#X Local    : PRG PRGDIR 
-#X Synopsis : source entities.bash [ [inherit*] | [new] | [load libname] 
-#X          :                       | [no-load libname] | [load-to newdir] ] 
-#X          : source entities.bash inherit 
+#X Global   : PRG PRGDIR 
+#X Desc     : PRG and PRGDIR are initialised every time entities.bash is
+#X          : executed.
+#X Examples : source entities.bash inherit 
 #X          :       # ^ if entities.bash has already been loaded, 
 #X          :       # init PRGDIR/PRG globals only then return.
 #X          :       # if entities.bash has not been loaded, load it.
@@ -42,26 +42,25 @@ declare -- PRG PRGDIR
 
 declare -x _ent_scriptstatus="\$0=$0|"
 
-	# is script is being run?
+	# Is entities.bash being executed as a script?
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
 		declare p_
 		p_="$(/bin/readlink -f "${0}")" || p_=''
 		_ent_scriptstatus+="is.script|\$p_=$p_|\n"
-
-		# has entities.bash been executed?
+		# Has entities.bash been executed?
 		if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
 			_ent_scriptstatus+='is.execute|\n'
 			__entities__=0
+			# do options for execute
 			while (( $# )); do
-				# do options for execute
 				case "${1,,}" in
 					-h|--help|help)	
 								"${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
 								exit $?
-								break ;;
-					# all other passed parameters are ignored.
-					-*)		echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
-					*)		echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
+								break;;
+					# All other passed parameters return error.
+					-*)		echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 22;;
+					*)		echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 22;;
 				esac
 				shift
 			done		
@@ -73,12 +72,13 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
 		unset _p
 
-		# entities is already loaded, and no other parameters have been given, so do not reload.
+		# `entities` is already loaded, and no other parameters have 
+		# been given, so do not reload.
 		if (( ! $# )); then
 			(( ${__entities__:-0} )) && return 0
 		fi
 	
-	# source entities has been executed at the shell command prompt
+	# `source entities` has been executed at the shell command prompt
 	else
 		_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|\n"
 		p_="$(/bin/readlink -f "${BASH_SOURCE[0]}")"
@@ -99,26 +99,27 @@ declare -x _ent_scriptstatus="\$0=$0|"
 	while (( $# )); do
 		case "${1,,}" in
 			# new load
-			new) 									__entities__=0 ;;
-			# does the calling script wish to inherit the current Entities environment/functions?
-			# (inherit is the default)
-			# can only inherit if called from a script
-			inherit|preserve)	__entities__=${__entities__:-0} ;;
-			# all other passed parameters are ignored (possibly script parameters? but not for entities)
-			*)	break;;
+			new)			__entities__=0;;
+			# Does the calling script wish to inherit the current 
+			# Entities environment/functions?
+			# Inherit is the default. Can only inherit if called from a script.
+			inherit)	__entities__=${__entities__:-0};;
+			# all other passed parameters are ignored (possibly script parameters? 
+			# but not for entities)
+			*)				break;;
 		esac
 		shift
 	done
 
 #X Global  : __entities__
-#X Desc    : __entities__ global indicated whether entities.bash has 
-#X         : already been loaded or not.
-#X Example : (("${__entities__:-}")) || { echo >&2 'entities.bash not loaded!'; exit; }
+#X Desc    : __entities__ global flags whether entities.bash has 
+#X         : already been loaded or not.  If it has, then exit straight away.
+#X Example : (( ${__entities__:-0} )) || { echo >&2 'entities.bash not loaded!'; exit; }
 ((__entities__)) && return 0;
 
 _ent_scriptstatus+="reloading|\n"
 
-# turn off 'strict' by default)
+# turn off 'strict' by default
 set +o errexit +o nounset +o pipefail
 
 # oh why not ...
@@ -178,7 +179,6 @@ verbose.set() {
 	if (( ${#@} )); then
 		_ent_VERBOSE=$(onoff "${1}")
 	else
-		#-- SC2086: Double quote to prevent globbing and word splitting.
 		# shellcheck disable=SC2086
 		echo -n ${_ent_VERBOSE}
 	fi
@@ -216,7 +216,6 @@ color.set() {
 declare -fx 'color.set'
 	alias colour.set='color.set'		# for the civilised world
 
-
 #X Global   : colorreset colordebug colorinfo colornotice colorwarning colorerr colorcrit coloralert coloremerg
 #X Desc     : Colors used by entities msg.* functions.
 #X          : emerg alert crit err warning notice info debug
@@ -234,13 +233,14 @@ declare -x coloralert="\x1b[1;33;41m"
 declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 
 #X Function : version.set
-#X Desc     : set or return version of the script.
-#X Defaults : '0.00 prealpha'
-#X Synopsis : version.set verstring
+#X Desc     : Set or return version number of the current script.
+#X Defaults : '0.0.0'
+#X Synopsis : version.set "verstring"
 #X          : $(version.set)
-#X Example  : version.set '4.20 beta'
-#X          : ver=$(version.set)
-declare -x _ent_SCRIPT_VERSION='0.00 prealpha'
+#X Example  : version.set '4.20'	# set script version.
+#X          : version.set					# print current script version.
+#X          : ver=$(version.set)	# store current version setting to variable.
+declare -x _ent_SCRIPT_VERSION='0.0.0'
 version() { echo -n "$_ent_SCRIPT_VERSION"; return 0; }
 declare -fx version
 version.set() {
@@ -250,7 +250,6 @@ version.set() {
 	return 0
 }
 declare -fx 'version.set'
-
 
 #X Function : dryrun.set
 #X Desc     : general purpose global var for debugging. 
@@ -562,7 +561,7 @@ declare -fx 'msg.crit'
 #X          : msg.line '+'
 #X          : msg.line '=' 42
 msg.line() {
-	((_ent_VERBOSE)) || return
+	((_ent_VERBOSE)) || return 0
 	local -i  width=78 screencols=0
 	local --  repchar='_'	
 	if (( $# )); then
@@ -834,7 +833,7 @@ check.dependencies() {
 		fi
 	done
 	((missing && _ent_VERBOSE)) && \
-			>&2 echo "These dependencies are missing: '$(trim "${missing_deps[@]}")'"
+			echo >&2 "These dependencies are missing: '$(trim "${missing_deps[@]}")'"
 	return $missing
 }
 declare -fx 'check.dependencies'
@@ -845,22 +844,19 @@ declare -fx 'check.dependencies'
 #X Synopsis : is.tty
 #X Example  : is.tty && ask.yn "Continue?"
 is.tty() {
-	tty --quiet	# [[ -t 0 ]] is this the same??
+	tty --quiet	2>/dev/null	# [[ -t 0 ]] is this the same??
 	return $?
 }
 declare -fx 'is.tty'
 	alias is_tty='is.tty'
 	
-
 #X Function : is.interactive
 #X Desc     : return 0 if tty available, otherwise 1.
-#X          : this function should be used as a comparison function
 #X Synopsis : is.interactive [report|noreport*]
 #X Example  : is.interactive && ask.yn "Continue?"
 is.interactive() {
 	declare report=${1:-}
 	declare -i isit=0 echoit=0
-
 	# echo results? default is no.
 	if [[ -n $report ]]; then
 		case "${1:-}" in
@@ -868,13 +864,12 @@ is.interactive() {
 			noreport)	echoit=0;;
 		esac
 	fi
-	
 	# look for positives first
 	if [[ -t 1 ]]; then 
 		isit=1
 		((echoit)) && echo "${isit}: STDOUT is attached to TTY."
 	fi
-
+	#
 	if [[ "${PS1+x}" == 'x' ]]; then
 		((echoit)) && echo "${isit}: PS1 is set. This is possibly an interactive shell."
 		if (( ${#PS1} > 1 )); then
@@ -882,28 +877,26 @@ is.interactive() {
 			((echoit)) && echo "${isit}: PS1 is set and has a length -gt 1. This is very probably an interactive shell."
 		fi
 	fi
-	
+	#	
 	if [[ "$-" == *"i"* ]]; then
 		isit=1
 		((echoit)) && echo "${isit}: \$- = *i*"
 	fi
-
 	# look for negatives		
 	if [[ -p /dev/stdout ]]; then
 		isit=0
 		((echoit)) && echo "${isit}: STDOUT is attached to a pipe."
 	fi
-
+	# 
 	if [[ ! -t 1 && ! -p /dev/stdout ]]; then
 		isit=0
 		((echoit)) && echo "${isit}: STDOUT is attached to a redirection."
 	fi
-	
 	# echo the result
 	if ((echoit)); then
 		((isit)) && echo '1: is interactive' || echo '0: is not interactive'
 	fi
-
+	# return true/false
 	return $(( ! isit ))
 }
 declare -fx 'is.interactive'
@@ -924,11 +917,11 @@ declare -fx 'trap.breakp'
 
 #--_ent_MINIMAL if defined, don't do this section.
 if (( ! ${_ent_MINIMAL:-0} )); then
-#X File: IncludeModules 
-#X Desc: By default, all '*.bash' module files located in
-#X     : $ENTITIES/entities.d/** are 
-#X     : automatically included in the entities.bash source file. 
-#X     :
+#X File: Modules 
+#X Desc: By default, *all* files with a '.bash' extension located in
+#X     : $ENTITIES/entities.d/** are automatically included in the 
+#X     : entities.bash source file. 
+#X     : Symlinks to *.bash files are processed last.
 	shopt -s globstar
 	if [[ -d "${ENTITIES:-/lib/include/entities}/entities.d" ]]; then
 		declare _e
@@ -958,9 +951,9 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 fi
 #^^_ent_MINIMAL
 
-#X Global   : _entities_
-#X Desc     : Integer flag to announce that entities.bash has been loaded. 
-#X Defaults : 0
+#X Global  : _entities_
+#X Desc    : Integer flag to announce that entities.bash has been loaded. 
+#X Defaults: 0
 declare -xig __entities__=1
 declare -xng _ent_LOADED='__entities__'
 
@@ -969,4 +962,5 @@ shopt -s expand_aliases # Enables alias expansion.
 
 _ent_scriptstatus+="entities loaded|\n"
 #-Function Declarations End --------------------------------------------------
+
 #fin

@@ -3,7 +3,7 @@
       Desc: Entities Functions/Globals/Local Declarations and Initialisations.
           : entities.bash is a light-weight Bash function library for systems
           : programmers and administrators.
-          : __entities__=is set if entities has been successfully loaded.
+          : __entities__ is set if entities.bash has been successfully loaded.
           : PRG=basename of current script.
           : PRGDIR=directory location of current script, with softlinks
           : resolved to actual location.

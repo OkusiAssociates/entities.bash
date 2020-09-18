@@ -14,9 +14,9 @@ declare -x _ent_scriptstatus="\$0=$0|"
 					-h|--help|help)	
 								"${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
 								exit $?
-								break ;;
-					-*)		echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 1 ;;
-					*)		echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 1 ;;
+								break;;
+					-*)		echo >&2 "$0: Bad option '$1' in entities.bash!";		exit 22;;
+					*)		echo >&2 "$0: Bad argument '$1' in entities.bash!";	exit 22;;
 				esac
 				shift
 			done		
@@ -48,9 +48,9 @@ declare -x _ent_scriptstatus="\$0=$0|"
 	fi
 	while (( $# )); do
 		case "${1,,}" in
-			new) 									__entities__=0 ;;
-			inherit|preserve)	__entities__=${__entities__:-0} ;;
-			*)	break;;
+			new)			__entities__=0;;
+			inherit)	__entities__=${__entities__:-0};;
+			*)				break;;
 		esac
 		shift
 	done
@@ -115,7 +115,7 @@ declare -x colorerr="\x1b[31m";							declare -nx colorerror='colorerr'
 declare -x colorcrit="\x1b[1;31m";					declare -nx colorcritical='colorcrit'
 declare -x coloralert="\x1b[1;33;41m"
 declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
-declare -x _ent_SCRIPT_VERSION='0.00 prealpha'
+declare -x _ent_SCRIPT_VERSION='0.0.0'
 version() { echo -n "$_ent_SCRIPT_VERSION"; return 0; }
 declare -fx version
 version.set() {
@@ -295,7 +295,7 @@ declare -fx 'msg.crit'
 	alias msgcrit='msg.crit' #X legacy X#
 	alias critmsg='msg.crit' #X legacy X#
 msg.line() {
-	((_ent_VERBOSE)) || return
+	((_ent_VERBOSE)) || return 0
 	local -i  width=78 screencols=0
 	local --  repchar='_'	
 	if (( $# )); then
@@ -488,12 +488,12 @@ check.dependencies() {
 		fi
 	done
 	((missing && _ent_VERBOSE)) && \
-			>&2 echo "These dependencies are missing: '$(trim "${missing_deps[@]}")'"
+			echo >&2 "These dependencies are missing: '$(trim "${missing_deps[@]}")'"
 	return $missing
 }
 declare -fx 'check.dependencies'
 is.tty() {
-	tty --quiet	# [[ -t 0 ]] is this the same??
+	tty --quiet	2>/dev/null	# [[ -t 0 ]] is this the same??
 	return $?
 }
 declare -fx 'is.tty'
@@ -508,7 +508,6 @@ is.interactive() {
 			noreport)	echoit=0;;
 		esac
 	fi
-	
 	if [[ -t 1 ]]; then 
 		isit=1
 		((echoit)) && echo "${isit}: STDOUT is attached to TTY."
@@ -520,7 +519,6 @@ is.interactive() {
 			((echoit)) && echo "${isit}: PS1 is set and has a length -gt 1. This is very probably an interactive shell."
 		fi
 	fi
-	
 	if [[ "$-" == *"i"* ]]; then
 		isit=1
 		((echoit)) && echo "${isit}: \$- = *i*"
@@ -533,7 +531,6 @@ is.interactive() {
 		isit=0
 		((echoit)) && echo "${isit}: STDOUT is attached to a redirection."
 	fi
-	
 	if ((echoit)); then
 		((isit)) && echo '1: is interactive' || echo '0: is not interactive'
 	fi
@@ -682,7 +679,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.95.420.454.17'
+_ent_VERSION='0.95.420.455.3'
 cdd() {
 	(( $# )) || return 0
 	local dirspec="${1}" pwd=''

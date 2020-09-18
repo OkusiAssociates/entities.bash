@@ -1,8 +1,8 @@
-#----Local--PRG
-     Local: PRG PRGDIR
-  Synopsis: source entities.bash [ [inherit*] | [new] | [load libname]
-          :                       | [no-load libname] | [load-to newdir] ]
-          : source entities.bash inherit
+#---Global--PRG
+    Global: PRG PRGDIR
+      Desc: PRG and PRGDIR are initialised every time entities.bash is
+          : executed.
+   Example: source entities.bash inherit
           :       # ^ if entities.bash has already been loaded,
           :       # init PRGDIR/PRG globals only then return.
           :       # if entities.bash has not been loaded, load it.
@@ -18,4 +18,4 @@
           :       # ^ load into new dir (eg, /run/entities) and
           :       # set ENTITIES globalvar to new position.
     Source: /usr/share/okusi/entities/entities.bash
-#----Local--PRG---------------------------------------------------------------
+#---Global--PRG---------------------------------------------------------------

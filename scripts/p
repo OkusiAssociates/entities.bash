@@ -1,5 +1,5 @@
 #!/bin/bash
-#!	shellcheck disable=SC2086
+##!	shellcheck disable=SC2086
 	source entities || { echo >&2 "Could not open entities.bash!"; exit 1; }
 #	source $OKROOT/entities/entities.bash new || { echo >&2 "Could not open entities.bash!"; exit 1; }
 #	source entities.bash new || { echo >&2 "Could not open entities.bash!"; exit 1; }
@@ -27,7 +27,7 @@ main() {
 			-h|-?|--help)			usage; return 0 ;;
 			-v|--verbose)			verbose on ;;
 			-q|--quiet)				verbose off ;;
-			-*)								msg.err "Bad option [$1]"; return 1 ;;
+			-*)								msg.err "Bad option [$1]"; return 22 ;;
 			*)								cmd+=( "$1" ) ;;
 		esac
 		shift
