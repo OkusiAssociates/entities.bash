@@ -197,7 +197,7 @@ get_filetype() {
 # look in syntax files for matching ext
 lookup_syntax_definition() {
 	local editor="$1" fileext="$2"
-	[[ -z "$fileext" ]] && { echo ''; return; }
+	[[ -z "$fileext" ]] && { echo ''; return 0; }
 	editor=$(basename "$(which "$editor")")
 	case "$editor" in
 		joe)

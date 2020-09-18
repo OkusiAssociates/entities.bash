@@ -594,7 +594,7 @@ clntempfiles() {
 	local -a aDir
 	while (($#)); do
 		case $1 in
-			-h|--help)			usage; return ;;
+			-h|--help)			usage; return 0 ;;
 			-n|--dryrun)		dryrun=1 ;;
 			-N|--notdryrun)	dryrun=0 ;;
 			-m|--maxdepth)	shift; maxdepth=${1:- 2} ;;
@@ -679,7 +679,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.95.420.455.3'
+_ent_VERSION='0.95.420.455.5'
 cdd() {
 	(( $# )) || return 0
 	local dirspec="${1}" pwd=''

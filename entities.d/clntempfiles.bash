@@ -27,7 +27,7 @@ clntempfiles() {
 	local -a aDir
 	while (($#)); do
 		case $1 in
-			-h|--help)			usage; return ;;
+			-h|--help)			usage; return 0 ;;
 			-n|--dryrun)		dryrun=1 ;;
 			-N|--notdryrun)	dryrun=0 ;;
 			-m|--maxdepth)	shift; maxdepth=${1:- 2} ;;

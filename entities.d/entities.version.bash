@@ -8,8 +8,8 @@
 #X          :   minorver  0
 #X          :   420       constant
 #X          :   day0      days since 2019-06-21 (455)
-#X          :   daybuild  this is build number on day0 (3)
-#X          : This entities.bash version is 0.95.420.455.3
+#X          :   daybuild  this is build number on day0 (5)
+#X          : This entities.bash version is 0.95.420.455.5
 declare -xg _ent_VERSION
-_ent_VERSION='0.95.420.455.3'
+_ent_VERSION='0.95.420.455.5'
 #Xfin
