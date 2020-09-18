@@ -133,17 +133,17 @@ main() {
 			#X Global   : _ent_VERSION 
 			#X Desc     : Return version/build of this entities.bash.
 			#X          : Returns string in form:
-			#X          :   majorver.minorver.420.day0.daybuild
+			#X          :   majorver.minorver.420.day0.build
 			#X          : Where:
 			#X          :   majorver  ${MajorVer}
 			#X          :   minorver  ${MinorVer}
 			#X          :   420       constant
 			#X          :   day0      days since 2019-06-21 ($dayssince)
-			#X          :   daybuild  this is build number on day0 (${_arr[4]})
-			#X          : This entities.bash version is ${_p// /.}
+			#X          :   build     this is build #${_arr[4]} on day $daysince
+			#X          : This is entities.bash version ${_p// /.}
 			declare -xg _ent_VERSION
 			_ent_VERSION='${_p// /.}'
-			#Xfin
+			#fin
 		etx
 		source "$_verfile" || exit 2
 		unset _verfile _arr dayssince

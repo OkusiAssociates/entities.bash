@@ -2,13 +2,13 @@
     Global: _ent_VERSION
       Desc: Return version/build of this entities.bash.
           : Returns string in form:
-          :   majorver.minorver.420.day0.daybuild
+          :   majorver.minorver.420.day0.build
           : Where:
           :   majorver  1
           :   minorver  0
           :   420       constant
           :   day0      days since 2019-06-21 (455)
-          :   daybuild  this is build number on day0 (4)
-          : This entities.bash version is 0.95.420.455.4
+          :   build     this is build 7 on day0
+          : This is entities.bash version 0.95.420.455.7
     Source: /usr/share/okusi/entities/entities.d/sys/urlencode.bash
 #---Global--_ent_VERSION------------------------------------------------------
