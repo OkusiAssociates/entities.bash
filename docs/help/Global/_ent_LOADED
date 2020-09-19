@@ -1,0 +1,7 @@
+#---Global--_ent_LOADED
+    Global: _ent_LOADED
+      Desc: _ent_LOADED global flags whether entities.bash has
+          : already been loaded or not.  If it has, then exit straight away.
+   Example: (( ${_ent_LOADED:-0} )) || { echo >&2 'entities.bash not loaded!'; exit; }
+    Source: /usr/share/okusi/entities/entities.bash
+#---Global--_ent_LOADED-------------------------------------------------------

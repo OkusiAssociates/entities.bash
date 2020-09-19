@@ -1,24 +1,32 @@
 #!/bin/bash
-useage() {
-	echo "$(basename "$0"): Entities installation script"
-	if [[ "${USER:-}" -ne 'root' ]] || ((EUID > 0)); then
-		echo >&2 "Requires root to install. Current user is [${USER:-}]."
+usage() {
+	echo "Script  : $(basename "$0")"
+	local v
+	v="$(dirname "$(readlink "$0")")/entities.d/entities.version.bash"
+	if [[ -f "$v" ]]; then
+		source "$v" 2>/dev/null || true
 	fi
-	echo "Usage: $(basename "$0") [-y|--auto] [-i|--install] [--dev]"
-	exit ${1:-0}
+	echo "Version : ${_ent_VERSION:-Not Found}"
+	echo "Desc    : entities.bash installation program."
+	echo "        : Requires root to install."
+	((EUID)) && echo "        : Current user is [${EUID:-} ${USER:-}]"
+	echo "Synopsis: $(basename "$0") [-y|--auto] [-i|--install] [-p|--production] [-v|-q] [-V]"
+	exit "${1:-0}"
 }
 	# cries for help.
-	[[ "$@" == '' || "$@" == *"--help"* || "$@" == *"/?"* || "$@" == *-h* ]] && useage 0
+	[[ "$@" == '' || "$@" == *"--help"* || "$@" == *"/?"* || "$@" == *-h* ]] && usage 0
 	# not root say bye
-	[[ "${USER:-}" == 'root' || $EUID == 0 ]] || useage 1
+	[[ "${USER:-}" == 'root' || $EUID == 0 ]] || usage 1
 
 	declare -ix MajorVer=1 MinorVer=0
 
 	declare -i production=0
 	declare -i autoinstall=0
 	declare -i install=0
+
+	declare canonical
 	
-	declare etc_profile_d="/etc/profile.d/entities.env.sh"
+	declare etc_profile_d='/etc/profile.d/entities.env.sh'
 
 	# make absolutely certain we have identified the canonical entities.bash script
 	PRG="$(basename "$(/bin/readlink -f "${0:-}")")"
@@ -28,12 +36,12 @@ useage() {
 	else
 		echo >&2 "$PRG: Could not find entities.bash in the [$PRGDIR] directory."
 		echo >&2 "$PRG: Check that it has been installed properly."
-		exit 1
+		exit 2
 	fi	
 	OPRG=$PRG; OPRGDIR=$PRGDIR
 	
 	OENTITIES=${ENTITIES:-}; ENTITIES=$PRGDIR 
-	source "$canonical" new || { echo >&2 "$PRG: Could not open [$canonical]!"; exit 1; }
+	source "$canonical" new || { echo >&2 "$PRG: Could not open [$canonical]!"; exit 2; }
 	ENTITIES=$OENTITIES;
 	PRG=$OPRG; PRGDIR=$OPRGDIR
 
@@ -46,22 +54,16 @@ useage() {
 	msg.prefix.set 'entities.bash'
 	cd "$PRGDIR" || msg.die "Could not change into directory [$PRGDIR]"
 
-	msg.info "Source entities directory is [$canonical]"
-
 	# set ENTITIES as the destination (production) directory
 	# 	ENTITIES in this case is the destination directory for the install
 	ENTITIES='/lib/include/entities'
 	mkdir -p "$ENTITIES" || exit 2
 	
 	# are we trying to install into the install directory?
-	[[ $ENTITIES == "$PRGDIR" ]] &&	msg.die "Cannot install over installation directory!"		
-
-	# get rid of old symlinks (legacy; remove soon)
-#	declare -a del=()
-#	del=( $( /usr/bin/find $PRGDIR -type l | grep -v 'docs/' | grep -v "./entities$" | grep -v '/string.inc.php$' | grep -v '/entities.help' ) ) || del=()
-#	for l in ${del[@]:-}; do msg.info "* removing $l"; rm "$l"; done
+	[[ $ENTITIES == "$PRGDIR" ]] &&	msg.die 'Cannot install over installation directory!'
 
 	declare env_entities
+	# shellcheck disable=SC2154
 	env_entities="$(cat <<-eot
 	
 			#X entities.bash begin
@@ -78,27 +80,30 @@ useage() {
 		)"
 
 	# Exclusions for rsync
-	declare -a exclude=( 't' 'tt' '*~' '*.bak' '*.old' 'gudang/' '.gudang/' '*.zip' 'mkdistzip' '_*' 'dev/' 'test/' 'tmp/' 'temp/' )
+	declare -a exclude=( 't' 'tt' '*~' '*.bak' '*.old' 'gudang/' '.gudang/' '*.zip' 'dev/' 'test/' 'tmp/' 'temp/' )
 	declare SyncExclude="/tmp/$PRG-exclusions-$RANDOM"
 	>"$SyncExclude"
 	declare _l; for _l in "${exclude[@]}"; do	echo "${_l}"; done >>"$SyncExclude"; unset _l
 			
 main() {
+	declare _verfile="$PRGDIR/entities.d/entities.version.bash"
+	source "$_verfile" || msg.die "Could not source [$_verfile]"
 	while (( $# )); do
 		case "$1" in
-			--dev|-p|--prod*)			production=1;;
-			-y|--auto)						autoinstall=1; install=1;;
-			-i|--install)					install=1;;
-			-v|--verbose)					verbose.set on;;
-			-q|--quiet)						verbose.set off;;
-			-h|--help)						useage;;
-			*)										msg.err log "Bad command line argument '$1'"
-														return 1;;
+			--dev|-p|--prod*)	production=1;;
+			-y|--auto)				autoinstall=1; install=1;;
+			-i|--install)			install=1;;
+			-v|--verbose)			verbose.set on;;
+			-q|--quiet)				verbose.set off;;
+			-V|--version)			echo "$PRG ${_ent_VERSION}"; return 0;;
+			-h|--help)				usage 0;;
+			*)								msg.die "Bad command line argument [$1]";;
 		esac
 		shift
 	done
-	(( ! install )) && return 0
+	(( ! install )) && usage 1 
 	
+	msg.info "entities.bash installation directory is [$canonical]"
 	msg.info "entities.bash shall be installed to [$ENTITIES]."
 	if [[ -f "$ENTITIES/entities.bash" ]]; then
 		msg.warn "A version of entities.bash is already installed at [$ENTITIES]."
@@ -108,18 +113,16 @@ main() {
 	if (( ! autoinstall)); then
 		infotext
 		ask.yn 'Install with these settings?' \
-				|| { msg 'Exiting'; return 0; }
-		msg 'Installing'
+				|| { msg.err 'Exiting'; return 0; }
+		msg 'Installing entities.bash'
 	fi
 
 	if ((production)); then
-		msg.sys "Production: Updating help files..."
-		"$PRGDIR/entities.help.make" --auto	|| msg.die "[PRGDIR=$PRGDIR] entities.help.make failed!"
+		msg.sys "Creating help files"
+		"$PRGDIR/entities.help.make" --auto	|| msg.die "[$PRGDIR/entities.help.make] failed!"
 		# make new version file
-		declare _verfile="$PRGDIR/entities.d/entities.version.bash"
-		source "$_verfile" || msg.die "Could not source $_verfile!"
 
-		[[ -z ${_ent_VERSION:-} ]] && msg.die "Version has not been set. See $_verfile"
+		[[ -z ${_ent_VERSION:-} ]] && msg.die "Version has not been set. See [$_verfile]"
 		declare -ia _arr
 		_arr=( ${_ent_VERSION//./ } )
 		declare -i dayssince
@@ -139,7 +142,7 @@ main() {
 			#X          :   minorver  ${MinorVer}
 			#X          :   420       constant
 			#X          :   day0      days since 2019-06-21 ($dayssince)
-			#X          :   build     this is build #${_arr[4]} on day $daysince
+			#X          :   build     this is build #${_arr[4]} on day $dayssince
 			#X          : This is entities.bash version ${_p// /.}
 			declare -xg _ent_VERSION
 			_ent_VERSION='${_p// /.}'
@@ -155,7 +158,7 @@ main() {
 		#fi
 	fi
 
-	"$PRGDIR/entities.make.minimal" --auto	|| msg.die "[PRGDIR=$PRGDIR] make entities.bash.min failed!"
+	"$PRGDIR/entities.make.minimal" --auto	|| msg.die "[$PRGDIR/entities.make.minimal] failed!"
 
 	makeprofile
 
@@ -166,33 +169,26 @@ main() {
 	testit
 
 	msg.line '-'
-	msg '' \
-			"entities.bash ${_ent_VERSION} has been installed." \
-			'To use, log out of this bash session and log back in.'  \
-			'Entities will then be ready to use.' \
-			'' \
-			'After returning, type the following at the command' \
-			'prompt to activate entities functions:' \
-			'' \
-			'  $ source entities new' \
-			''
+	msg "entities.bash [${_ent_VERSION}] has been installed." \
+			'Exit from this bash session and then re-enter.' \
+			'To activate entities.bash environment:' \
+			'    source entities new'
 	rm -f "$SyncExclude"
 }
 
 makeprofile() {
-	msg.info "Making ${etc_profile_d}..."
-	mkdir -p "$(dirname "$etc_profile_d")" || msg.die "could not create $(dirname "$etc_profile_d")"
+	msg.info "Making [${etc_profile_d}]"
+	mkdir -p "$(dirname "$etc_profile_d")" || msg.die "Could not create [$(dirname "$etc_profile_d")]"
 	echo -e "${env_entities}"	> "$etc_profile_d"			
-	chmod 644 "$etc_profile_d" 				|| msg.die "could not chmod $etc_profile_d"
-	chown root:root "$etc_profile_d"	|| msg.die "could not chown $etc_profile_d"
+	chmod 644 "$etc_profile_d" 				|| msg.die "Could not chmod 644 [$etc_profile_d]"
+	chown root:root "$etc_profile_d"	|| msg.die "Could not chown [$etc_profile_d]"
 }
 
 # Dep: /etc/environment cat
 makeenvirnonment() {
 	envfile=/etc/environment
-	msg.info "Changing $envfile..."
+	msg.info "Creating [$envfile]"
 	tmpfile="$(mktemp --tmpdir 'ent-XXXX')"
-
 	( while read -r line; do
 			env=${line%=*}
 			val=${line#*=}; val=${val//\"/}
@@ -204,30 +200,29 @@ makeenvirnonment() {
 		done
 	) <"$envfile" >"$tmpfile"
 	echo "ENTITIES=\"$ENTITIES\"" >> "$tmpfile" 
-	cp -p "$envfile" "${envfile}~"	|| msg.die "Could not backup $envfile to ${envfile}~!"
-	chown root:root "$tmpfile"			|| msg.die "$tmpfile chown error!"
-	chmod 644 "$tmpfile" 						|| msg.die "$tmpfile chmod error!"
+	cp -p "$envfile" "${envfile}~"	|| msg.die "Could not backup [$envfile] to [${envfile}~]"
+	chown root:root "$tmpfile"			|| msg.die "[$tmpfile] chown error!"
+	chmod 644 "$tmpfile" 						|| msg.die "[$tmpfile] chmod error!"
 	mv "$tmpfile" "$envfile"
 }
 
 
 infotext() {
 	tab.set ++
-	msg "This entities.bash installation script shall do the following: " \
-	 "  * Copy all script files to directory [$ENTITIES]" \
-	 "  * Add Entities path to /etc/profile.d [$etc_profile_d]" \
-	 "Current environment:" \
-	 "  ENTITIES=[$ENTITIES]" \
-	 "  BASH_SOURCE=[$BASH_SOURCE]" \
-	 "  PRG=[$PRG]" \
-	 "  PRGDIR=[$PRGDIR]" \
-	 "  \$0=[$0]"
+	msg \
+		"This entities.bash installation script shall do the following: " \
+		"  * Copy all script files to directory [$ENTITIES]" \
+		"  * Add path [$ENTITIES] to [$etc_profile_d]" 		\
+		"  * Add path [$ENTITIES] to [/etc/environment]" \
+		"ENTITIES=[$ENTITIES]" \
+		"PRG=[$PRG]" 					\
+		"PRGDIR=[$PRGDIR]"
 	tab.set --
 }
 
 # Dep: mkdir cd rsync find ln touch cp
 install() {
-	msg.info "Installing Entities into ${ENTITIES}..."
+	msg.info "Installing Entities into [${ENTITIES}]"
 
 	cd "$PRGDIR" || exit 2
 	
@@ -235,20 +230,20 @@ install() {
 #	for e in "${exclude[@]}"; do excl+=" --exclude $e"; done
 
 	# do backup of existing $ENTITIES directory
-	msg.info "Doing backup of existing $ENTITIES directory..."
+	msg.info "Backing up [$ENTITIES] directory"
 	if [[ -d "${ENTITIES}.old" ]]; then
 		if [[ -d "${ENTITIES}" ]]; then
-			msg.info "* Deleting $ENTITIES.old."
+			msg.info "* Deleting [$ENTITIES.old]"
 			rm -rf "${ENTITIES}.old"	
 		fi
 	fi
 	if [[ -d "${ENTITIES}" ]]; then
-		msg.info "* Renaming $ENTITIES to $ENTITIES.old."
+		msg.info "* Renaming [$ENTITIES] to [$ENTITIES.old]"
 		mv "${ENTITIES}" "${ENTITIES}.old" || { msg.err "$(errno $?)" "Could not move [${ENTITIES}] to [${ENTITIES}.old]"; exit 1; }
 	fi
 
 	# start creating $ENTITIES
-	msg.info "Start creating $ENTITIES"
+	msg.info "Copying entities.bash files to [$ENTITIES]"
 	mkdir -p "$ENTITIES" || exit $?
 	[[ -d "$ENTITIES" ]] || exit $?
 
@@ -267,7 +262,7 @@ install() {
 	/usr/bin/rsync -avl --exclude-from "$SyncExclude" docs/*						"$ENTITIES/docs/" >/dev/null || exit 1
 
 	# make symlinks in $ENTITIES directory
-	msg.info "Make symlinks in [$ENTITIES] directory..."
+	msg.info "Make symlinks in [$ENTITIES] directory"
 	cd "$ENTITIES" 																|| exit 2
 	# execute permissions on entities	
 	chmod 775 entities.bash entities.bash.min			|| exit $?
@@ -284,7 +279,7 @@ install() {
 	fi
 
 	# touch420 all files in $ENTITIES directory
-	msg.info "Fix owner/perms, touch420 all files in [$ENTITIES] directory..."
+	msg.info "Change owner/perms/times in [$ENTITIES] directory"
 	cd "$ENTITIES" || exit 2
 	chown root:root ${ENTITIES}/* -R
 	declare IFS=$'\n'

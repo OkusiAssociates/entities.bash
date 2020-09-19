@@ -5,10 +5,10 @@ declare -x _ent_scriptstatus="\$0=$0|"
 	declare p_
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
 		p_="$(/bin/readlink -f "${0}")" || p_=''
-		_ent_scriptstatus+="is.script|\$p_=$p_|\n"
+		_ent_scriptstatus+="is.script|\$p_=$p_|"
 		if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
-			_ent_scriptstatus+='is.execute|\n'
-			__entities__=0
+			_ent_scriptstatus+='is.execute|'
+			_ent_LOADED=0
 			while (( $# )); do
 				case "${1,,}" in
 					/\?|-\?|-h|--help|help)	
@@ -22,21 +22,21 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			done		
 			exit $?
 		fi
-		_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|\n"
+		_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
-		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
+		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
 		unset p_
 		if (( ! $# )); then
-			(( ${__entities__:-0} )) && return 0
+			(( ${_ent_LOADED:-0} )) && return 0
 		fi
 	
 	else
-		_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|\n"
+		_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|"
 		p_="$(/bin/readlink -f "${BASH_SOURCE[0]}")"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
-		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
+		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
 		unset _p
 		if [[ -n "${ENTITIES:-}" ]]; then
 			PATH="${PATH//\:${ENTITIES}/}"
@@ -44,18 +44,18 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		fi
 		export ENTITIES="$PRGDIR"
 		export PATH="${PATH}:${ENTITIES}"		
-		__entities__=0		# always reload when sourced from command line
+		_ent_LOADED=0		# always reload when sourced from command line
 	fi
 	while (( $# )); do
 		case "${1,,}" in
-			new)			__entities__=0;;
-			inherit)	__entities__=${__entities__:-0};;
+			new)			_ent_LOADED=0;;
+			inherit)	_ent_LOADED=${_ent_LOADED:-0};;
 			*)				break;;
 		esac
 		shift
 	done
-((__entities__)) && return 0;
-_ent_scriptstatus+="reloading|\n"
+((_ent_LOADED)) && return 0;
+_ent_scriptstatus+="reloading|"
 set +o errexit +o nounset +o pipefail
 shopt -s extglob
 shopt -s globstar
@@ -452,10 +452,10 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 		echo >&2 'Warning: Dependencies not found. entities.bash may not run correctly.'	
 	fi 
 fi
-declare -xig __entities__=1
-declare -xng _ent_LOADED='__entities__'
+declare -xig _ent_LOADED=1
+declare -xng __entities__='_ent_LOADED' #X legacy X#
 shopt -s expand_aliases # Enables alias expansion.
-_ent_scriptstatus+="entities loaded|\n"
+_ent_scriptstatus+='entities loaded'
 declare -ax CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
 clntempfiles() {
 	(( ${#CLNTEMPFILES[@]} )) || CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
@@ -558,7 +558,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.95.420.455.12'
+_ent_VERSION='0.95.420.456.5'
 cdd() {
 	(( $# )) || return 0
 	local dirspec="${1}" pwd=''
@@ -838,6 +838,13 @@ elipstr() {
 	echo "${str:0:$sx}${pd}..${str: -$sx}"
 }
 declare -fx elipstr
+explode() {	IFS="$1" a=( "${@:2}" ); echo "${a[@]}"; }
+implode() {
+	local x d=','
+	[[ ${1:-} == '-d' ]] && { shift; d="${1:-,}"; shift; }
+	printf -v x "${d}%s" "$@"
+	echo "${x:1}"
+}
 is.number() {	[[ ${1:-} =~ ^[-+]?[0-9]+$ ]] || return 1; }
 declare -fx is.number
 shopt -s extglob

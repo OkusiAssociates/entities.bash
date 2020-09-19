@@ -12,7 +12,7 @@
 #X Desc     : Entities Functions/Globals/Local Declarations and Initialisations.
 #X          : entities.bash is a light-weight Bash function library for systems
 #X          : programmers and administrators.
-#X          : __entities__ is set if entities.bash has been successfully loaded.
+#X          : _ent_LOADED is set if entities.bash has been successfully loaded.
 #X          : PRG=basename of current script. 
 #X          : PRGDIR=directory location of current script, with softlinks 
 #X          : resolved to actual location.
@@ -46,11 +46,11 @@ declare -x _ent_scriptstatus="\$0=$0|"
 	# Is entities.bash being executed as a script?
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
 		p_="$(/bin/readlink -f "${0}")" || p_=''
-		_ent_scriptstatus+="is.script|\$p_=$p_|\n"
+		_ent_scriptstatus+="is.script|\$p_=$p_|"
 		# Has entities.bash been executed?
 		if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
-			_ent_scriptstatus+='is.execute|\n'
-			__entities__=0
+			_ent_scriptstatus+='is.execute|'
+			_ent_LOADED=0
 			# do options for execute mode
 			while (( $# )); do
 				case "${1,,}" in
@@ -66,25 +66,25 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			done		
 			exit $?
 		fi
-		_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|\n"
+		_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
-		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
+		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
 		unset p_
 
 		# `entities` is already loaded, and no other parameters have 
 		# been given, so do not reload.
 		if (( ! $# )); then
-			(( ${__entities__:-0} )) && return 0
+			(( ${_ent_LOADED:-0} )) && return 0
 		fi
 	
 	# `source entities` has been executed at the shell command prompt
 	else
-		_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|\n"
+		_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|"
 		p_="$(/bin/readlink -f "${BASH_SOURCE[0]}")"
 		PRG="$(/usr/bin/basename "${p_}")"
 		PRGDIR="$(/usr/bin/dirname "${p_}")"
-		_ent_scriptstatus+="PRGDIR=$PRGDIR|\n"
+		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
 		unset _p
 		if [[ -n "${ENTITIES:-}" ]]; then
 			PATH="${PATH//\:${ENTITIES}/}"
@@ -92,18 +92,18 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		fi
 		export ENTITIES="$PRGDIR"
 		export PATH="${PATH}:${ENTITIES}"		
-		__entities__=0		# always reload when sourced from command line
+		_ent_LOADED=0		# always reload when sourced from command line
 	fi
 
 	# there are parameters
 	while (( $# )); do
 		case "${1,,}" in
 			# new load
-			new)			__entities__=0;;
+			new)			_ent_LOADED=0;;
 			# Does the calling script wish to inherit the current 
 			# Entities.bash environment/functions?
 			# Inherit is the default. Can only inherit if called from a script.
-			inherit)	__entities__=${__entities__:-0};;
+			inherit)	_ent_LOADED=${_ent_LOADED:-0};;
 			# all other passed parameters are ignored (possibly script parameters? 
 			# but not for entities)
 			*)				break;;
@@ -111,13 +111,13 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		shift
 	done
 
-#X Global  : __entities__
-#X Desc    : __entities__ global flags whether entities.bash has 
+#X Global  : _ent_LOADED
+#X Desc    : _ent_LOADED global flags whether entities.bash has 
 #X         : already been loaded or not.  If it has, then exit straight away.
-#X Example : (( ${__entities__:-0} )) || { echo >&2 'entities.bash not loaded!'; exit; }
-((__entities__)) && return 0;
+#X Example : (( ${_ent_LOADED:-0} )) || { echo >&2 'entities.bash not loaded!'; exit; }
+((_ent_LOADED)) && return 0;
 
-_ent_scriptstatus+="reloading|\n"
+_ent_scriptstatus+="reloading|"
 
 # turn off 'strict' by default
 set +o errexit +o nounset +o pipefail
@@ -777,16 +777,15 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 fi
 #^^_ent_MINIMAL
 
-#X Global  : _entities_
+#X Global  : _ent_LOADED
 #X Desc    : Integer flag to announce that entities.bash has been loaded. 
 #X Defaults: 0
-declare -xig __entities__=1
-declare -xng _ent_LOADED='__entities__'
-
+declare -xig _ent_LOADED=1
+declare -xng __entities__='_ent_LOADED' #X legacy X#
 # expand all the aliases defined above.
 shopt -s expand_aliases # Enables alias expansion.
 
-_ent_scriptstatus+="entities loaded|\n"
 #-Function Declarations End --------------------------------------------------
 
+_ent_scriptstatus+='entities loaded'
 #fin

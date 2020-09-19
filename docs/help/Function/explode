@@ -1,0 +1,7 @@
+#-Function--explode
+  Function: explode
+      Desc: Convert delimited string into array.
+  Synopsis: explode "delimiter" "${array[@]}"
+   Example: str=( $(explode '|' "${files[@]}") )
+    Source: /usr/share/okusi/entities/entities.d/string/remsp2.bash
+#-Function--explode-----------------------------------------------------------

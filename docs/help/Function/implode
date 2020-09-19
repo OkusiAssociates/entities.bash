@@ -1,0 +1,8 @@
+#-Function--implode
+  Function: implode
+      Desc: Convert array[@] into delimited string.
+  Synopsis: implode [-d "delimiter"] "${array[@]}"
+          : -d if specified must preceed array.
+   Example: str=$(implode -d '|' "${files[@]}")
+    Source: /usr/share/okusi/entities/entities.d/entities.version.bash
+#-Function--implode-----------------------------------------------------------

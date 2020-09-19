@@ -4,5 +4,5 @@
   Synopsis: s number
    Example: num=30; echo "$num file$(s $num) counted."
           : num=1; echo "$num file$(s $num) counted."
-    Source: /usr/share/okusi/entities/entities.d/entities.version.bash
+    Source: /usr/share/okusi/entities/entities.d/string/impode.bash
 #-Function--s-----------------------------------------------------------------
