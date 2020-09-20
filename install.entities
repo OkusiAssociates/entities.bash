@@ -226,9 +226,6 @@ install() {
 
 	cd "$PRGDIR" || exit 2
 	
-#	declare excl=''
-#	for e in "${exclude[@]}"; do excl+=" --exclude $e"; done
-
 	# do backup of existing $ENTITIES directory
 	msg.info "Backing up [$ENTITIES] directory"
 	if [[ -d "${ENTITIES}.old" ]]; then
@@ -269,8 +266,7 @@ install() {
 	# in production, entities points to the min version
 	ln  -fs entities.bash.min entities				    || exit $?
 	ln  -fs entities.bash.min entities.min		    || exit $?
-
-
+	
 	# MAIN EXECUTABLE in /usr/local/bin/ || /usr/bin
 	if [[ -d /usr/local/bin ]]; then
 		ln -fs "$ENTITIES/entities.bash" /usr/local/bin/entities
@@ -278,6 +274,17 @@ install() {
 		ln -fs "$ENTITIES/entities.bash" /usr/bin/entities
 	fi
 
+	# symlink to bundled utility scripts
+	declare -a arr
+	declare -- s
+	arr=( $(find scripts/ -maxdepth 1 -executable -type f) )
+	for s in "${arr[@]}"; do 
+#		cat <<-etx
+#		ln -fs "$ENTITIES/scripts/$(basename "$s")" "/usr/local/bin/$(basename "$s")"
+#		etx
+		ln -fs "$ENTITIES/scripts/$(basename "$s")" "/usr/local/bin/$(basename "$s")"
+	done 
+	
 	# touch420 all files in $ENTITIES directory
 	msg.info "Change owner/perms/times in [$ENTITIES] directory"
 	cd "$ENTITIES" || exit 2

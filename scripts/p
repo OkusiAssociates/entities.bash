@@ -1,15 +1,20 @@
 #!/bin/bash
 ##!	shellcheck disable=SC2086
-	source entities || { echo >&2 "Could not open entities.bash!"; exit 1; }
+	source entities || { echo >&2 "$(basename "$"): Could not open entities.bash!"; exit 1; }
 #	source $OKROOT/entities/entities.bash new || { echo >&2 "Could not open entities.bash!"; exit 1; }
 #	source entities.bash new || { echo >&2 "Could not open entities.bash!"; exit 1; }
 	strict.set off
 	verbose.set on
 	trap.set on
 	
-	[[ -z "$EDITOR" ]] && export EDITOR="$(which joe) -tab 2 --wordwrap --autoindent"
-	[[ -z "$EDITOR" ]] &&	export EDITOR="$(which nano)"
-	[[ -z "$EDITOR" ]] &&	export EDITOR="$(which vi)"
+	# if by some chance entities.bash has not already set EDITOR
+	if [[ -z "$EDITOR" ]]; then
+		EDITOR="$(which joe) -tab 2 --wordwrap --autoindent"
+		[[ -z "$EDITOR" ]] &&	EDITOR="$(which nano)"
+		[[ -z "$EDITOR" ]] &&	EDITOR="$(which vi)"
+		[[ -z "$EDITOR" ]] && echo >&2 "$(basename "$"): envvar EDITOR not set!"
+	fi
+	export EDITOR
 	
 	tmpfile="/tmp/p-$RANDOM"
 	CH9=$'\t'

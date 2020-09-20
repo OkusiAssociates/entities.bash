@@ -558,7 +558,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.95.420.456.5'
+_ent_VERSION='0.95.420.457.8'
 cdd() {
 	(( $# )) || return 0
 	local dirspec="${1}" pwd=''
@@ -641,13 +641,11 @@ editorsyntaxstring() {
 					fi
 					;;
 		nano)
-					opt-"--syntax=$FileType"
+					opt="--syntax=$FileType"
 					;;
-		*)
-					msg.err "Editor [$editor] not found."
-					;;
+		*)		msg.err "Editor [$editor] not found.";;
 	esac
-	echo $EDITOR $opt $FileName
+x	echo "$EDITOR $opt $FileName"
 }
 declare -fx editorsyntaxstring
 declare -Ax _ent_TextFileTypes=(	
@@ -676,6 +674,7 @@ textfiletype() {
 		testfile="${1}"
 		[[ $testfile == '-t' ]] && { typeonly=1; shift; continue; }
 		[[ -d "$testfile" ]] && { shift; continue; }
+		FileType=''
 		ext=${testfile##*\.}
 		case "$ext" in
 			php)				FileType=php;;
@@ -684,20 +683,19 @@ textfiletype() {
 			bash|cnf)		FileType=bash;;
 			c|h)				FileType=c;;
 			xml)				FileType=xml;;
-			*)					FileType=text;;
 		esac
 		
-		if [[ -z $FileType || $FileType == 'text' ]]; then
+		if [[ -z $FileType ]]; then
 			if [[ -f "$testfile" ]]; then
-				h=$(head -n1 "$testfile")
-				if 	 [[ $h =~ ^\#\!.*\/bash.* ]];	then	
+				h="$(head -c 64 "$testfile" | strings -w)" || h=''
+				if 	 [[ "$h" =~ ^\#\!.*/bash.* ]];	then	
 					FileType='bash'
-				elif [[ $h =~ ^\#\!.*\/sh.*   ]];	then	
+				elif [[ "$h" =~ ^\#\!.*/sh.*   ]];	then	
 					FileType='sh'
-				elif [[ $h =~ ^\#\!.*\/php.*  || ${h} == '<?' || ${h:0:5} == '<?php' ]];	then	
+				elif [[ "$h" =~ ^\#\!.*/php.*  || ${h} == '<?' || ${h:0:5} == '<?php' ]];	then	
 					FileType='php'
 				else
-					File=$(trim "$(file "$testfile" | grep ' text' | cut -d':' -f2)")
+					File="$(trim "$(file "$testfile" | grep ' text' | cut -d':' -f2)")"
 					[[ -z $File ]] && { shift; continue; }
 					File=${File%%,*}
 					[[ -z $File ]] && File='text'
@@ -709,8 +707,9 @@ textfiletype() {
 			fi
 		fi
 				
+		[[ -z $FileType ]] && FileType='text'
 		if ((typeonly)); then
-			echo "${FileType:-text}"
+			echo "${FileType}"
 		else
 			echo "${FileType} ${testfile}"
 		fi
