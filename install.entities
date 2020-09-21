@@ -103,10 +103,10 @@ main() {
 	done
 	(( ! install )) && usage 1 
 	
-	msg.info "entities.bash installation directory is [$canonical]"
+	msg.info "Installation directory is [$canonical]"
 	msg.info "entities.bash shall be installed to [$ENTITIES]."
 	if [[ -f "$ENTITIES/entities.bash" ]]; then
-		msg.warn "A version of entities.bash is already installed at [$ENTITIES]."
+		msg.warn "entities.bash is already installed at [$ENTITIES]."
 		msg.warn "It shall be backed-up to [$ENTITIES/entities.bash.old]."
 	fi
 	
@@ -118,17 +118,16 @@ main() {
 	fi
 
 	if ((production)); then
-		msg.sys "Creating help files"
+		msg.info "Creating help files"
 		"$PRGDIR/entities.help.make" --auto	|| msg.die "[$PRGDIR/entities.help.make] failed!"
 		# make new version file
-
 		[[ -z ${_ent_VERSION:-} ]] && msg.die "Version has not been set. See [$_verfile]"
 		declare -ia _arr
 		_arr=( ${_ent_VERSION//./ } )
-		declare -i dayssince
-		dayssince=$(( ($(date +%s) - $(date +%s -d '2019-06-21')) / (60*60*24) ))
+		declare -i _dayssince
+		_dayssince=$(( ($(date +%s) - $(date +%s -d '2019-06-21')) / (60*60*24) ))
 		_arr[2]=420
-		(( _arr[3] == dayssince )) || { _arr[3]=${dayssince}; _arr[4]=0; } 
+		(( _arr[3] == _dayssince )) || { _arr[3]=${_dayssince}; _arr[4]=0; } 
 		_arr[4]+=1
 		_p=${_arr[*]}
 		cat >"$_verfile" <<-etx
@@ -141,24 +140,19 @@ main() {
 			#X          :   majorver  ${MajorVer}
 			#X          :   minorver  ${MinorVer}
 			#X          :   420       constant
-			#X          :   day0      days since 2019-06-21 ($dayssince)
-			#X          :   build     this is build #${_arr[4]} on day $dayssince
+			#X          :   day0      days since 2019-06-21 ($_dayssince)
+			#X          :   build     this is build #${_arr[4]} on day $_dayssince
 			#X          : This is entities.bash version ${_p// /.}
 			declare -xg _ent_VERSION
 			_ent_VERSION='${_p// /.}'
 			#fin
 		etx
 		source "$_verfile" || exit 2
-		unset _verfile _arr dayssince
-		#if [[ -x entities.scripts/_linkscripts2entities ]]; then
-		#	msg.info "Running linkscripts2entities"
-		#	cd entities.scripts || msg.die "could not cd into entities.scripts!"
-		#	./_linkscripts2entities || msg.die "Error in ./linkscripts2entities!"
-		#	cd "$PRGDIR" || msg.die "Could not change into directory $PRGDIR!"
-		#fi
+		unset _verfile _arr _dayssince
 	fi
 
-	"$PRGDIR/entities.make.minimal" --auto	|| msg.die "[$PRGDIR/entities.make.minimal] failed!"
+	"$PRGDIR/entities.make.minimal" --no-prompt \
+		|| msg.die "[$PRGDIR/entities.make.minimal] failed!"
 
 	makeprofile
 
@@ -189,16 +183,7 @@ makeenvirnonment() {
 	envfile=/etc/environment
 	msg.info "Creating [$envfile]"
 	tmpfile="$(mktemp --tmpdir 'ent-XXXX')"
-	( while read -r line; do
-			env=${line%=*}
-			val=${line#*=}; val=${val//\"/}
-			case "$env" in
-				'')					continue;;
-				'ENTITIES')	continue;;
-				*)					echo "${env}=\"${val}\"";;
-			esac
-		done
-	) <"$envfile" >"$tmpfile"
+	grep -v '^[[:blank:]]*ENTITIES=' "$envfile" >"$tmpfile" || true
 	echo "ENTITIES=\"$ENTITIES\"" >> "$tmpfile" 
 	cp -p "$envfile" "${envfile}~"	|| msg.die "Could not backup [$envfile] to [${envfile}~]"
 	chown root:root "$tmpfile"			|| msg.die "[$tmpfile] chown error!"
@@ -279,9 +264,6 @@ install() {
 	declare -- s
 	arr=( $(find scripts/ -maxdepth 1 -executable -type f) )
 	for s in "${arr[@]}"; do 
-#		cat <<-etx
-#		ln -fs "$ENTITIES/scripts/$(basename "$s")" "/usr/local/bin/$(basename "$s")"
-#		etx
 		ln -fs "$ENTITIES/scripts/$(basename "$s")" "/usr/local/bin/$(basename "$s")"
 	done 
 	

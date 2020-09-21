@@ -1,0 +1,4 @@
+#-Function--lockfiles.timeout
+  Function: lockfiles.timeout
+    Source: /usr/share/okusi/entities/entities.bash
+#-Function--lockfiles.timeout-------------------------------------------------

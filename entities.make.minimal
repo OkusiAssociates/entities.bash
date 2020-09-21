@@ -1,49 +1,59 @@
 #!/bin/bash
-# set entities location to this.script directory
+# set entities location to *this* script directory
 ENTITIES="$(dirname "$(readlink -f "$0")")" || exit 2
 source "$ENTITIES/entities.bash" || exit 2
 strict.set off
-msg.prefix.set "$(msg.prefix.set)$PRG"
+msg.prefix.set ++ 'make.minimal'
 
-declare entities_file="$ENTITIES/entities.bash"
-declare entities_min="$ENTITIES/entities.bash.min"
-declare entities_min_tmp="${entities_min}.$$"
+declare    entities_file="$ENTITIES/entities.bash"
+declare     entities_min="$ENTITIES/entities.bash.min"
+declare entities_min_tmp=''
 
-declare -i auto=0
+declare -i noprompt=0
 
 main() {
 	while (($#)); do
 		case "$1" in
-			--minfile|-m)	minfile="${2:-}";;
-			--auto|-y)		auto=1; color.set off;;
+			--minfile|-m)	shift; entities_min="${1:-}";;
+			--no-prompt|--noprompt|-y)		
+										noprompt=1; color.set off;;
 			--verbose|-v)	verbose.set on;;
 			--quiet|-q)		verbose.set off;;
-			--help|-h)		usage;;
-			--version|-V)	printTitle; exit 0;;
-			*)						usage "Bad parameter $1";;
+			--help|-h)		usage; return 0;;
+			--version|-V)	echo "$PRG $_ent_VERSION"; return 0;;
+			*)						msg.err "Bad parameter [$1]"
+										usage
+										return 1;;
 		esac
 		shift
 	done
-	[[ "$entities_file" == "$entities_min" ]] && msg.die log "Cannot clobber [${entities_file}]!"
-	cd "$ENTITIES" || msg.die log "Could not cd into [$ENTITIES]"
+	# set up canonical filenames
+	[[ -z $entities_min ]] && entities_min="$ENTITIES/entities.bash.min"
+	touch "$entities_min" || msg.die "Could not touch [$entities_min]"
+	entities_min=$(readlink -f "$entities_min") || msg.die "$(errno $?)"
+	entities_min_tmp="${entities_min}.$$.$RANDOM"
+
+	# sanity check
+	[[ "$entities_file" == "$entities_min" ]] \
+			&& msg.die log "Cannot clobber [${entities_file}]!"
+	cd "$ENTITIES" \
+			|| msg.die log "Could not cd into [$ENTITIES]"
 
 	local -i tab
 	tab=$(tab.set)
-	printTitle
 	tab.set ++
-	if ((!auto)); then
-		printDesc
-		msg ''
-		ask.yn "Do you wish to proceed?" || { tab.set $tab; return 1; }
+	if (( ! noprompt )); then
+		ask.yn "Do you wish to proceed?" || { tab.set "$tab"; return 1; }
 		msg 'Proceeding'
 	fi
 
-	[[ -z "$ENTITIES" ]] 	&& msg.die log "Envvar \$ENTITIES not defined!"
-	cd "$ENTITIES" 				|| msg.die log "Could not cd into [$ENTITIES]!"
+	[[ -z "$ENTITIES" ]] 	&& msg.die "Envvar \$ENTITIES not defined!"
+	cd "$ENTITIES" 				|| msg.die "Could not cd into [$ENTITIES]!"
 
 	# set up header for entities.bash.min
 	echo '#!/bin/bash' > "$entities_min_tmp"
-	echo "_ent_MINIMAL=1" >> $entities_min_tmp
+	echo 'declare -ix _ent_MINIMAL=1' >> "$entities_min_tmp"
+	chmod 755 "$entities_min_tmp"
 	# assemble all .bash files; define entities.bash as start point
 	local -a templates=( "$ENTITIES/entities.bash" )
 	# get all .bash files in entities.d/
@@ -53,6 +63,10 @@ main() {
 	shopt -s globstar
 	for _e in $ENTITIES/entities.d/**/*.bash; do
 		if [[ -r "$_e" ]]; then
+			if [[ ${_e} == *"/dev/"* || ${_e} == *"/tmp/"* || ${_e} == *"/temp/"*	]]; then 
+				((_ent_DEBUG)) && msg.warn "[${_e}] not included."
+				continue
+			fi
 			if [[ ! -L "$_e" ]] ; then
 				_userbash+=( "${_e}" )
 			else
@@ -61,7 +75,7 @@ main() {
 		fi
 	done
 	# do symlinks last
-	for _e in ${_userbash[@]}; do
+	for _e in "${_userbash[@]}"; do
 		templates+=( "${_e}" )
 	done
 	unset _e _userbash
@@ -69,62 +83,62 @@ main() {
 	# merge all bash files into one minimal file
 	local template 
 	local -a tx=()
-	for template in ${templates[@]}; do
-		[[ ! -f "${template}" ]] && msg.err "[${template}] not found!"
-		# remove blank lines, and #comment lines that begin with space*#
-		# make the minimal version of entities.bash
-		(	tx=( "$(grep -v '^$\|^[[:space:]]*#' "$template" )" )
-			local IFS=$'\n'
-			for ln in "${tx[@]}"; do	trim "$ln";	echo;	done
+	for template in "${templates[@]}"; do
+		[[ ! -f "${template}" ]] && { msg.err "[${template}] not found!"; continue; }
+		# remove comment lines that begin with ^space*#
+		# remove blank lines
+		# space trim all lines
+		# export to minimal version of entities.bash
+		(	tx=( 
+					"$(grep -v '^[[:space:]]*#' "$template" | grep -v '^[[:blank:]]*$')"
+				 )
+				local IFS=$'\n'
+				for ln in "${tx[@]}"; do	trim "$ln";	echo;	done
 		) >> "$entities_min_tmp"
 	done
 	unset template templates tx
 
-	# rename entities_min_tmp.$$ to entities.bash.min, backup any old version
-#	[[ -f "$entities_min" ]] \
-#			&& mv "$entities_min" "$entities_min.old"
+	## rename entities_min_tmp.$$ to entities.bash.min
+	# backup any old version
+	[[ -f "$entities_min" ]] \
+			&& mv "$entities_min" "$entities_min.old"
 	# rename the temp file as minimal file
 	mv "$entities_min_tmp" "$entities_min" \
-			|| msg.die log "Could not rename [$entities_min_tmp]" "  to [$entities_min]."
+			|| msg.die "Could not rename [$entities_min_tmp]" "  to [$entities_min]."
 
 	# make timestamps the same for *.bash and *.bash.min
 	/usr/bin/touch -r "$entities_file" "$entities_min" \
-			|| msg.die log "File touch [$entities_min] failed!"
+			|| msg.err "File touch [$entities_min] failed!"
 
 	# check permissions
 	chmod 755 "$entities_min"	\
-			|| msg.die log "Could not chmod 755 [$entities_min]!"
+			|| msg.err "Could not chmod 755 [$entities_min]!"
 
-	tab.set $tab
-	msg.info log "$entities_min created."
+	tab.set "$tab"
+	msg.info "$entities_min created."
 }
-
 
 # docs ===============================================================
 printTitle() { msg "$PRG vs $(version.set)"; }
 
-printDesc() {
-	msg "Make optimised minimal version of entities.bash source file." \
-	 "All comments and blank lines are removed." \
-	 "Output is to [$entities_min]" \
-	 '' \
-	 "File [$(basename "$entities_file")] is always included first, " \
-	 "then all .bash files found in [$ENTITIES/entities.d/]" \
-	 '' \
-	 "Within user scripts, [source $(basename "$entities_min")] can be used instead" \
-	 "of [source $(basename "$entities_file")]"
-}
-
 usage() {
-	(($#)) && msg.err "$1" ''
-	printTitle
-	msg ''
-	printDesc
-	msg ''
-	msg "Synopsis: $PRG [--auto|-y] [--minfile {filename}"
-	msg "                [--verbose|-v||--quiet|-q] [--help|-h] [--version|-v]"
-	msg ''
-	exit 1
+	cat <<-etx
+	Script  : $PRG
+	Version : ${_ent_VERSION}
+	Desc    : Make optimised minimal version of entities.bash source file.
+	        : All comments and blank lines are removed.
+	        : Default output file is [${entities_min:-}]
+	        : Core script [$(basename "$entities_file")] is always included first,
+	        :   then *all* *.bash files found in [$ENTITIES/entities.d/]
+	        :   *except* those occuring within subdirectories dev/ tmp/ or /temp
+	        : Within user scripts, [source $(basename "$entities_min")] can be used instead
+	        :   of [source $(basename "$entities_file")]
+	        : Note that 'entities' in the PATH is a symlink to 
+	        :   [$ENTITIES/entities.min]
+	Synopsis: $PRG [-y|--no-prompt] [--minfile "filename"]
+	        :        [--v|-verbose] [-q|--quiet] [-V|--version] [-h|--help]
+	etx
+	return 0
 }
 
 main "$@"
