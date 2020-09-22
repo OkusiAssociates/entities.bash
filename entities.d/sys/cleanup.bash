@@ -12,15 +12,21 @@ cleanup() {
 	local -i exitcode=$?
 	if ((exitcode)); then
 		if ((_ent_DEBUG)); then
-			msg.info "Debug [$PRG]:"
+			msg.info "Debug [${PRG:-}]:"
 			msg.info "$(set | grep ^_ent_)"
 			msg.info "$(set | grep ^BASH	| grep -v BASH_VERSINFO)"
 		fi
 		if ((exitcode > 1)); then
-			msg.err "script=[$PRG] exit=[$exitcode] line=[${2:-}] \$1=$[{1:-}] fn[]=[${FUNCNAME[*]// /\|}] ln=[${BASH_LINENO[*]}] bs=[${BASH_SOURCE[*]}]"
+			msg.err "script=[${PRG:-}] 
+							exit=[$exitcode] 
+							line=[${2:-}] 
+							\$1=[${1:-}] 
+							fn[]=[${FUNCNAME[*]// /\|}]
+							ln=[${BASH_LINENO[*]:-}]
+							bs=[${BASH_SOURCE[*]:-}]"
 		fi
 	fi
-	exit $exitcode
+	exit "$exitcode"
 }
 declare -fx cleanup
 #fin

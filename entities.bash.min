@@ -554,7 +554,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.95.420.458.3'
+_ent_VERSION='0.95.420.460.2'
 cdd() {
 	(( $# )) || return 0
 	local dirspec="${1}" pwd=''
@@ -912,15 +912,21 @@ cleanup() {
 	local -i exitcode=$?
 	if ((exitcode)); then
 		if ((_ent_DEBUG)); then
-			msg.info "Debug [$PRG]:"
+			msg.info "Debug [${PRG:-}]:"
 			msg.info "$(set | grep ^_ent_)"
 			msg.info "$(set | grep ^BASH	| grep -v BASH_VERSINFO)"
 		fi
 		if ((exitcode > 1)); then
-			msg.err "script=[$PRG] exit=[$exitcode] line=[${2:-}] \$1=$[{1:-}] fn[]=[${FUNCNAME[*]// /\|}] ln=[${BASH_LINENO[*]}] bs=[${BASH_SOURCE[*]}]"
+			msg.err "script=[${PRG:-}] 
+							exit=[$exitcode] 
+							line=[${2:-}] 
+							\$1=[${1:-}] 
+							fn[]=[${FUNCNAME[*]// /\|}]
+							ln=[${BASH_LINENO[*]:-}]
+							bs=[${BASH_SOURCE[*]:-}]"
 		fi
 	fi
-	exit $exitcode
+	exit "$exitcode"
 }
 declare -fx cleanup
 declare -Aix HRint=( [b]=1 [k]=1024 [m]=1024000 [g]=1024000000 [t]=1024000000000 [p]=1024000000000000 \

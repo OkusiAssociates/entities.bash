@@ -1,0 +1,10 @@
+#!/bin/bash
+
+	shopt -s globstar
+	cd Scripts || exit
+	for f in **; do 
+		if grep -qs -m1 _ent_ "$f"; then
+			echo "$f"
+#			sed -i 's/_ent_/e_/' "$f"
+		fi
+	done
