@@ -14,7 +14,7 @@ usage() {
 	echo "Desc    : entities.bash installation program."
 	echo "        : Requires root to install."
 	((EUID)) && echo "        : Current user is [${EUID:-} ${USER:-}]"
-	echo "Synopsis: $(basename "$0") [-y|--auto] [-i|--install] [-p|--production] [-v|-q] [-V]"
+	echo "Synopsis: $(basename "$0") [-y|--auto] [-i|--install] [-p|--production] [-a|--apt-update] [-v|-q] [-V]"
 	exit "${1:-0}"
 }
 	# cries for help.
@@ -165,7 +165,7 @@ main() {
 
 	install
 	
-	install_externals
+	install_externals || true
 
 	testit
 
@@ -349,7 +349,7 @@ make.syncexclude() {
 }
 
 install_externals() {
-	# update/upgrade ###
+	# update/upgrade
 	msg.info "Updating Installed Packages"
 	if ((AptUpdate)); then
 		apt-get --yes  update 	|| msg.die 'Error updating packages.'
@@ -366,14 +366,14 @@ install_externals() {
       nmap              \
 			wget              \
       zip unzip 				\
-			||	msg.die "Error installing external dependencies."
+			||	msg.err "Error/s installing external dependencies."
 
 	if ((AptUpdate)); then
 		msg.info "Performing apt Cleanup"
-		apt-get --yes autoremove
-		apt-get --yes clean
+		apt-get --yes autoremove	|| true
+		apt-get --yes clean				|| true
 		msg.info "Updating mlocate Database"
-		updatedb &
+		updatedb || true
 	fi
 	
 	msg.info "All external packages installed."
