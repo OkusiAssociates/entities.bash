@@ -27,7 +27,7 @@ usage() {
 	declare -i production=0
 	declare -i autoinstall=0
 	declare -i install=0
-
+	declare -i AptUpdate=0
 	declare canonical
 	
 	declare etc_profile_d='/etc/profile.d/entities.env.sh'
@@ -97,6 +97,7 @@ main() {
 			--dev|-p|--prod*)	production=1;;
 			-y|--auto)				autoinstall=1; install=1;;
 			-i|--install)			install=1;;
+			-a|--apt-update)	AptUpdate=1;;
 			-v|--verbose)			verbose.set on;;
 			-q|--quiet)				verbose.set off;;
 			-V|--version)			echo "$PRG ${_ent_VERSION}"; return 0;;
@@ -350,9 +351,11 @@ make.syncexclude() {
 install_externals() {
 	# update/upgrade ###
 	msg.info "Updating Installed Packages"
-	apt-get --yes  update 	|| msg.die 'Error updating packages.'
-	apt-get --yes  upgrade	|| msg.die 'Error upgrading packages.'
-
+	if ((AptUpdate)); then
+		apt-get --yes  update 	|| msg.die 'Error updating packages.'
+		apt-get --yes  upgrade	|| msg.die 'Error upgrading packages.'
+	fi
+	
 	msg.info "Installing External Dependencies"
 	apt-get install --yes \
       hexedit           \
@@ -365,13 +368,14 @@ install_externals() {
       zip unzip 				\
 			||	msg.die "Error installing external dependencies."
 
-	msg.info "Performing apt Cleanup"
-	apt-get --yes autoremove
-	apt-get --yes clean
-
-#	msg.info "Updating mlocate Database"
-#	updatedb
-
+	if ((AptUpdate)); then
+		msg.info "Performing apt Cleanup"
+		apt-get --yes autoremove
+		apt-get --yes clean
+		msg.info "Updating mlocate Database"
+		updatedb &
+	fi
+	
 	msg.info "All external packages installed."
 }
 
