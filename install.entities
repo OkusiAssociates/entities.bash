@@ -266,8 +266,8 @@ install() {
 	for s in "${arr[@]}"; do 
 		s=$(basename "$s")
 		if [[ $HOSTNAME == 'okusi0' ]]; then
-			msg.info "Linking $PRGDIR/entities/scripts/$s to /usr/local/bin/$s"
-			ln -fs "$PRGDIR/entities/scripts/$s" "/usr/local/bin/$s"
+			msg.info "Linking $PRGDIR/scripts/$s to /usr/local/bin/$s"
+			ln -fs "$PRGDIR/scripts/$s" "/usr/local/bin/$s"
 		else
 			msg.info "Linking $ENTITIES/scripts/$s to /usr/local/bin/$s"
 			ln -fs "$ENTITIES/scripts/$s" "/usr/local/bin/$s"
