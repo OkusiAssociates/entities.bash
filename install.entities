@@ -1,4 +1,8 @@
 #!/bin/bash
+	declare u
+	u=$(cat /etc/issue)
+	[[ "${u:0:12}" < 'Ubuntu 16.04' ]] \
+			&& msg.die 'entities.bash requires installation of Ubuntu 16.04 or higher.'
 usage() {
 	echo "Script  : $(basename "$0")"
 	local v
@@ -97,7 +101,7 @@ main() {
 			-q|--quiet)				verbose.set off;;
 			-V|--version)			echo "$PRG ${_ent_VERSION}"; return 0;;
 			-h|--help)				usage 0;;
-			*)								msg.die "Bad command line argument [$1]";;
+			*)								msg.die "Bad command argument [$1]";;
 		esac
 		shift
 	done
@@ -107,18 +111,18 @@ main() {
 	msg.info "entities.bash shall be installed to [$ENTITIES]."
 	if [[ -f "$ENTITIES/entities.bash" ]]; then
 		msg.warn "entities.bash is already installed at [$ENTITIES]."
-		msg.warn "It shall be backed-up to [$ENTITIES/entities.bash.old]."
+		msg.warn "Backup will be at [$ENTITIES/entities.bash.old]."
 	fi
 	
 	if (( ! autoinstall)); then
 		infotext
 		ask.yn 'Install with these settings?' \
-				|| { msg.err 'Exiting'; return 0; }
+				|| { msg.err ''; return 0; }
 		msg 'Installing entities.bash'
 	fi
 
 	if ((production)); then
-		msg.info "Creating help files"
+		msg.info "Creating Help Files"
 		"$PRGDIR/entities.help.make" --auto	|| msg.die "[$PRGDIR/entities.help.make] failed!"
 		# make new version file
 		[[ -z ${_ent_VERSION:-} ]] && msg.die "Version has not been set. See [$_verfile]"
@@ -152,21 +156,27 @@ main() {
 	fi
 
 	"$PRGDIR/entities.make.minimal" --no-prompt \
-		|| msg.die "[$PRGDIR/entities.make.minimal] failed!"
+			|| msg.die "[$PRGDIR/entities.make.minimal] failed!"
 
 	makeprofile
 
 	makeenvirnonment
 
 	install
+	
+	install_externals
 
 	testit
 
 	msg.line '-'
 	msg "entities.bash [${_ent_VERSION}] has been installed." \
 			'Exit from this bash session and then re-enter.' \
-			'To activate entities.bash environment:' \
-			'    source entities new'
+			'To activate entities.bash environment enter:' \
+			'    source entities new' \
+			'For help:' \
+			'    entities help ' \
+			'Repository:' \
+			'    https://github.com/OkusiAssociates/entities.bash'
 	rm -f "$SyncExclude"
 }
 
@@ -181,7 +191,7 @@ makeprofile() {
 # Dep: /etc/environment cat
 makeenvirnonment() {
 	envfile=/etc/environment
-	msg.info "Modifyinging [$envfile]"
+	msg.info "Modifying [$envfile]"
 	tmpfile="$(mktemp --tmpdir 'ent-XXXX')"
 	grep -v '^[[:blank:]]*ENTITIES=' "$envfile" >"$tmpfile" || true
 	echo "ENTITIES=\"$ENTITIES\"" >> "$tmpfile" 
@@ -207,12 +217,12 @@ infotext() {
 
 # Dep: mkdir cd rsync find ln touch cp
 install() {
-	msg.info "Installing Entities into [${ENTITIES}]"
+	msg.info "Installing Entities to [${ENTITIES}]"
 
 	cd "$PRGDIR" || exit 2
 	
 	# do backup of existing $ENTITIES directory
-	msg.info "Backing up [$ENTITIES] directory"
+	msg.info "Backing up [$ENTITIES]"
 	if [[ -d "${ENTITIES}.old" ]]; then
 		if [[ -d "${ENTITIES}" ]]; then
 			msg.info "* Deleting [$ENTITIES.old]"
@@ -244,7 +254,7 @@ install() {
 	/usr/bin/rsync -al --exclude-from "$SyncExclude" docs/*							"$ENTITIES/docs/" || exit 1
 
 	# make symlinks in $ENTITIES directory
-	msg.info "Create symlinks in [$ENTITIES] directory"
+	msg.info "Creating symlinks in [$ENTITIES] directory"
 	cd "$ENTITIES" 																|| exit 2
 	# execute permissions on entities	
 	chmod 775 entities.bash entities.bash.min			|| exit $?
@@ -275,7 +285,7 @@ install() {
 	done 
 	
 	# touch420 all files in $ENTITIES directory
-	msg.info "Change owner/perms/times in [$ENTITIES] directory"
+	msg.info "Change permissions in [$ENTITIES] directory"
 	cd "$ENTITIES" || exit 2
 	chown root:root ${ENTITIES}/* -R
 	declare IFS=$'\n'
@@ -283,7 +293,7 @@ install() {
 		if [[ -d "$f" ]]; then
 			chmod 775 "$f"
 		else 
-			chmod u+rw,g+rw,o+rw "$f"	#should this be 555??
+			chmod u+rw,g+rw,o+rw "$f"	#should this be 555?? ###
 		fi
 		fd=$(stat "$f" -c '%y');
 		fd=${fd%% *} 
@@ -311,11 +321,9 @@ make.syncexclude() {
 		*~
 		*.bak
 		*.c
-		CbgTerakhir
+		dead.letter
 		DEADJOE
 		.*/DEADJOE
-		deluser.sh
-		desktopokusi-do-not-use
 		dev/
 		.git
 		.git/
@@ -323,35 +331,14 @@ make.syncexclude() {
 		.gudang/*
 		*/gudang/
 		gudang/
-		ip2nation/
-		ips.okusi
-		iptables-save
-		IPTables.txt
 		*.lock
 		*.log
-		mktarball
-		obd-script.lst
-		obd-zip-script
-		okusi-script.lst
 		old/
-		Pakta/pakta.*
-		XXXmkuser/skel14/*
-		mkuser/skel12/*
-		shadow.bak
-		spam/
-		spool/*
-		.ssh/*
 		syncexclude
-		synclist
-		synclist-opt
 		t
 		*/t/*
 		t1
 		t2
-		taskmaster.continue
-		.taskmasterid
-		taskmaster.lock
-		*/temp/*
 		temp/*
 		*/tmp/*
 		tmp/*
@@ -360,6 +347,33 @@ make.syncexclude() {
 	EOT
 }
 
+install_externals() {
+	# update/upgrade ###
+	msg.info "Updating Installed Packages"
+	apt-get --yes  update 	|| msg.die 'Error updating packages.'
+	apt-get --yes  upgrade	|| msg.die 'Error upgrading packages.'
+
+	msg.info "Installing External Dependencies"
+	apt-get install --yes \
+      hexedit           \
+      joe               \
+      lynx w3m          \
+			moreutils					\
+			tree							\
+      nmap              \
+			wget              \
+      zip unzip 				\
+			||	msg.die "Error installing external dependencies."
+
+	msg.info "Performing apt Cleanup"
+	apt-get --yes autoremove
+	apt-get --yes clean
+
+#	msg.info "Updating mlocate Database"
+#	updatedb
+
+	msg.info "All external packages installed."
+}
 
 main "$@"
 #fin

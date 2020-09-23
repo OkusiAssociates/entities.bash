@@ -224,7 +224,7 @@ declare -fx 'msg.err'
 msg.die() {
 	declare log="${1:-}"
 	[[ ${log} == 'log' ]] && shift
-	__msgx >&2 "$log" "crit" "1" "$@" 'Aborting.'
+	__msgx >&2 "$log" "crit" "1" "$@"
 	exit 1
 }
 declare -fx 'msg.die'
@@ -554,7 +554,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.95.420.460.7'
+_ent_VERSION='0.95.420.460.9'
 cdd() {
 	(( $# )) || return 0
 	local dirspec="${1}" pwd=''

@@ -14,33 +14,46 @@ source "$OKROOT/entities/entities.bash" new || exit 2
 	msg.prefix.set "$PRG"
 	msg.prefix.separator.set '> '
 	
+	declare -xg Profile ProfileStr
 	declare -xg Database='' DataTable='' DataCommand=''
 
 main() {
 	while (( $# )); do
 		case "$1" in
-			-V|--version)		msg "$PRG $(version.set)"; return 0;;
-			-h|--help)			usage; return 0;;
-			-?|--*)					msg.err "Invalid option [$1]"; return 1;;
-			*)							msg.err "Invalid argument [$1]"; return 1;;
+			-p|--profile)	shift; Profile="$1";;
+			-V|--version)	msg "$(version.set)"; return 0;;
+			-h|--help)		usage; return 0;;
+			-?|--*)				msg.err "Invalid option [$1]"; return 1;;
+			*)						if   [[ -z $Database ]]; 	  then Database="$1"
+										elif [[ -z $DataTable ]];   then DataTable="$1";
+										elif [[ -z $DataCommand ]]; then DataCommand="$1"
+										else
+											msg.err "Too many parameters [$1]"
+											return 1
+										fi
+										;;
 		esac
 		shift
 	done
-
+	[[ -z $DataCommand && -n $DataTable ]] && DataCommand='fields'
+		
 	tabs 8	
 	while ((1)); do
 		msg.prefix.set "$PRG"
-		select_database
+		[[ -n $Database ]] || select_database
 		[[ -z $Database ]] && break;
 		while ((1)); do
-			select_table
+			[[ -n $DataTable ]] || select_table
 			[[ -z $DataTable ]] && break
 			while ((1)); do
-				select_command
+				[[ -n $DataCommand ]] || select_command
 				[[ -z $DataCommand ]] && break
 				"do_${DataCommand}"
+				DataCommand=''
 			done
+			DataTable=''
 		done
+		Database=''
 	done
 }
 
@@ -57,6 +70,7 @@ select_database() {
 	Database="$v"
 	msg.prefix.set --
 }
+
 select_table() {
 	local v REPLY PS3
 	msg.prefix.set ++ "$Database"
@@ -70,16 +84,18 @@ select_table() {
 	DataTable="$v"
 	msg.prefix.set --
 }
+
 select_command() {
 	local v REPLY PS3
 	msg.prefix.set ++ "$Database:$DataTable"
 	PS3="$(msg.prefix.set)Select Command: "
 	local -a cmds
-	cmds=(	'show structure' 
-					'show fields'
-					'mysql select'
-					'mysql command line'
-					'mysql prompt' 
+	cmds=(	'structure' 
+					'fields'
+					'select'
+					'command'
+					'prompt' 
+					''
 			 )
 	echo
 	select v in "${cmds[@]}"; do 
@@ -90,11 +106,13 @@ select_command() {
 	DataCommand="${v// /_}"
 	msg.prefix.set --
 }
-do_show_structure() {
+
+do_structure() {
 	mysql --prompt="$(msg.prefix.set)" --no-auto-rehash  "$Database" -e "show columns from $DataTable" || true
 	return 0
 }
-do_mysql_command_line() {
+
+do_command() {
 	local cmd='' PS3
 	msg.prefix.set ++ "$Database:$DataTable"
 	PS3="$(msg.prefix.set)Command: "
@@ -106,7 +124,8 @@ do_mysql_command_line() {
 	msg.prefix.set --
 	return 0
 }
-do_mysql_prompt() {
+
+do_prompt() {
 	msg.prefix.set '++' "$Database"
 	(
 		mysql --no-auto-rehash --prompt="$(msg.prefix.set)mysql> " "$Database"	
@@ -114,7 +133,8 @@ do_mysql_prompt() {
 	msg.prefix.set --
 	return 0
 }
-do_mysql_select() {
+
+do_select() {
 	local mselect='*' mwhere='' mlimit='100' morder='' PS3
 	msg.prefix.set ++ "$Database:$DataTable"
 	PS3="$(msg.prefix.set)Select: "
@@ -143,7 +163,7 @@ do_mysql_select() {
 	return 0
 }
 
-do_show_fields() {
+do_fields() {
 	local -a flds
 	local fld
 	local db="$Database" table="$DataTable" 
@@ -153,12 +173,12 @@ do_show_fields() {
 		(( $# )) && table="$1"
 	fi
 	msg.prefix.set ++ "$db:$table"
-	msg.info -n 'Fields: '
-	flds=( $(mysql -Nse "use information_schema; \
-							SELECT concat(COLUMN_NAME,'~',replace(COLUMN_TYPE,' ','~')) FROM COLUMNS \
+	msg.info 'Fields: '
+	flds=( $(mysql -Nse "use information_schema; 
+							SELECT concat(COLUMN_NAME,'~',replace(COLUMN_TYPE,' ','~')) FROM COLUMNS 
 									WHERE TABLE_SCHEMA='$db' AND TABLE_NAME='$table';") )
 	for fld in "${flds[@]}"; do
-		echo -en "${fld//\~/ }\t"
+		echo -n "[${fld//\~/ }]  "
 	done
 	echo ''
 	msg.prefix.set --

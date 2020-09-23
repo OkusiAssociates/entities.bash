@@ -29,7 +29,7 @@
 #sourced && return
 
 # process command line arguments, etc.
-#X Intro    : entities.bash
+#X About    : entities.bash
 #X Desc     : Entities Functions/Globals/Local Declarations and Initialisations.
 #X          : entities.bash is a light-weight Bash function library for systems
 #X          : programmers and administrators.
@@ -463,7 +463,7 @@ declare -fx 'msg.err'
 msg.die() {
 	declare log="${1:-}"
 	[[ ${log} == 'log' ]] && shift
-	__msgx >&2 "$log" "crit" "1" "$@" 'Aborting.'
+	__msgx >&2 "$log" "crit" "1" "$@"
 	exit 1
 }
 declare -fx 'msg.die'

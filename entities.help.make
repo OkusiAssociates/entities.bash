@@ -1,7 +1,8 @@
 #!/bin/bash
-source $(dirname "$0")/entities.bash new || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
+#! shellcheck disable=SC2034
+source "$(dirname "$0")/entities.bash" new || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
 	strict.set off
-	msg.prefix.set "$(msg.prefix.set)$PRG"
+	msg.prefix.set "$(msg.prefix.set)help.make"
 	trap.set on
 		
 #	ENTITIES=$PRGDIR/entities
@@ -28,7 +29,8 @@ source $(dirname "$0")/entities.bash new || { echo >&2 "Could not open [$(dirnam
 
 	# Category Labels
 	declare -a CatHdrs=( 
-			Intro 
+			About 
+			XGlobal
 			Global 
 			Local 
 			Function 
@@ -72,7 +74,7 @@ source $(dirname "$0")/entities.bash new || { echo >&2 "Could not open [$(dirnam
 main() {
 	exit_if_not_root
 #	exit_if_already_running
-	declare label='Intro' oldlabel='' lbl='' cmt=''
+	declare label='About' oldlabel='' lbl='' cmt=''
 	local IFS=$'\n'
 
 	cmd=()
@@ -97,13 +99,15 @@ main() {
 	msg "Create help pages from canonical entities.bash file to " "directory $HelpFilesDir." 
 	if ((!auto)); then
 		askyn "Do you wish to proceed?" || exit 1
+		echo
 	fi
 	if ((!auto)); then
-		askyn "Wipe the [$HelpFilesDir] directory?" && wipe=1
+		askyn "Wipe the [${HelpFilesDir//${EntitiesDir}/}] directory?" && wipe=1
+		echo
 	fi
 	if ((wipe)); then
 		msg.info "Deleting all files in [$HelpFilesDir]..."
-		rm -rf "$HelpFilesDir/"
+		rm -rf "${HelpFilesDir:?}/"
 		mkdir -p "$HelpFilesDir"
 	fi
 
@@ -143,7 +147,7 @@ main() {
 					endtag="$Label-"
 					sx=$((10 - ${#endtag} ))
 					endtag+="-${Symlink[0]}"
-					endtag=$(printf "#%${sx}.${sx}s%s" $dashes $endtag)
+					endtag=$(printf "#%${sx}.${sx}s%s" "$dashes" "$endtag")
 					(	echo "${endtag}"
 						printlines "$Label"  	"$Header"
 						printlines 'Tags' 		"$Tags"
@@ -160,7 +164,7 @@ main() {
 	
 					IFS=$' \t\n'
 					for s in ${Symlink[@]:1}; do
-						cd "$destdir"
+						cd "$destdir" || return 1
 						ln -fs "${Symlink[0]}" "${s}"
 						cd - >/dev/null
 					done
@@ -199,7 +203,7 @@ main() {
 	
 cleanup() {
 	[[ $1 == '' ]] && exitcode=$? || exitcode=$1
-	exit $exitcode
+	exit "$exitcode"
 }
 
 printlines() {

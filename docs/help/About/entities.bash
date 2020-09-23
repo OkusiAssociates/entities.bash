@@ -1,5 +1,5 @@
-#----Intro--entities.bash
-     Intro: entities.bash
+#----About--entities.bash
+     About: entities.bash
       Desc: Entities Functions/Globals/Local Declarations and Initialisations.
           : entities.bash is a light-weight Bash function library for systems
           : programmers and administrators.
@@ -11,4 +11,4 @@
           : 'inherit' status when loading entities.bash.
    Depends: basename dirname readlink mkdir ln cat systemd-cat stty
     Source: /usr/share/okusi/entities/entities.bash
-#----Intro--entities.bash-----------------------------------------------------
+#----About--entities.bash-----------------------------------------------------
