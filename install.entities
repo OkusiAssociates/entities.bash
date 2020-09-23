@@ -171,7 +171,7 @@ main() {
 }
 
 makeprofile() {
-	msg.info "Making [${etc_profile_d}]"
+	msg.info "Creating [${etc_profile_d}]"
 	mkdir -p "$(dirname "$etc_profile_d")" || msg.die "Could not create [$(dirname "$etc_profile_d")]"
 	echo -e "${env_entities}"	> "$etc_profile_d"			
 	chmod 644 "$etc_profile_d" 				|| msg.die "Could not chmod 644 [$etc_profile_d]"
@@ -181,7 +181,7 @@ makeprofile() {
 # Dep: /etc/environment cat
 makeenvirnonment() {
 	envfile=/etc/environment
-	msg.info "Creating [$envfile]"
+	msg.info "Modifyinging [$envfile]"
 	tmpfile="$(mktemp --tmpdir 'ent-XXXX')"
 	grep -v '^[[:blank:]]*ENTITIES=' "$envfile" >"$tmpfile" || true
 	echo "ENTITIES=\"$ENTITIES\"" >> "$tmpfile" 
@@ -229,22 +229,22 @@ install() {
 	mkdir -p "$ENTITIES" || exit $?
 	[[ -d "$ENTITIES" ]] || exit $?
 
-	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.bash 		 "$ENTITIES/" >/dev/null || exit 1
-	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.bash.min  "$ENTITIES/" >/dev/null || exit 1
-	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.help      "$ENTITIES/" >/dev/null || exit 1
-	/usr/bin/rsync -av  --exclude-from "$SyncExclude" entities.help.make "$ENTITIES/" >/dev/null || exit 1
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.bash 			"$ENTITIES/" >/dev/null || exit 1
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.bash.min  "$ENTITIES/" >/dev/null || exit 1
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.help      "$ENTITIES/" >/dev/null || exit 1
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.help.make "$ENTITIES/" >/dev/null || exit 1
 
 	mkdir -p "$ENTITIES/entities.d"
-	/usr/bin/rsync -avl --exclude-from "$SyncExclude" entities.d/*			"$ENTITIES/entities.d/" >/dev/null || exit 1
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" entities.d/*				"$ENTITIES/entities.d/" || exit 1
 
 	mkdir -p "$ENTITIES/scripts"
-	/usr/bin/rsync -avl --exclude-from "$SyncExclude" scripts/*					"$ENTITIES/scripts/" >/dev/null || exit 1
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" scripts/*					"$ENTITIES/scripts/" || exit 1
 
 	mkdir -p "$ENTITIES/docs/help"
-	/usr/bin/rsync -avl --exclude-from "$SyncExclude" docs/*						"$ENTITIES/docs/" >/dev/null || exit 1
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" docs/*							"$ENTITIES/docs/" || exit 1
 
 	# make symlinks in $ENTITIES directory
-	msg.info "Make symlinks in [$ENTITIES] directory"
+	msg.info "Create symlinks in [$ENTITIES] directory"
 	cd "$ENTITIES" 																|| exit 2
 	# execute permissions on entities	
 	chmod 775 entities.bash entities.bash.min			|| exit $?
@@ -264,7 +264,14 @@ install() {
 	declare -- s
 	arr=( $(find scripts/ -maxdepth 1 -executable -type f) )
 	for s in "${arr[@]}"; do 
-		ln -fs "$ENTITIES/scripts/$(basename "$s")" "/usr/local/bin/$(basename "$s")"
+		s=$(basename "$s")
+		if [[ $HOSTNAME == 'okusi0' ]]; then
+			msg.info "Linking $PRGDIR/entities/scripts/$s to /usr/local/bin/$s"
+			ln -fs "$PRGDIR/entities/scripts/$s" "/usr/local/bin/$s"
+		else
+			msg.info "Linking $ENTITIES/scripts/$s to /usr/local/bin/$s"
+			ln -fs "$ENTITIES/scripts/$s" "/usr/local/bin/$s"
+		fi
 	done 
 	
 	# touch420 all files in $ENTITIES directory
@@ -280,7 +287,7 @@ install() {
 		fi
 		fd=$(stat "$f" -c '%y');
 		fd=${fd%% *} 
-		/usr/bin/touch -h -d "$(date +'%F 04:20:00' -d "$fd")" "$f"
+		#/usr/bin/touch -h -d "$(date +'%F 04:20:00' -d "$fd")" "$f"
 	done
 
 	# back to base	
