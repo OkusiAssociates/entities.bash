@@ -26,6 +26,6 @@ tmpdir.set() {
 	fi
 	echo "$TMPDIR:-/tmp"
 }
-declare -fx tmpdir.set
+declare -fx 'tmpdir.set'
 
 #fin

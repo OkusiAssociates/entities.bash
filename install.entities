@@ -232,7 +232,7 @@ install() {
 	fi
 	if [[ -d "${ENTITIES}" ]]; then
 		msg.info "* Renaming [$ENTITIES] to [$ENTITIES.old]"
-		mv "${ENTITIES}" "${ENTITIES}.old" || { msg.err "$(errno $?)" "Could not move [${ENTITIES}] to [${ENTITIES}.old]"; exit 1; }
+		mv "${ENTITIES}" "${ENTITIES}.old" || { msg.err "$(errno $?)" "Could not move [${ENTITIES}] to [${ENTITIES}.old]"; return 1; }
 	fi
 
 	# start creating $ENTITIES
@@ -307,11 +307,10 @@ install() {
 
 testit() {
 		# test it
-		cd "$ENTITIES" || { echo >&2 'wtf?'; exit 1; } 
+		cd "$ENTITIES" || { echo >&2 "wtf? Could not change to [$ENTITIES]"; return 1; } 
 		strict.set off
 		trap.set off
-		source entities.bash new || { echo >&2 'wtf??'; exit 1; }
-		strict.set on
+		source entities.bash new || { echo >&2 "wtf?? Could not source [$PWD/entities.bash]"; return 1; }
 		trap.set on
 }
 
@@ -358,14 +357,20 @@ install_externals() {
 	
 	msg.info "Installing External Dependencies"
 	apt-get install --yes \
+			errno							\
+			git								\
+			gzip							\
       hexedit           \
       joe               \
-      lynx w3m          \
+      lynx 							\
 			moreutils					\
-			tree							\
       nmap              \
+			shellcheck				\
+			tree							\
+      unzip 						\
+      w3m 			        \
 			wget              \
-      zip unzip 				\
+      zip								\
 			||	msg.err "Error/s installing external dependencies."
 
 	if ((AptUpdate)); then
@@ -377,6 +382,7 @@ install_externals() {
 	fi
 	
 	msg.info "All external packages installed."
+	return 0
 }
 
 main "$@"

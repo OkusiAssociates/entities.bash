@@ -554,51 +554,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.95.420.460.13'
-cdd() {
-	(( $# )) || return 0
-	local dirspec="${1}" pwd=''
-	if [[ -d $dirspec ]]; then
-		cd "$dirspec"; pwd="$(pwd)"
-	elif [[ -d "../../../$dirspec" ]]; then
-		cd "../../../$dirspec"; pwd="$(pwd)"
-	elif [[ -d "../../$dirspec" ]]; then
-		cd "../../$dirspec"; pwd="$(pwd)"
-	elif [[ -d "../$dirspec" ]]; then
-		cd "../$dirspec"; pwd="$(pwd)"
-	elif [[ -d "/$dirspec" ]]; then
-		cd "/$dirspec"; pwd="$(pwd)"
-	else
-		msg "Searching PATH"
-		local -a apath=( "${PATH//:/$'\n'}" )
-		local path='' base=''
-		for path in ${apath[@]}; do
-			base="$(basename "$path")"
-			if [[ $base == $dirspec ]]; then
-				if [[ -d "$path" ]]; then
-					cd "$path"; pwd="$(pwd)"
-					break
-				fi
-			fi
-		done	
-		if [[ $pwd == '' ]]; then
-			msg "Finding"
-			declare -a find=( $( find ../.. -name "${dirspec}*" -type d ) )
-			(( ${#find[@]} == 0 )) && find=( $( find ../../.. -name "${dirspec}*" -type d ) )
-			if (( ${#find[@]} == 1)); then
-					cd "${find[0]}"
-					pwd="$(pwd)"
-			else 	
-				select d in ${find[@]}; do
-					cd "$d"
-					pwd="$(pwd)"
-				done
-				((${#pwd})) || msg.err "$dirspec not found"
-			fi
-		fi
-	fi
-	[[ $pwd ]] && msg "$pwd"
-}
+_ent_VERSION='0.95.420.460.15'
 exit_if_already_running() {
 	(($#)) && _ent_LOCKTIMEOUT="$1"
 	local lockfile="/run/lock/${PRG}.lock"
@@ -727,48 +683,7 @@ tmpdir.set() {
 	fi
 	echo "$TMPDIR:-/tmp"
 }
-declare -fx tmpdir.set
-path-add() {
-	local cmd=()
-	local -i prepend=0 export_path=1 test_dir=1
-	while (($#)); do
-		case "$1" in
-			-r|--prepend)			prepend=1	;;
-			-o|--postpend)		prepend=0 ;;
-			-n|--no-export)		export_path=0 ;;
-			-t|--no-test-dir)	test_dir=0;;
-			*)								cmd+=( "$1" ) ;;
-		esac
-		shift
-	done
-	path-delete "${cmd[@]}" /dev/null
-	for p in ${cmd[@]}; do
-		[[ "$test_dir" == "1" && ! -d "$p" ]] && return 1
-		if ((prepend)); then
-			PATH="${p}:${PATH}"
-		else
-			PATH="${PATH}:${p}"
-		fi
-	done
-	((export_path)) && export PATH
-	return 0
-}
-declare -fx path-add
-path-delete() {
-	local newpath='' IFS=':'
-	while ((${#@})); do
-		for p in ${PATH}; do
-			[[ "$p" == "$1" || "$p" == '' ]] && continue
-			newpath+="${p}:"
-		done
-		shift
-	done
-	while [[ "${newpath:0:1}" == ':' ]]; do newpath="${newpath:1}"; 		done
-	while [[ "${newpath: -1}" == ':' ]]; do newpath="${newpath:0: -1}"; done
-	PATH="$newpath"
-	return 0
-}
-declare -fx path-delete
+declare -fx 'tmpdir.set'
 declare -ix _slog_count=0
 slog() {
 	for log in "${@}"; do
