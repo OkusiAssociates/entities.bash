@@ -1,4 +1,4 @@
-##### Version [0.97.420.461.14]
+##### Version [0.97.420.461.15]
 # `entities.bash` Environment and Function Library
 
 `entities.bash` is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 20.04` or higher.
