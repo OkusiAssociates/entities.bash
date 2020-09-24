@@ -4,6 +4,7 @@ source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!";
 	strict.set off
 	verbose.set on
 	trap.set on
+	msg.prefix.set "$PRG"
 	
 	# if by some odd chance entities.bash has not already set EDITOR (it should have)
 	if [[ -z "$EDITOR" ]]; then
@@ -11,12 +12,14 @@ source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!";
 		[[ -n "$EDITOR" ]] && EDITOR+=' -tab 2 --wordwrap --autoindent'
 		[[ -z "$EDITOR" ]] &&	EDITOR="$(which nano)"
 		[[ -z "$EDITOR" ]] &&	EDITOR="$(which vi)"
-		[[ -z "$EDITOR" ]] && { echo >&2 "$(basename "$"): envvar EDITOR not set!"; exit 1; }
+		[[ -z "$EDITOR" ]] && { msg.err "Envvar EDITOR not set!"; exit 1; }
 	fi
 	export EDITOR
 	
 	tmpfile="/tmp/p-$RANDOM"
 	CH9=$'\t'
+
+	declare -i shellcheck=0 syntaxcheck=1
 
 main() {
 	local file='' ftype='' ext
@@ -25,12 +28,16 @@ main() {
 	while (($#)); do
 		case "$1" in
 			-l|--line)				shift; line=$((${1:-1})) ;;
-			+*)								line=${1:1} ;;
+			+[[:digit:]*])		line=${1:1} ;;
+			-n|--syntaxcheck)	syntaxcheck=1 ;;
+			+n|-+syntaxcheck)	syntaxcheck=0 ;;
 			-s|--shellcheck)	shellcheck=1 ;;
+			+s|-+shellcheck)	shellcheck=0 ;;
 			-x|--execute)			execute=1 ;;
-			-h|-?|--help)			usage; return 0 ;;
-			-v|--verbose)			verbose on ;;
-			-q|--quiet)				verbose off ;;
+			+x|-+execute)			execute=0 ;;
+			-h|--help)				usage; return 0 ;;
+			-v|--verbose|+q)	verbose on ;;
+			-q|--quiet|+v)		verbose off ;;
 			-*)								msg.err "Bad option [$1]"; return 22 ;;
 			*)								cmd+=( "$1" ) ;;
 		esac
@@ -44,7 +51,6 @@ main() {
 	if [[ ! -f "$file" ]]; then
 		# look for likely executable script
 		sx="$(readlink -f "$(which "$(basename "$file")")")"
-#msg.warn "$sx"
 		if [[ -z $sx ]]; then
 			# locate or create
 			sx="$(basename "$file")"
@@ -61,22 +67,15 @@ main() {
 	fi
 	
 	ext="${file##*.}"
-	if 		[[ "$ext" == 'php' ]];	then 
+	if 		[[ $ext == 'php' ]];	then 
 		ftype='php'
-	elif 	[[ "$ext" == 'sh'	|| "$ext" == 'bash' ]]; then 
+		shellcheck=0
+	elif 	[[ $ext == 'sh'	|| $ext == 'bash' ]]; then 
 		ftype='sh'
 	else
 		ftype=$(textfiletype -t "$file")
-		[[ $ftype == 'text' || -z $ftype ]] && ftype='sh'
-#		hd=$(head -n1 "$file")
-#		hd=${hd%% *}
-#		if [[ $hd == "#!$(which bash)" || $hd == "#!$(which sh)" || $hd == '#!/bin/bash' || $hd == '#!/bin/sh' ]]; then 
-#			ftype='sh' 
-#		elif [[ $hd == "#!$(which php)" || "${hd:0:2}" == '<?' ]]; then 
-#			ftype='php' 
-#		else 
-#			msg.die "$file is not a bash or php script!"
-#		fi
+#		[[ $ftype == 'text' || -z $ftype ]]  && ftype='sh'
+		[[ $ext == 'sh'	|| $ext == 'bash' ]] && ftype='sh' 
 	fi
 	
 	# Edit it.
@@ -84,8 +83,20 @@ main() {
 	$EDITOR $( ((line)) && echo "+${line}" ) "$file"
 
 	[[ ! -f $file ]] && return 1
+	# has file changed type?
+	if [[ $ftype == 'text' || -z $ftype ]]; then
+		if [[ ! -z $file ]]; then
+			h=$(head -n 1 "$file")
+			if [[ $h =~ ^\#\!.*/bash.* ]];  then  
+				ftype=sh
+			elif [[ $h =~ ^\#\!.*/php.*  || ${h:0:2} == '<?' || ${h:0:5} == '<?php' ]]; then  
+				ftype=php
+			fi
+		fi
+	fi
 
 	# syntax check
+	if ((syntaxcheck)); then
 	syntaxerr=0	
 	if [[ "${ftype}" == 'php' ]]; then
 		msg.info "$(php -l "${file}" 2>&1 | tee "$tmpfile")"
@@ -98,14 +109,16 @@ main() {
 			fi
 		fi
 	else
-		msg.info "$(bash -n "${file}" 2>&1 | tee "$tmpfile")"
-		hd="$(head -n1 "$tmpfile")"
-		if [[ "${hd}" != '' ]]; then
-			syntaxerr=1
-			l="${hd##*: line }"
-			l=${l//${CH9}/ }
-			l=$(trim "${l%%:*}")
-			[[ -z "$l" ]] && line=0 || line=$l
+		if [[ $ftype == 'sh' || $ftype == 'bash' ]]; then
+			msg.info "$(bash -n "${file}" 2>&1 | tee "$tmpfile")"
+			hd="$(head -n1 "$tmpfile")"
+			if [[ "${hd}" != '' ]]; then
+				syntaxerr=1
+				l="${hd##*: line }"
+				l=${l//${CH9}/ }
+				l=$(trim "${l%%:*}")
+				[[ -z "$l" ]] && line=0 || line=$l
+			fi
 		fi
 	fi
 	if ((syntaxerr)); then
@@ -115,9 +128,10 @@ main() {
 			exit
 		fi
 	fi
-
-	# shellcheck
-	if ((shellcheck)) && [[ $ftype == 'sh' ]] ; then
+	fi
+	
+	## shellcheck
+	if ((shellcheck)) && [[ $ftype == 'sh' || $ftype == 'bash'  ]] ; then
 		if [[ -f "$file" ]]; then
 			local -- scdisable
 			scdisable="$( grep -m 1 '^#\![[:blank:]]*shellcheck[[:blank:]]*disable=' "$file" 2>/dev/null )"
