@@ -14,7 +14,7 @@ usage() {
 	Version : ${_ent_VERSION:-Not Found}
 	Desc    : entities.bash installation program.
 	        : Requires root to install.
-	Synopsis: $(basename "$0") [-y] [-i] [-u] [-c] [-a] [-p] [-v|-q] [-V] [-h]
+	Synopsis: $(basename "$0") [-y] [-i] [-u] [-c] [-l] [-p] [-v|-q] [-V] [-h]
 	        :   -y|--auto         install without prompting.
 	        :   -i|--install      install with prompt.
 	        :   -u|--apt-upgrade  before external dependencies are installed

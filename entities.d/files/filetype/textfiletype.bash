@@ -29,6 +29,8 @@
 #      1 a /bin/env -i /bin/bash script
 
 #X Function: editorsyntaxstring
+#X Desc    : Return full path and arguments to edit a text file.
+#X         : Only editors 'joe' and 'nano' are supported at the moment.
 #X Usage   : editorsyntaxstring filetype filename
 editorsyntaxstring() {
 	local FileType="${1:-text}"
@@ -82,6 +84,10 @@ declare -Ax _ent_TextFileTypes=(
 			['BSD makefile script']='bsdmake'
 		)
 
+#X Function: textfiletype
+#X Desc    : Return type of text.
+#X Usage   : textfiletype [-t] filename
+#X         :   -t  Return type only without filename.
 textfiletype() {
 	local -- testfile='' ext
 	local -i typeonly=0
