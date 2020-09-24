@@ -1,4 +1,4 @@
-##### Version [0.97.420.461.19]
+##### Version [0.97.420.461.20]
 # `entities.bash` Environment/Function Library
 
 `entities.bash` is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 18.04` or higher.
@@ -47,12 +47,12 @@ hashbang ["dir"] [--search "str"]  [-e|--exclude 'str'] [-p|--prefix "prefix"] [
  
 ###### Example
  
-    \# 0. print bash script filenames
+    # 0. print bash script filenames
     hashbang                   
-    \# 1. print bash filenames matching pattern
+    # 1. print bash filenames matching pattern
     hashbang . -s '^whereisit' 
-    \# 2. print bash filenames containing string 'varname'
-    \#    in format "p filename -s"
+    # 2. print bash filenames containing string 'varname'
+    #    in format "p filename -s"
     hashbang . -s 'some_var_name' -p 'p' -x '-s' >editfiles
 
 ##### Script  : lsd
