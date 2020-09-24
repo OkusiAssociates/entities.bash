@@ -1,4 +1,4 @@
-##### Version [0.97.420.461.3]
+##### Version [0.97.420.461.4]
 # `entities.bash` Environment and Function Library
 
 `entities.bash` is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 20.04` or higher.
@@ -7,7 +7,7 @@ The basic philosophy is to be simple, unobtrusive and as flexible as possible, w
 
 `entities.bash` 
 
-`entities.bash` requires:
+#### `entities.bash` requires:
 
 	* Ubuntu 18.04, or higher
 
@@ -15,7 +15,13 @@ The basic philosophy is to be simple, unobtrusive and as flexible as possible, w
 
     sudo git clone https://github.com/OkusiAssociates/entities.bash.git && entities.bash/install.entities -y
 
+#### Invocation
+
 To invoke `entities`, just enter `source entitites` at the top of your script, or invoke it at the command line.
+    
+    source entities new
+    msg "Hello World"
+    entities help
 
 Once loaded into the environment `entities` can be invoked without reloading the entire library.
 
@@ -34,4 +40,12 @@ Here are just a few of the functions and globals that I commonly use in my scrip
 
 `entities.bash` can be easily extended with new functions.
 
-See `entities --help` for full documentation.
+See `entities help` for full documentation.
+
+#### Developers
+
+Are you a bash programmer? If you would like to assist with this project, go to the repository at:
+
+    http://github.com/OkusiAssociates/entities.bash
+
+
