@@ -1,4 +1,5 @@
 #!/bin/bash
+#! shellcheck disable=SC2086
 #X Function|Global|Local|Script: 
 #X Desc    : 
 #X Synopsis: 
@@ -14,7 +15,7 @@ source "$OKROOT/entities/entities.bash" new || exit 2
 	msg.prefix.set "$PRG"
 	msg.prefix.separator.set '> '
 	
-	declare -xg Profile ProfileStr
+	declare -xg Profile='' ProfileStr=''
 	declare -xg Database='' DataTable='' DataCommand=''
 
 main() {
@@ -36,6 +37,11 @@ main() {
 		shift
 	done
 	[[ -z $DataCommand && -n $DataTable ]] && DataCommand='fields'
+
+	if [[ -n $Profile ]]; then
+		[[ -f $Profile ]] || { msg.err "Profile [$Profile] not found."; return 2; }
+		ProfileStr="--defaults-extra-file=$Profile"
+	fi
 		
 	tabs 8	
 	while ((1)); do
@@ -58,12 +64,13 @@ main() {
 }
 
 select_database() {
-	local v REPLY PS3
+	local v='' REPLY PS3
 	msg.prefix.set ++ 'Databases'
 	PS3="$(msg.prefix.set)Select Database: "
 	echo
-	select v in $(mysql --no-auto-rehash -Nse 'show databases;' | sort -i); do 
-		[[ $REPLY == '0' || $REPLY == 'q' ]] && { v=''; break; }
+	select v in $(mysql $ProfileStr --no-auto-rehash -Nse 'show databases;' | sort -i); do 
+		[[ $REPLY == 'q' ]] && exit 0
+		[[ $REPLY == '0' ]] && { v=''; break; }
 		[[ -z $v ]] && continue
 		break
 	done
@@ -72,12 +79,13 @@ select_database() {
 }
 
 select_table() {
-	local v REPLY PS3
+	local v='' REPLY PS3
 	msg.prefix.set ++ "$Database"
 	PS3="$(msg.prefix.set)Select Table: "
 	echo
-	select v in $(mysql --no-auto-rehash -Nse "use $Database; show tables;" | sort -i); do 
-		[[ $REPLY == '0' || $REPLY == 'q' ]] && { v=''; break; }
+	select v in $(mysql $ProfileStr --no-auto-rehash -Nse "use $Database; show tables;" | sort -i); do 
+		[[ $REPLY == 'q' ]] && exit 0
+		[[ $REPLY == '0' ]] && { v=''; break; }
 		[[ -z $v ]] && continue
 		break
 	done
@@ -99,7 +107,8 @@ select_command() {
 			 )
 	echo
 	select v in "${cmds[@]}"; do 
-		[[ $REPLY == '0' || $REPLY == 'q' ]] && { v=''; break; }
+		[[ $REPLY == 'q' ]] && exit 0
+		[[ $REPLY == '0' ]] && { v=''; break; }
 		[[ -z $v ]] && continue
 		break
 	done
@@ -108,7 +117,7 @@ select_command() {
 }
 
 do_structure() {
-	mysql --prompt="$(msg.prefix.set)" --no-auto-rehash  "$Database" -e "show columns from $DataTable" || true
+	mysql $ProfileStr --prompt="$(msg.prefix.set)" --no-auto-rehash  "$Database" -e "show columns from $DataTable" || true
 	return 0
 }
 
@@ -119,7 +128,7 @@ do_command() {
 	while((1)); do
 		read -e -r -p "$PS3" cmd
 		[[ -z $cmd || $cmd == '0' || $cmd == 'q' ]] && break
-		mysql --no-auto-rehash "$Database" -e "$cmd" || true
+		mysql $ProfileStr --no-auto-rehash "$Database" -e "$cmd" || true
 	done
 	msg.prefix.set --
 	return 0
@@ -128,7 +137,7 @@ do_command() {
 do_prompt() {
 	msg.prefix.set '++' "$Database"
 	(
-		mysql --no-auto-rehash --prompt="$(msg.prefix.set)mysql> " "$Database"	
+		mysql $ProfileStr --no-auto-rehash --prompt="$(msg.prefix.set)mysql> " "$Database"	
 	) || true
 	msg.prefix.set --
 	return 0
@@ -141,22 +150,22 @@ do_select() {
 	while((1)); do
 		PS3="$(msg.prefix.set)SELECT: "
 		read -i "$mselect" -e -r -p "$PS3" mselect
-		[[ -z $mselect || $mselect == '0' || $mselect == 'q' ]] && break
+		[[ $mselect == 'q' ]] && exit 0; [[ -z $mselect || $mselect == '0' ]] && break
 		PS3="$(msg.prefix.set)WHERE: "
 		read -i "$mwhere" -e -r -p "$PS3" mwhere
-		[[ $mwhere == '0' || $mwhere == 'q' ]] && break
+		[[ $mselect == 'q' ]] && exit 0; [[ -z $mselect || $mselect == '0' ]] && break
 		PS3="$(msg.prefix.set)ORDER: "
 		read -i "$morder" -e -r -p "$PS3" morder
-		[[ $morder == '0' || $morder == 'q' ]] && break
+		[[ $mselect == 'q' ]] && exit 0; [[ -z $mselect || $mselect == '0' ]] && break
 		PS3="$(msg.prefix.set)LIMIT: "
 		read -i "$mlimit" -e -r -p "$PS3" mlimit
-		[[ $mlimit == '0' || $mlimit == 'q' ]] && break
+		[[ $mselect == 'q' ]] && exit 0; [[ -z $mselect || $mselect == '0' ]] && break
 		(	selectstr="SELECT $mselect FROM $DataTable 								\
 								$([[ -n $mwhere ]] && echo "WHERE $mwhere") 		\
 								$([[ -n $morder ]] && echo "ORDER BY $morder")  \
 								$([[ -n $mlimit ]] && echo "LIMIT $mlimit")"
 			msg "$(remsp2 "$selectstr")"
-			mysql --no-auto-rehash "$Database" -e "$selectstr" || perror $?
+			mysql $ProfileStr --no-auto-rehash "$Database" -e "$selectstr" || perror $?
 		) || true
 	done
 	msg.prefix.set --
@@ -174,7 +183,7 @@ do_fields() {
 	fi
 	msg.prefix.set ++ "$db:$table"
 	msg.info 'Fields: '
-	flds=( $(mysql -Nse "use information_schema; 
+	flds=( $(mysql $ProfileStr -Nse "use information_schema; 
 							SELECT concat(COLUMN_NAME,'~',replace(COLUMN_TYPE,' ','~')) FROM COLUMNS 
 									WHERE TABLE_SCHEMA='$db' AND TABLE_NAME='$table';") )
 	for fld in "${flds[@]}"; do
@@ -194,9 +203,18 @@ cleanup() {
 usage() {
 	cat <<-usage
 		Script  : $PRG
-		Synopsis: $PRG [-V] [-h]
-		        : To exit or back out of a menu, select 0.
-		Desc    : Command-driven mysql helper script.
+		Desc    : MySQL helper script to quickly view data/structure.
+		Synopsis: $PRG [database [table [command]]] [-p profile] [-V] [-h]
+		        :   -p|--profile  Specify mysql profile [eg, /root/.my3.cnf].
+		        :   -V|--version  Print version.
+		        :   -h|--help     This help.
+		        : To back out of a menu, select 0.
+		        : To exit, select q.
+		Examples: 0. $PRG         # direct to database selection
+		        : 1. $PRG Users   # open db Userss, then to table selection.
+		        : 2. $PRG Users users fields # open table Users:user and show fields. 
+		        : 3. $PRG -p /root/my3.cnf   # open mysql with profile. 
+		Requires: mysql-cli
 	usage
 }
 
