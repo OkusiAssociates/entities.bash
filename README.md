@@ -1,18 +1,21 @@
-##### Version [0.97.420.461.2]
-# `entities.bash` Function Library
+##### Version [0.97.420.461.3]
+# `entities.bash` Environment and Function Library
 
-`entities.bash` is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 20.04' or higher.
+`entities.bash` is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 20.04` or higher.
 
 The basic philosophy is to be simple, unobtrusive and as flexible as possible, with minimal dependencies, while providing standard funcionality across an environment.
 
-`entities.bash' requires:
+`entities.bash` 
+
+`entities.bash` requires:
+
 	* Ubuntu 18.04, or higher
 
-Quick Install:
+#### Quick Install:
 
     sudo git clone https://github.com/OkusiAssociates/entities.bash.git && entities.bash/install.entities -y
 
-To invoke `entities`, just put `source entitites` at the top of your script, or invoke it at the command line.
+To invoke `entities`, just enter `source entitites` at the top of your script, or invoke it at the command line.
 
 Once loaded into the environment `entities` can be invoked without reloading the entire library.
 
@@ -29,9 +32,6 @@ Here are just a few of the functions and globals that I commonly use in my scrip
   * `trap.set [[on|1] | [off|0]]`
   * `trim {strval}`
 
-`entities` can be easily extended with new functions.
+`entities.bash` can be easily extended with new functions.
 
 See `entities --help` for full documentation.
-
-
-
