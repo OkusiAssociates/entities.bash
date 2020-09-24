@@ -266,7 +266,10 @@ install() {
 	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.help.make "$ENTITIES/" >/dev/null || exit $?
 
 	cp -p LICENSE  "$ENTITIES/" || exit $?
-	cp -p README.* "$ENTITIES/" || exit $?
+	( echo "# Version [$_ent_VERSION]"
+		grep -iv '^#[[:blank:]]version[[:blank:]]\[' README.md 
+	) > $ENTITIES/README.md
+#	cp -p README.* "$ENTITIES/" || exit $?
 
 	mkdir -p "$ENTITIES/entities.d"
 	/usr/bin/rsync -al --exclude-from "$SyncExclude" entities.d/*				"$ENTITIES/entities.d/" || exit $?

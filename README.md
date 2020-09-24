@@ -1,11 +1,12 @@
 # `entities.bash` Function Library
+# Version [0.95.420.460.15]
 
 `entities.bash` is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 20.04' or higher.
 
 The basic philosophy is to be simple, unobtrusive and as flexible as possible, with minimal dependencies, while providing standard funcionality across an environment.
 
 `entities.bash' requires:
-	* Ubuntu 20.04, or higher
+	* Ubuntu 18.04, or higher
 
 Quick Install:
 
