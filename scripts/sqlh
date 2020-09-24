@@ -8,7 +8,7 @@
 #X Depends :
 #X See Also:
 source "$OKROOT/entities/entities.bash" new || exit 2
-	version.set '0.9'
+	version.set '0.97'
 	verbose.set on
 	trap.set on
 	strict.set on
@@ -22,7 +22,7 @@ main() {
 	while (( $# )); do
 		case "$1" in
 			-p|--profile)	shift; Profile="$1";;
-			-V|--version)	msg "$(version.set)"; return 0;;
+			-V|--version)	echo "$PRG $(version.set)"; return 0;;
 			-h|--help)		usage; return 0;;
 			-?|--*)				msg.err "Invalid option [$1]"; return 1;;
 			*)						if   [[ -z $Database ]]; 	  then Database="$1"
@@ -202,19 +202,24 @@ cleanup() {
 
 usage() {
 	cat <<-usage
-		Script  : $PRG
-		Desc    : MySQL helper script to quickly view data/structure.
-		Synopsis: $PRG [database [table [command]]] [-p profile] [-V] [-h]
-		        :   -p|--profile  Specify mysql profile [eg, /root/.my3.cnf].
-		        :   -V|--version  Print version.
-		        :   -h|--help     This help.
-		        : To back out of a menu, select 0.
-		        : To exit, select q.
-		Examples: 0. $PRG         # direct to database selection
-		        : 1. $PRG Users   # open db Userss, then to table selection.
-		        : 2. $PRG Users users fields # open table Users:user and show fields. 
-		        : 3. $PRG -p /root/my3.cnf   # open mysql with profile. 
-		Requires: mysql-cli
+	Script  : $PRG
+	Version : $(version.set)
+	Desc    : MySQL helper script to quickly view data/structure/info, 
+	        : without a lot of typing long sql commands. Fast in, fast out.
+	Synopsis: $PRG [database [table [command]]] [-p profile] [-V] [-h]
+	        :   -p|--profile  Specify mysql profile [eg, /root/.my3.cnf].
+	        :   -V|--version  Print version.
+	        :   -h|--help     This help.
+	        : To back out of a menu, select 0.
+	        : To exit, select q.
+	Examples: # 0. go direct to database selection menu.
+	        : $PRG
+	        : # 1. open db Users, then to table selection.
+	        : $PRG Users
+	        : # 2. open table Users:user and show fields.
+	        : $PRG Users users fields 
+	        : # 3. open mysql with profile, open Essays:essays 
+	        : $PRG -p /root/my3.cnf Essays essays
 	usage
 }
 

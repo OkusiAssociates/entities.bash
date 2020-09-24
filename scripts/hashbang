@@ -4,14 +4,14 @@ source entities || exit 2
 
 	if [[ -z "${hb_EXCLUDE[@]:-}" ]]; then
 		declare -ax hb_EXCLUDE
-		hb_EXCLUDE=( '~' '.gudang' 'gudang' '.old' '.bak' 'dev/' '.png' '.jpg' '.mp' '.iso' )
+		hb_EXCLUDE=( '~' '.gudang' 'gudang' '.old' '.bak' 'dev/' '.png' '.jpg' '.mp[34]' '.iso' )
 	fi
 
 	declare -i hb_MAX_FILESIZE
 	hb_MAX_FILESIZE=${hb_MAX_FILESIZE:- 30000}
 
 hashbang_main() {
-	version.set '0.93'
+	version.set '0.97'
 	local dir='' search='' hashbang='bash' prefix='' suffix='' LF=$'\n' padfix=' '
 	local -a gcmd=()
 	local -i ccc=0 hbExclude=0 maxdepth=5
@@ -55,6 +55,7 @@ hashbang_main() {
 	
 	[[ -z "${dir}" ]] 			&& dir='.'
 	[[ -z "${gcmd[@]:-}" ]]	|| gcmd+=( '-l' )
+	# shellcheck disable=SC2154
 	((_ent_VERBOSE))				|| gcmd+=( '-s' )
 	
 	# report
@@ -134,29 +135,39 @@ usage() {
 	cat <<-ETX
 	Script  : hashbang
 	Version : $(version.set)
-	Desc    : Search directory recursively for files with #!/bin/bash header.
-	Synopsis: hashbang ["dir"]             Directory to start search ('.')
-	        :   [-s|--search "str"]        String to find in found files.
-	        :   [-b|--hashbang bash|php]   File type to search for ($hashbang)
-	        :   [-X|--hb-exclude]          Exclude using hb_EXCLUDE array.
-	        :   [-Y|--no-hb-exclude]       Do not use hb-exclude.
-	        :   [-e|--exclude 'expr']      Add 'expr' to hb_EXCLUDE. Enables -X.
-	        :   [-f|--padfix "str"]        Spacer for pre/suffix (' '). For no spacer: -f ''
-	        :   [-p|--prefix "prefix"]     Prefix found files with "prefix".
-	        :   [-x|--suffix "suffix"]     Suffix found files with "suffix".
-	        :   [-l|--nolf]                Do not emit LF.
-	        :   [-v|--verbose]             Verbose (default).
-	        :   [-D|--debug]               Increase verbosity. Enables -v.
-	        :   [-q|--quiet]               Just the facts, mam. Disables -v -D.
-	        :   [--|--grep]                Pass all remaining parameters to grep.
+	Desc    : Used 'find' and 'grep' to search directory recursively for 
+	        : files identified as bash scripts, ignoring all other files.
+	        : Identification is by filename extension, a hashbang 
+	        : containing '/bash', or by result from 'file' command.
+	Synopsis: hashbang ["dir"] [-s str] [-b php|php] [-X][-Y][-e]
+	        :          [-p str][-x str][-f str] [-l] [-v][-q] [--] 
+	        :   dir                    Directory to start search (def. '.')
+	        :   -s|--search "str"      String to find in found files.
+	        :   -b|--hashbang bash|php File type to search (def. $hashbang)
+	        :   -X|--hb-exclude        Exclude using envvar hb_EXCLUDE.
+	        :   -Y|--no-hb-exclude     Do not use hb-exclude.
+	        :   -e|--exclude 'expr'    Add 'expr' to hb_EXCLUDE. Enables -X; 
+	        :                          re-disable with -Y.
+	        :   -f|--padfix "str"      Spacer for pre/suffix (def. ' '). 
+	        :                          For no spacer: -f ''
+	        :   -p|--prefix "prefix"   Prefix found files with "prefix".
+	        :   -x|--suffix "suffix"   Suffix found files with "suffix".
+	        :   -l|--nolf              No line feed at end of filename.
+	        :   -v|--verbose           Verbose (default). Enable messages.
+	        :   -D|--debug             Increase verbosity. Enables -v.
+	        :   -q|--quiet             No messages. Disables -v -D.
+	        :   --|--grep              Pass remaining parameters to grep.
 	        : Note: All non-hashbang options are passed onto grep.
 	 Example: # 0. print bash script filenames
 	        : hashbang                   
-	        : # 1. print bash filenames matching pattern
-	        : hashbang . -s '^whereisit' 
-	        : # 2. print bash filenames containing string 'varname'
-	        : #    in format "p filename -s"
-	        : hashbang . -s 'some_var_name' -p 'p' -x '-s' >editfiles
+	        : # 1. print bash filenames for string matching pattern
+	        : #    ^whereisit
+	        : hashbang -s '^whereisit' 
+	        : # 2. print bash filenames containing string 'varname' in format 
+	        :      "p {filename} -s". Useful for generating temporary scripts.
+	        :      In this case, I wish to edit {filename} (using the entities 
+	        :      'p' editor) with shellcheck enabled.
+	        : hashbang -s 'some_var_name' -p 'p' -x '-s' >editfiles
 	ETX
 }
 

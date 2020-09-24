@@ -40,7 +40,7 @@ main() {
 	(( ${#cmd[@]} == 1 )) || { usage; return 0; }
 
 	file="$(readlink -f "${cmd[0]}")"
-	[[ -f $file ]] || file=$(readlink -f $(which ${cmd[0]}))
+	[[ -f $file ]] || file="$(readlink -f "$(which "${cmd[0]:-}")")"
 	
 	if [[ ! -f "${file}" ]]; then
 		if [[ -f "${file}.php" ]]; then
@@ -71,6 +71,7 @@ main() {
 		fi
 	fi
 
+	# shellcheck disable=2046
 	$EDITOR $( ((line)) && echo "+${line}" ) "$file"
 
 	if [[ "${ftype}" == 'php' ]]; then
@@ -97,7 +98,8 @@ main() {
 
 	if ((syntaxerr)); then
 		if ask.yn "Re-edit $file [$line]?"; then
-			$PRGDIR/$PRG "$file" --line $line $( ((execute)) && echo '-x' )
+			# shellcheck disable=SC2046
+			"$PRGDIR/$PRG" "$file" --line "$line" $( ((execute)) && echo '-x' )
 			exit
 		fi
 	fi
@@ -111,6 +113,7 @@ main() {
 				scdisable=${scdisable//,/ }
 				scdisable="--exclude ${scdisable// /,}"
 			fi
+			# shellcheck disable=SC2086
 			$(which shellcheck) --shell=bash ${scdisable} "$file"
 		fi
 	fi
@@ -137,16 +140,16 @@ cleanup() {
 usage() {
 	cat >&2 <<-usage
 		Script  : $PRG
-		Desc    : Script programmers Edit/syntax-check wrapper for 
-		        : bash/php files.
-		        : Bash/php scripts without .sh/.bash/php extentions 
+		Desc    : Edit/Syntax-Check/ShellCheck/Execute wrapper for 
+		        : bash (and php) files.
+		        : Bash/php scripts without .sh/.bash/.php extentions 
 		        : are autodetected from the header.
-		        : Uses EDITOR=[$EDITOR].
-		Synopsis: $PRG filename[{.sh,.bash,php}] [-l|--line rownum || +rownum] [-x]
-		        :   -l|--line n  position at row n on entry to editor.
-		        :   +n           position at row n on entry to editor.
-		        :   -s           execute shellcheck for bash scripts after editing.
-		        :   -x           execute script after editting (asks first).
+		        : Uses envvar EDITOR ([$EDITOR])
+		Synopsis: $PRG filename{.sh|.bash|php} [-l row] [-s] [-x]
+		        :   -l row  position at row n on entry to editor.
+		        :   +n      position at row n on entry to editor.
+		        :   -s      execute shellcheck after editing.
+		        :   -x      execute script after editting (asks first).
 	usage
 	return 0
 }
