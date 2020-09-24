@@ -22,13 +22,15 @@ usage() {
 	        :   -c|--apt-clean    after external dependencies are installed
 	        :                     perform apt autoremove and apt clean.
 	        :   -l|--mlocate      update mlocate database. (This could take
-	        :                     some time if it has never been invoked.)
+	        :                     some time.)
 	        :   -p|--prod         make new build of help files and increment 
 	        :                     version build numbers (for developers).
-	        :   -v|--verbose      turn message verbose on.
-	        :   -q|--quiet        turn message verbose off.
+	        :   -v|--verbose      turn message verbose on. Default on.
+	        :   -q|--quiet        turn message verbose off. Default off.
 	        :   -V|--version      print entities.bash version.
 	        :   -h|--help         print help message.
+	Examples: 0. $PRG -y          # just install it.
+	        : 1. $PRG -y -u -c -l # do everything.
 	etx
 	((EUID)) && echo >&2 "        : Current user is [${EUID:-} ${USER:-}]"
 	exit "${1:-0}"
@@ -258,19 +260,22 @@ install() {
 	mkdir -p "$ENTITIES" || exit $?
 	[[ -d "$ENTITIES" ]] || exit $?
 
-	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.bash 			"$ENTITIES/" >/dev/null || exit 1
-	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.bash.min  "$ENTITIES/" >/dev/null || exit 1
-	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.help      "$ENTITIES/" >/dev/null || exit 1
-	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.help.make "$ENTITIES/" >/dev/null || exit 1
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.bash 			"$ENTITIES/" >/dev/null || exit $?
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.bash.min  "$ENTITIES/" >/dev/null || exit $?
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.help      "$ENTITIES/" >/dev/null || exit $?
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.help.make "$ENTITIES/" >/dev/null || exit $?
+
+	cp -p LICENSE  "$ENTITIES/" || exit $?
+	cp -p README.* "$ENTITIES/" || exit $?
 
 	mkdir -p "$ENTITIES/entities.d"
-	/usr/bin/rsync -al --exclude-from "$SyncExclude" entities.d/*				"$ENTITIES/entities.d/" || exit 1
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" entities.d/*				"$ENTITIES/entities.d/" || exit $?
 
 	mkdir -p "$ENTITIES/scripts"
-	/usr/bin/rsync -al --exclude-from "$SyncExclude" scripts/*					"$ENTITIES/scripts/" || exit 1
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" scripts/*					"$ENTITIES/scripts/" || exit $?
 
 	mkdir -p "$ENTITIES/docs/help"
-	/usr/bin/rsync -al --exclude-from "$SyncExclude" docs/*							"$ENTITIES/docs/" || exit 1
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" docs/*							"$ENTITIES/docs/" || exit $?
 
 	# make symlinks in $ENTITIES directory
 	msg.info "Creating symlinks in [$ENTITIES] directory"
@@ -283,9 +288,9 @@ install() {
 	
 	# MAIN EXECUTABLE in /usr/local/bin/ || /usr/bin
 	if [[ -d /usr/local/bin ]]; then
-		ln -fs "$ENTITIES/entities.bash" /usr/local/bin/entities
+		ln -fs "$ENTITIES/entities.bash" /usr/local/bin/entities || exit $?
 	else
-		ln -fs "$ENTITIES/entities.bash" /usr/bin/entities
+		ln -fs "$ENTITIES/entities.bash" /usr/bin/entities || exit $?
 	fi
 
 	# symlink to bundled utility scripts
