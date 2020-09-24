@@ -109,7 +109,7 @@ hashbang_main() {
 			fi
 		fi
 	done
-	[[ -n ${LF} ]] && printf '\n'
+	[[ -n ${LF} ]] || printf '\n'
 	msg "# ${ccc} file$( ((ccc != 1)) && echo 's') found\n"
 	return 0
 }
