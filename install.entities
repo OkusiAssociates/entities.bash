@@ -369,7 +369,7 @@ make.syncexclude() {
 		*/tmp/*
 		tmp/*
 		tt
-		e.d
+		e.d/
 	EOT
 }
 

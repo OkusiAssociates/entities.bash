@@ -554,7 +554,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.461.12'
+_ent_VERSION='0.97.420.461.13'
 exit_if_already_running() {
 	(($#)) && _ent_LOCKTIMEOUT="$1"
 	local lockfile="/run/lock/${PRG}.lock"
