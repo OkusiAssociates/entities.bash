@@ -33,7 +33,9 @@ post_slug() {
 }
 
 #X Function: remove_accents
-#X Synopsis; {str}=$(remove_accents {rawstr})
+#X Desc    : Transliterate non-ASCII characters to an ASCII 
+#X         : near-equivalent. Uses iconv.
+#X Synopsis: remove_accents "string"
 remove_accents() {
 	echo -n "${1:-}" | iconv -c -f UTF-8 -t ASCII//TRANSLIT//IGNORE
 }
