@@ -10,12 +10,5 @@
           : source entities.bash new
           :       # ^ load new instance of entities.bash;
           :       # do not use any existing instance already loaded.
-          : source entities.bash load libname
-          :       # ^ load an additional library of bash scripts
-          : source entities.bash no-load libname
-          :       # ^ infers new, libname is not loaded with entities.bash
-          : source entities.bash load-to newdir
-          :       # ^ load into new dir (eg, /run/entities) and
-          :       # set ENTITIES globalvar to new position.
     Source: /usr/share/okusi/entities/entities.bash
 #---Global--PRG---------------------------------------------------------------

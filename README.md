@@ -1,9 +1,9 @@
-##### Version [0.97.420.461.15]
-# `entities.bash` Environment and Function Library
+##### Version [0.97.420.461.17]
+# `entities.bash` Environment/Function Library
 
-`entities.bash` is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 20.04` or higher.
+`entities.bash` is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 18.04` or higher.
 
-The basic philosophy is to be simple, unobtrusive and as flexible as possible, with minimal dependencies, while providing standard funcionality across an environment.
+The basic philosophy is to be simple, unobtrusive and as flexible as possible, with minimal dependencies, while providing a standard functionality across an entire network environment.
 
 #### `entities.bash` requires:
 
@@ -25,18 +25,19 @@ Once loaded into the environment `entities` can be invoked without reloading the
 
 If `entities` is already loaded at the time a script is run, it is not loaded again, greatly speeding up load and execution time for downstream scripts that also use `entities` library functions.
 
-Here are just a few of the functions and globals that I commonly use in my scripts:
+#### Functions
 
-  * `PRG`     # global var, fq basename of current script name.
-  * `PRGDIR`  # global var, fq path for current script directory.
-  * `msg{.info|.err|.warn|.crit|.die} [log] message`
-  * `verbose.set [[on|1] | [off|0]]`
-  * `color.set [[on|1] | [off|0]]`
-  * `strict.set [[on|1] | [off|0]]`
-  * `trap.set [[on|1] | [off|0]]`
-  * `trim {strval}`
+Here are some of the functions:
+
+`addslashes` `ask.yn` `calcfp` `check.dependencies` `cleanup` `clntempfiles` `color` `color.set` `debug` `debug.set` `dequote` `dryrun` `dryrun.set` `editorsyntaxstring` `elipstr` `entities.location` `exit_if_already_running` `exit_if_not_root` `explode` `hr2int` `implode` `int2hr` `is.interactive` `is.number` `is.root` `is.tty` `ltrim` `mktempfile` `msg` `msg.crit` `msg.debug` `msg.die` `msg.err` `msg.info` `msg.line` `msg.prefix.separator.set` `msg.prefix.set` `msg.sys` `msg.warn` `onoff` `pause` `payload_decode` `payload_encode` `perrno` `post_slug` `remove_accents` `remsp2` `rtfm` `rtrim` `s` `slog` `slog.file` `slog.prefix` `slog.prefix.eval` `slog.truncate` `str_str` `strict` `strict.set` `tab.set` `tab.width` `textfiletype` `tmpdir.set` `trap.breakp` `trap.function` `trap.set` `trim` `urldecode` `urlencode` `urlpayload_encode` `verbose` `verbose.set` `version` `version.set`
 
 `entities.bash` can be easily extended with new functions.
+
+#### Examples
+
+See the scripts in scripts/*.
+
+#### Help
 
 See `entities help` for full documentation.
 
@@ -46,4 +47,5 @@ Are you a bash programmer? If you would like to assist with this project, go to 
 
     http://github.com/OkusiAssociates/entities.bash
 
+For bugs/features/reports/requests, send to `garydean@linux.id`
 

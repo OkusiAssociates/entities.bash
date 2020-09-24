@@ -1,5 +1,7 @@
 #!/bin/bash
-# global shellcheck disables used by 'p' editor
+
+# global shellcheck disables used by 'p' editor 
+#(remove leading '# ' to enable this)
 # #! shellcheck disable=SC2035,SC2154,SC1090
 
 # entities.bash - Bash programming environment and library
@@ -22,24 +24,17 @@
 # https://okusiassociates.com
 # https://github.com/OkusiAssociates/entities.bash
 
-# Bash only
-#libfunc1() { ...; }
-#libfunc2() { ...; }
-#sourced() { [[ ${FUNCNAME[1]} = source ]]; }
-#sourced && return
-
-# process command line arguments, etc.
-#X About    : entities.bash
-#X Desc     : Entities Functions/Globals/Local Declarations and Initialisations.
-#X          : entities.bash is a light-weight Bash function library for systems
-#X          : programmers and administrators.
-#X          : _ent_LOADED is set if entities.bash has been successfully loaded.
-#X          : PRG=basename of current script. 
-#X          : PRGDIR=directory location of current script, with softlinks 
-#X          : resolved to actual location.
-#X          : PRG/PRGDIR are *always* initialised as local vars regardless of 
-#X          : 'inherit' status when loading entities.bash.
-#X Depends  : basename dirname readlink mkdir ln cat systemd-cat stty
+#X About   : entities.bash
+#X Desc    : Entities Functions/Globals/Local Declarations and Initialisations.
+#X         : entities.bash is a light-weight Bash function library for systems
+#X         : programmers and administrators.
+#X         : _ent_LOADED is set if entities.bash has been successfully loaded.
+#X         : PRG=basename of current script. 
+#X         : PRGDIR=directory location of current script, with softlinks 
+#X         : resolved to actual location.
+#X         : PRG/PRGDIR are *always* initialised as local vars regardless of 
+#X         : 'inherit' status when loading entities.bash.
+#X Depends : basename dirname readlink mkdir ln cat systemd-cat stty
 
 #X Global   : PRG PRGDIR 
 #X Desc     : PRG and PRGDIR are initialised every time entities.bash is
@@ -52,13 +47,6 @@
 #X          : source entities.bash new 
 #X          :       # ^ load new instance of entities.bash; 
 #X          :       # do not use any existing instance already loaded.
-#X          : source entities.bash load libname
-#X          :       # ^ load an additional library of bash scripts 
-#X          : source entities.bash no-load libname
-#X          :       # ^ infers new, libname is not loaded with entities.bash 
-#X          : source entities.bash load-to newdir
-#X          :       # ^ load into new dir (eg, /run/entities) and
-#X          :       # set ENTITIES globalvar to new position. 
 declare -- PRG PRGDIR 
 
 declare -x _ent_scriptstatus="\$0=$0|"
@@ -134,8 +122,10 @@ declare -x _ent_scriptstatus="\$0=$0|"
 
 #X Global  : _ent_LOADED
 #X Desc    : _ent_LOADED global flags whether entities.bash has 
-#X         : already been loaded or not.  If it has, then exit straight away.
-#X Example : (( ${_ent_LOADED:-0} )) || { echo >&2 'entities.bash not loaded!'; exit; }
+#X         : already been loaded or not. If it has, then it exit 
+#X         : straight away.
+#X Example : (( ${_ent_LOADED:-0} )) \
+#X         :     || { echo >&2 'entities.bash not loaded!'; exit; }
 ((_ent_LOADED)) && return 0;
 
 _ent_scriptstatus+="reloading|"
@@ -147,15 +137,15 @@ set +o errexit +o nounset +o pipefail
 shopt -s extglob
 shopt -s globstar
 
-#X Global   : CH9 LF CR OLDIFS IFS
-#X Desc     : Constant global char values.
-#X          : NOTE: IFS is 'normalised' on every full execution of entities.
-#X          :       OLDIFS retains the existing IFS
-#X Synopsis : LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n' 
-#X Defaults : OLDIFS=$IFS     # captures existing IFS before assigning 'standard' IFS
-#X          : IFS=$' \\t\\n'  # 'standard' IFS
-#X Example  : str = "${LF}${CH9}This is a wrapping string.${LF}{$CH9}This is another sentence."
-#X          : echo -e "$str"
+#X Global  : CH9 LF CR OLDIFS IFS
+#X Desc    : Constant global char values.
+#X         : NOTE: IFS is 'normalised' on every 'new' execution of 
+#X         :       entities. OLDIFS retains the existing IFS.
+#X Synopsis: LF=$'\n' CR=$'\r' CH9=$'\t' OLDIFS="$IFS" IFS=$' \t\n' 
+#X Defaults: OLDIFS=$IFS     # captures existing IFS before assigning 'standard' IFS
+#X         : IFS=$' \\t\\n'  # standard IFS
+#X Example : str = "${LF}${CH9}This is a wrapping string.${LF}{$CH9}This is another sentence."
+#X         : echo -e "$str"
 declare -x	LF=$'\n' CR=$'\r' CH9=$'\t'
 declare -x	OLDIFS="$IFS" IFS=$' \t\n'
 declare -nx	OIFS="OLDIFS"
@@ -178,12 +168,13 @@ onoff() {
 declare -fx onoff
 
 #X Function : verbose.set 
-#X Desc     : Set global verbose status. For shell terminal verbose ON by default,
-#X          : otherwise, called from another script, verbose is OFF by default.
+#X Desc     : Set global verbose status for msg* functions. For shell 
+#X          : terminal verbose is ON by default, otherwise, when called 
+#X          : from another script, verbose is OFF by default.
 #X          : verbose.set() status is used in the ask.yn() and some msg.*() 
 #X          : commands, except msg.sys(), msg.die() and msg.crit(), which will 
-#X          : always ignore verbose status.
-#X Synopsis : verbose.set [ON|1] | [OFF|0]
+#X          : always ignore verbose status and output to STDERR.
+#X Synopsis : verbose.set [on|1] | [off|0]
 #X          : curstatus=$(verbose.set)      
 #X Example  : 
 #X          : oldverbose=$(verbose.set)
@@ -346,6 +337,7 @@ declare -fx 'strict.set'
 #X Function : msg
 #X Desc     : if verbose.set is enabled, send strings to output.
 #X          : embedded chars (\n \t etc) enabled by default.
+#X          : Tabs and prefixes (if set) are printed with the string.
 #X Synopsis : msg [-n] {str} [[-n] {str} ...]
 #X          : -n  suppress line feed, applied separately to each 
 #X          :     string argument
@@ -363,14 +355,14 @@ msg.debug() {
 }
 declare -fx 'msg.debug'
 
-#X Function : __msgx
-#X Desc     : output string to terminal with color.
-#X          : embedded chars (\n \t etc) enabled by default.
-#X Synopsis : __msgx log msglevel verbose [string ...]
-#X          : msglevel is one of:
-#X          :    reset debug info notice warning error
-#X          :    critical alert emergency
-#X Example  : __msgx log info 1 "hello world!" "it's so nice to be black!"
+# Function : __msgx
+# Desc     : output string to terminal with color.
+#          : embedded chars (\n \t etc) enabled by default.
+# Synopsis : __msgx log msglevel verbose [string ...]
+#          : msglevel is one of:
+#          :    reset debug info notice warning error
+#          :    critical alert emergency
+# Example  : __msgx log info 1 "hello world!" "it's so nice to be black!"
 __msgx() {
 	local log="$1" msglevel="$2" verbose="$3"
 	shift 3
@@ -449,8 +441,6 @@ msg.err() {
 	return 0
 }
 declare -fx 'msg.err'
-	alias msgerr='msg.err'	#X lecacy X#
-	alias errmsg='msg.err'	#X legacy X#
 
 #X Function : msg.die
 #X Desc     : output an error message, with option to write to systemd journal.

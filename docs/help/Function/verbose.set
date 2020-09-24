@@ -1,11 +1,12 @@
 #-Function--verbose.set
   Function: verbose.set
-      Desc: Set global verbose status. For shell terminal verbose ON by default,
-          : otherwise, called from another script, verbose is OFF by default.
+      Desc: Set global verbose status for msg* functions. For shell
+          : terminal verbose is ON by default, otherwise, when called
+          : from another script, verbose is OFF by default.
           : verbose.set() status is used in the ask.yn() and some msg.*()
           : commands, except msg.sys(), msg.die() and msg.crit(), which will
-          : always ignore verbose status.
-  Synopsis: verbose.set [ON|1] | [OFF|0]
+          : always ignore verbose status and output to STDERR.
+  Synopsis: verbose.set [on|1] | [off|0]
           : curstatus=$(verbose.set)
           : oldverbose=$(verbose.set)
           : verbose.set on

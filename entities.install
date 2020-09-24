@@ -1,0 +1,417 @@
+#!/bin/bash
+	declare _u
+	_u=$(cat /etc/issue)
+	[[ "${_u:0:12}" < 'Ubuntu 16.04' ]] \
+			&& msg.die 'entities.bash requires Ubuntu 16.04 or higher.'
+	unset _u
+usage() {
+	local v
+	v="$(dirname "$(readlink "$0")")/entities.d/entities.version.bash"
+	# shellcheck disable=2015
+	[[ -f "$v" ]] && source "$v" 2>/dev/null || true	# yes, this is deliberate
+	cat <<-etx
+	Script  : $(basename "$0")
+	Version : ${_ent_VERSION:-Not Found}
+	Desc    : entities.bash installation program.
+	        : Requires root to install.
+	Synopsis: $(basename "$0") [-y] [-i] [-u] [-c] [-a] [-p] [-v|-q] [-V] [-h]
+	        :   -y|--auto         install without prompting.
+	        :   -i|--install      install with prompt.
+	        :   -u|--apt-upgrade  before external dependencies are installed
+	        :                     perform apt upgrade.
+	        :   -c|--apt-clean    after external dependencies are installed
+	        :                     perform apt autoremove and apt clean.
+	        :   -l|--mlocate      update mlocate database. (This could take
+	        :                     some time.)
+	        :   -p|--prod         make new build of help files and increment 
+	        :                     version build numbers (for developers).
+	        :   -v|--verbose      turn message verbose on. Default on.
+	        :   -q|--quiet        turn message verbose off. Default off.
+	        :   -V|--version      print entities.bash version.
+	        :   -h|--help         print help message.
+	Examples: 0. $PRG -y          # just install it.
+	        : 1. $PRG -y -u -c -l # do everything.
+	etx
+	((EUID)) && echo >&2 "        : Current user is [${EUID:-} ${USER:-}]"
+	exit "${1:-0}"
+}
+	# cries for help.
+	[[ "$@" == '' || "$@" == *"--help"* || "$@" == *"/?"* || "$@" == *-h* ]] && usage 0
+	# not root say bye
+	[[ "${USER:-}" == 'root' || $EUID == 0 ]] || usage 1
+
+	declare -ix MajorVer=1 MinorVer=0
+
+	declare -i production=0
+	declare -i autoinstall=0
+	declare -i install=0
+	declare -i AptUpgrade=0 AptClean=0 MLocate=0
+	declare canonical
+	
+	declare etc_profile_d='/etc/profile.d/entities.env.sh'
+
+	# make absolutely certain we have identified the canonical entities.bash script
+	PRG="$(basename "$(/bin/readlink -f "${0:-}")")"
+	PRGDIR="$(/usr/bin/dirname "$(/bin/readlink -f "${0:-}")")"
+	if [[ -f "$PRGDIR/entities.bash" ]]; then	# located in the same directory as this script.
+		canonical="$PRGDIR/entities.bash"
+	else
+		echo >&2 "$PRG: Could not find entities.bash in the [$PRGDIR] directory."
+		echo >&2 "$PRG: Check that it has been installed properly."
+		exit 2
+	fi	
+	OPRG=$PRG; OPRGDIR=$PRGDIR
+	
+	OENTITIES=${ENTITIES:-}; ENTITIES=$PRGDIR 
+	source "$canonical" new || { echo >&2 "$PRG: Could not open [$canonical]!"; exit 2; }
+	ENTITIES=$OENTITIES;
+	PRG=$OPRG; PRGDIR=$OPRGDIR
+
+	# ==========================================================================
+	# let's start
+	strict.set off
+	verbose.set on
+	debug.set off
+	trap.set on
+	msg.prefix.set 'entities.bash'
+	cd "$PRGDIR" || msg.die "Could not change into directory [$PRGDIR]"
+
+	# set ENTITIES as the destination (production) directory
+	# 	ENTITIES in this case is the destination directory for the install
+	ENTITIES='/lib/include/entities'
+	mkdir -p "$ENTITIES" || exit 2
+	
+	# are we trying to install into the install directory?
+	[[ $ENTITIES == "$PRGDIR" ]] &&	msg.die 'Cannot install over installation directory!'
+
+	declare env_entities
+	# shellcheck disable=SC2154
+	env_entities="$(cat <<-eot
+	
+			#X entities.bash begin
+			#X entities $_ent_VERSION
+			#X   * export ENTITIES='${ENTITIES}'
+			#X Installed by $(readlink -f "$0")
+			#X   on $(date +'%F %T').420 by ${USER:-}@${HOSTNAME}
+			#X https://github.com/OkusiAssociates/entities.bash
+			ENTITIES="${ENTITIES}"
+			export ENTITIES
+			#X entities.bash end
+
+		eot
+		)"
+
+	# Exclusions for rsync
+	declare -a exclude=( 't' 'tt' '*~' '*.bak' '*.old' 'gudang/' '.gudang/' '*.zip' 'dev/' 'test/' 'tmp/' 'temp/' )
+	declare SyncExclude="/tmp/$PRG-exclusions-$RANDOM"
+	>"$SyncExclude"
+	declare _l; for _l in "${exclude[@]}"; do	echo "${_l}"; done >>"$SyncExclude"; unset _l
+			
+main() {
+	declare _verfile="$PRGDIR/entities.d/entities.version.bash"
+	source "$_verfile" || msg.die "Could not source [$_verfile]"
+	while (( $# )); do
+		case "$1" in
+			--dev|-p|--prod*)	production=1;;
+			-y|--auto)				autoinstall=1; install=1;;
+			-i|--install)			install=1;;
+			-u|--apt-upgrade)	AptUpgrade=1;;
+			-c|--apt-clean)		AptClean=1;;
+			-l|--mlocate)			MLocate=1;;
+			-v|--verbose)			verbose.set on;;
+			-q|--quiet)				verbose.set off;;
+			-V|--version)			echo "$PRG ${_ent_VERSION}"; return 0;;
+			-h|--help)				usage 0;;
+			*)								msg.die "Bad command argument [$1]";;
+		esac
+		shift
+	done
+	(( ! install )) && usage 1 
+	
+	msg.info "Installation directory is [$canonical]"
+	msg.info "entities.bash shall be installed to [$ENTITIES]."
+	if [[ -f "$ENTITIES/entities.bash" ]]; then
+		msg.warn "entities.bash is already installed at [$ENTITIES]."
+		msg.warn "Backup will be at [$ENTITIES/entities.bash.old]."
+	fi
+	
+	if (( ! autoinstall)); then
+		infotext
+		ask.yn 'Install with these settings?' \
+				|| { echo; return 0; }
+		msg 'Installing entities.bash'
+	fi
+
+	if ((production)); then
+		msg.info "Creating Help Files"
+		"$PRGDIR/entities.help.make" --auto	|| msg.die "[$PRGDIR/entities.help.make] failed!"
+		# make new version file
+		[[ -z ${_ent_VERSION:-} ]] && msg.die "Version has not been set. See [$_verfile]"
+		declare -ia _arr
+		_arr=( ${_ent_VERSION//./ } )
+		declare -i _dayssince
+		_dayssince=$(( ($(date +%s) - $(date +%s -d '2019-06-21')) / (60*60*24) ))
+		_arr[2]=420
+		(( _arr[3] == _dayssince )) || { _arr[3]=${_dayssince}; _arr[4]=0; } 
+		_arr[4]+=1
+		_p=${_arr[*]}
+		cat >"$_verfile" <<-etx
+			#!$(which bash)
+			#X Global   : _ent_VERSION 
+			#X Desc     : Return version/build of this entities.bash.
+			#X          : Returns string in form:
+			#X          :   majorver.minorver.420.day0.build
+			#X          : Where:
+			#X          :   majorver  ${MajorVer}
+			#X          :   minorver  ${MinorVer}
+			#X          :   420       constant
+			#X          :   day0      days since 2019-06-21 ($_dayssince)
+			#X          :   build     this is build #${_arr[4]} on day $_dayssince
+			#X          : This is entities.bash version ${_p// /.}
+			declare -xg _ent_VERSION
+			_ent_VERSION='${_p// /.}'
+			#fin
+		etx
+		source "$_verfile" || exit 2
+		unset _verfile _arr _dayssince
+	fi
+
+	"$PRGDIR/entities.make.minimal" --no-prompt \
+			|| msg.die "[$PRGDIR/entities.make.minimal] failed!"
+
+	makeprofile
+
+	makeenvirnonment
+
+	install
+	
+	install_externals || true
+
+	testit
+
+	msg.line '-'
+	msg "entities.bash [${_ent_VERSION}] has been installed." \
+			'Exit from this bash session and then re-enter.' \
+			'To activate entities.bash environment enter:' \
+			'    source entities new' \
+			'For help:' \
+			'    entities help ' \
+			'Repository:' \
+			'    https://github.com/OkusiAssociates/entities.bash'
+	rm -f "$SyncExclude"
+}
+
+makeprofile() {
+	msg.info "Creating [${etc_profile_d}]"
+	mkdir -p "$(dirname "$etc_profile_d")" || msg.die "Could not create [$(dirname "$etc_profile_d")]"
+	echo -e "${env_entities}"	> "$etc_profile_d"			
+	chmod 644 "$etc_profile_d" 				|| msg.die "Could not chmod 644 [$etc_profile_d]"
+	chown root:root "$etc_profile_d"	|| msg.die "Could not chown [$etc_profile_d]"
+}
+
+# Dep: /etc/environment cat
+makeenvirnonment() {
+	envfile=/etc/environment
+	msg.info "Modifying [$envfile]"
+	tmpfile="$(mktemp --tmpdir 'ent-XXXX')"
+	grep -v '^[[:blank:]]*ENTITIES=' "$envfile" >"$tmpfile" || true
+	echo "ENTITIES=\"$ENTITIES\"" >> "$tmpfile" 
+	cp -p "$envfile" "${envfile}~"	|| msg.die "Could not backup [$envfile] to [${envfile}~]"
+	chown root:root "$tmpfile"			|| msg.die "[$tmpfile] chown error!"
+	chmod 644 "$tmpfile" 						|| msg.die "[$tmpfile] chmod error!"
+	mv "$tmpfile" "$envfile"
+}
+
+
+infotext() {
+	tab.set ++
+	msg \
+		"This entities.bash installation script shall do the following: " \
+		"  * Copy all script files to directory [$ENTITIES]" \
+		"  * Add path [$ENTITIES] to [$etc_profile_d]" 		\
+		"  * Add path [$ENTITIES] to [/etc/environment]" \
+		"ENTITIES=[$ENTITIES]" \
+		"PRG=[$PRG]" 					\
+		"PRGDIR=[$PRGDIR]"
+	tab.set --
+}
+
+# Dep: mkdir cd rsync find ln touch cp
+install() {
+	msg.info "Installing Entities to [${ENTITIES}]"
+
+	cd "$PRGDIR" || exit 2
+	
+	# do backup of existing $ENTITIES directory
+	msg.info "Backing up [$ENTITIES]"
+	if [[ -d "${ENTITIES}.old" ]]; then
+		if [[ -d "${ENTITIES}" ]]; then
+			msg.info "* Deleting [$ENTITIES.old]"
+			rm -rf "${ENTITIES}.old"	
+		fi
+	fi
+	if [[ -d "${ENTITIES}" ]]; then
+		msg.info "* Renaming [$ENTITIES] to [$ENTITIES.old]"
+		mv "${ENTITIES}" "${ENTITIES}.old" || { msg.err "$(errno $?)" "Could not move [${ENTITIES}] to [${ENTITIES}.old]"; return 1; }
+	fi
+
+	# start creating $ENTITIES
+	msg.info "Copying entities.bash files to [$ENTITIES]"
+	mkdir -p "$ENTITIES" || exit $?
+	[[ -d "$ENTITIES" ]] || exit $?
+
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.bash 			"$ENTITIES/" >/dev/null || exit $?
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.bash.min  "$ENTITIES/" >/dev/null || exit $?
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.help      "$ENTITIES/" >/dev/null || exit $?
+	/usr/bin/rsync -a  --exclude-from "$SyncExclude" entities.help.make "$ENTITIES/" >/dev/null || exit $?
+
+	cp -p LICENSE  "$ENTITIES/" || exit $?
+	( echo "##### Version [$_ent_VERSION]"
+		grep -iv '^#####[[:blank:]]version[[:blank:]]\[' README.md 
+	) > "$ENTITIES/README.md"
+	cp -p "$ENTITIES/README.md" README.md || exit $?	# yes, other way around; saves using a temp file
+
+	mkdir -p "$ENTITIES/entities.d"
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" entities.d/*				"$ENTITIES/entities.d/" || exit $?
+
+	mkdir -p "$ENTITIES/scripts"
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" scripts/*					"$ENTITIES/scripts/" || exit $?
+
+	mkdir -p "$ENTITIES/docs/help"
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" docs/*							"$ENTITIES/docs/" || exit $?
+
+	# make symlinks in $ENTITIES directory
+	msg.info "Creating symlinks in [$ENTITIES] directory"
+	cd "$ENTITIES" 																|| exit 2
+	# execute permissions on entities	
+	chmod 775 entities.bash entities.bash.min			|| exit $?
+	# in production, entities points to the min version
+	ln  -fs entities.bash.min entities				    || exit $?
+	ln  -fs entities.bash.min entities.min		    || exit $?
+	
+	# MAIN EXECUTABLE in /usr/local/bin/ || /usr/bin
+	if [[ -d /usr/local/bin ]]; then
+		ln -fs "$ENTITIES/entities.bash" /usr/local/bin/entities || exit $?
+	else
+		ln -fs "$ENTITIES/entities.bash" /usr/bin/entities || exit $?
+	fi
+
+	# symlink to bundled utility scripts
+	declare -a arr
+	declare -- s
+	arr=( $(find scripts/ -maxdepth 1 -executable -type f) )
+	for s in "${arr[@]}"; do 
+		s=$(basename "$s")
+		if [[ $HOSTNAME == 'okusi0' ]]; then
+			msg.info "Linking $PRGDIR/scripts/$s to /usr/local/bin/$s"
+			ln -fs "$PRGDIR/scripts/$s" "/usr/local/bin/$s"
+		else
+			msg.info "Linking $ENTITIES/scripts/$s to /usr/local/bin/$s"
+			ln -fs "$ENTITIES/scripts/$s" "/usr/local/bin/$s"
+		fi
+	done 
+	
+	# touch420 all files in $ENTITIES directory
+	msg.info "Change permissions in [$ENTITIES] directory"
+	cd "$ENTITIES" || exit 2
+	chown root:root ${ENTITIES}/* -R
+	declare IFS=$'\n'
+	for f in $(/usr/bin/find | grep -v ".g"); do 
+		if [[ -d "$f" ]]; then
+			chmod 775 "$f"
+		else 
+			chmod u+rw,g+rw,o+rw "$f"	#should this be 555?? ###
+		fi
+		fd=$(stat "$f" -c '%y');
+		fd=${fd%% *} 
+		/usr/bin/touch -h -d "$(date +'%F 04:20:00' -d "$fd")" "$f"
+	done
+
+	# back to base	
+	cd "$PRGDIR"
+}
+
+testit() {
+		# test it
+		cd "$ENTITIES" || { echo >&2 "wtf? Could not change to [$ENTITIES]"; return 1; } 
+		strict.set off
+		trap.set off
+		source entities.bash new || { echo >&2 "wtf?? Could not source [$PWD/entities.bash]"; return 1; }
+		trap.set on
+}
+
+make.syncexclude() {
+	cat >"$SyncExclude" <<-EOT
+		~*
+		.~*
+		*~
+		*.bak
+		*.c
+		dead.letter
+		DEADJOE
+		.*/DEADJOE
+		dev/
+		.git
+		.git/
+		.gitignore
+		.gudang/*
+		*/gudang/
+		gudang/
+		*.lock
+		*.log
+		old/
+		syncexclude
+		t
+		*/t/*
+		t1
+		t2
+		temp/*
+		*/tmp/*
+		tmp/*
+		tt
+		e.d/
+	EOT
+}
+
+install_externals() {
+	# update/upgrade
+	msg.info "Updating Installed Packages"
+	if ((AptUpgrade)); then
+		apt-get --yes  update 	|| msg.die 'Error updating packages.'
+		apt-get --yes  upgrade	|| msg.die 'Error upgrading packages.'
+	fi
+	
+	msg.info "Installing External Dependencies"
+	apt-get install --yes \
+			errno							\
+			git								\
+			gzip							\
+      hexedit           \
+      joe               \
+      lynx 							\
+			moreutils					\
+      nmap              \
+			shellcheck				\
+			tree							\
+      unzip 						\
+      w3m 			        \
+			wget              \
+      zip								\
+			||	msg.err "Error/s installing external dependencies."
+
+	if ((AptClean)); then
+		msg.info "Performing apt Cleanup"
+		apt-get --yes autoremove	|| true
+		apt-get --yes clean				|| true
+	fi
+	if ((MLocate)); then
+		msg.info "Updating mlocate Database"
+		updatedb || true
+	fi
+		
+	msg.info "All external packages installed."
+	return 0
+}
+
+main "$@"
+#fin
