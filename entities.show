@@ -1,0 +1,90 @@
+#!/bin/bash
+#X Function|Global|Local|Script: 
+#X Desc    : 
+#X Synopsis: 
+#X Options :
+#X Example : 
+#X Depends :
+#X See Also:
+source entities || exit 2
+	# shellcheck disable=2154
+	version.set "$_ent_VERSION"
+	verbose.set on
+	trap.set on
+	strict.set off
+	msg.prefix.set "$PRG"
+
+	declare -i ShowFuncs=0 ShowVars=0	
+	
+	declare -- nonentities="CH9 CLNTEMPFILES CR EDITOR IFS LF OLDIFS PRG PRGDIR TABSET TABWIDTH _slog_count _slog_file _slog_prefix color0 coloralert colorcrit colorcritical colordebug coloremerg colorerr colorerror colorinfo colornotice colorpanic colorreset colorwarn colorwarning perrnoListFile "
+
+main() {
+	local -a funcs=() vars=()
+	while (( $# )); do
+		case "$1" in
+			-f|--funcs)			ShowFuncs=1;;
+			+f|-+funcs)			ShowFuncs=0;;
+			-v|--vars)			ShowVars=1;;
+			+v|-+vars)			ShowVars=0;;
+			-V|--version)		version.set; echo; return 0;;
+			-h|--help)			usage; return 0;;
+			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
+			*)							msg.err "Invalid argument [$1]"; return 22;;
+		esac
+		shift
+	done
+	((ShowFuncs+ShowVars)) || { ShowFuncs=1; ShowVars=1; }	
+
+	if ((ShowFuncs)); then
+		funcs=( 
+			"$(env -i bash --norc -c \
+				"source $PRGDIR/entities.bash new;"'set |/bin/grep -v "=" |/bin/grep "^[a-zA-Z][a-zA-Z0-9_.]*[[:blank:]]*\(\)" | grep -v "^$"')"
+			)
+		( for f in "${funcs[@]}"; do
+			f=${f//()/}
+			echo "$f"
+		done ) | sort
+	fi
+	
+	if ((ShowVars)); then		
+		IFS=$'\n'
+		vars=( 
+			"$( env -i bash --norc -c "source $PRGDIR/entities.bash new; declare -p" )"
+			 )
+		# shellcheck disable=SC2068
+		( for v in ${vars[@]}; do
+			v=${v%%=*}
+			v=$(echo "$v" | cut -d' ' -f3)
+			if [[ $v == _ent_* ]]; then
+				echo "$v"
+			else
+				if [[ -n $v ]]; then
+					[[ "${nonentities}" == *"$v"* ]] && echo "$v"
+				fi
+			fi
+		done ) | sort
+	fi
+}
+
+# shellcheck disable=SC2086
+cleanup() {
+	local -i err=$?
+	[[ -z ${1:-} ]] && err=$1
+	((err > 1)) && errno $err
+	exit $err
+}
+
+usage() {
+	cat <<-usage
+		Script  : $PRG
+		Desc    : Show all entities.bash functions and variables.
+		Synopsis: $PRG [-f] [-v] [-V] [-h]
+		        :   -f|--funcs  Show entities functions
+		        :   -v|--vars   Show entities variables
+	          : If no options specified, show all.
+	usage
+	return 0
+}
+
+main "$@"
+#fin

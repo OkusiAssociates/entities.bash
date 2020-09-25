@@ -32,5 +32,5 @@ remsp2() {
 	fi
 	return $?
 }
-declare -nx remsp2
+declare -fx remsp2
 #fin

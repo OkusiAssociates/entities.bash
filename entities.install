@@ -37,6 +37,8 @@ usage() {
 	        : $PRG -y
 	        : # 1. Do everything.
 	        : $PRG -y -u -c -l
+	        : # 2. Do everything quietly.
+	        : $PRG -y -u -c -l -q
 	etx
 	((EUID)) && echo >&2 "        : Current user is [${EUID:-} ${USER:-}]"
 	exit "${1:-0}"

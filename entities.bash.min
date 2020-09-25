@@ -552,7 +552,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.462.3'
+_ent_VERSION='0.97.420.462.5'
 exit_if_already_running() {
 	return 0
 }
@@ -782,7 +782,7 @@ remsp2() {
 	fi
 	return $?
 }
-declare -nx remsp2
+declare -fx remsp2
 s() {	(( ${1} == 1 )) || echo -n 's'; }
 declare -fx s
 str_str() {
@@ -913,7 +913,7 @@ is.tty() {
 }
 declare -fx 'is.tty'
 	alias is_tty='is.tty'
-pause() { read -n1 -p "${1:-*Pause*}"; echo; }
+pause() { echo; read -n1 -p "${1:-*Pause*}"; echo; }
 declare -fx pause
 declare -x perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"
 perrno() {
