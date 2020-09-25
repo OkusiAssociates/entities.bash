@@ -133,13 +133,13 @@ usage() {
 	local PRG
 	PRG="$(basename "$0")"
 	cat <<-ETX
-	Script  : hashbang
+	Script  : $PRG
 	Version : $(version.set)
 	Desc    : Used 'find' and 'grep' to search directory recursively for 
 	        : files identified as bash scripts, ignoring all other files.
 	        : Identification is by filename extension, a hashbang 
 	        : containing '/bash', or by result from 'file' command.
-	Synopsis: hashbang ["dir"] [-s str] [-b php|php] [-X][-Y][-e]
+	Synopsis: $PRG ["dir"] [-s str] [-b php|php] [-X][-Y][-e]
 	        :          [-p str][-x str][-f str] [-l] [-v][-q] [--] 
 	        :   dir                    Directory to start search (def. '.')
 	        :   -s|--search "str"      String to find in found files.
@@ -158,15 +158,16 @@ usage() {
 	        :   -q|--quiet             No messages. Disables -v -D.
 	        :   --|--grep              Pass remaining parameters to grep.
 	        : Note: All non-hashbang options are passed onto grep.
-	 Example: # 0. print bash script filenames
-	        : hashbang                   
+	 Example: # 0. recursively find all qualified bash script filenames
+	        : $PRG                   
+	        : 
 	        : # 1. print bash filenames for string matching pattern
-	        : #    ^whereisit
 	        : hashbang -s '^whereisit' 
+	        : 
 	        : # 2. print bash filenames containing string 'varname' in format 
-	        :      "p {filename} -s". Useful for generating temporary scripts.
-	        :      In this case, I wish to edit {filename} (using the entities 
-	        :      'p' editor) with shellcheck enabled.
+	        : #    "p {filename} -s". Useful for generating temporary scripts.
+	        : #    In this case, I wish to edit {filename} (using the entities 
+	        : #    'p' editor) with shellcheck enabled.
 	        : hashbang -s 'some_var_name' -p 'p' -x '-s' >editfiles
 	ETX
 }
