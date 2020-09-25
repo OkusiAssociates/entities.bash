@@ -112,7 +112,7 @@ main() {
 	fi
 
 	bashfiles="$(find "$EntitiesDir/" -name "*.bash"  -not -name "_*" -type f \
-								| grep -v '/docs/' | grep -v '.gudang' | grep -v '.min.')"
+								| grep -v '/docs/\|.gudang\|.min\|/dev/')"
 	for file in ${bashfiles[@]}; do
 		msg.info "Searching [$file]..."
 		hlp="$(grep '^#X\+' "$file" | grep ':')"

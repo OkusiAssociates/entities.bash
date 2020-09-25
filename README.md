@@ -1,4 +1,4 @@
-##### Version [0.97.420.462.8]
+##### Version [0.97.420.462.10]
 # `entities.bash` Environment/Function Library
 
 `entities.bash` is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 18.04` or higher.
@@ -33,11 +33,13 @@ Here are some of the functions:
 
 `entities.bash` can be easily extended with new functions.
 
+#### Templates
+
+See docs/templates.
+
 #### Scripts
 
-##### Script   hashbang
-
-###### Desc     
+##### hashbang
 
 Search directory recursively for files with #!/bin/bash header.
 
@@ -55,9 +57,7 @@ hashbang ["dir"] [--search "str"]  [-e|--exclude 'str'] [-p|--prefix "prefix"] [
     #    in format "p filename -s"
     hashbang . -s 'some_var_name' -p 'p' -x '-s' >editfiles
 
-##### Script  : lsd
-
-###### Desc
+##### lsd
 
 Wrapper script for 'tree'. Display directory tree starting at {pathspec}.
 
@@ -65,17 +65,13 @@ Wrapper script for 'tree'. Display directory tree starting at {pathspec}.
 
 If not specified, {pathspec} defaults to current directory.
 
-##### Script  : p
-
-###### Desc
+##### p
 
 Script programmers Edit/syntax-check/shellcheck wrapper for bash/php files. Bash/php scripts without .sh/.bash/php extentions are autodetected from the header. Uses envvar EDITOR
 
 ###### Synopsis p filename[{.sh,.bash,.php}] [-l|--line rownum] [-x]
 
-##### Script  : sqlh
-
-###### Desc
+##### sqlh
 
 MySQL helper script to quickly view data/structure.
 

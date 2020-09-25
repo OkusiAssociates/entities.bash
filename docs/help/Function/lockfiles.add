@@ -1,7 +1,0 @@
-#-Function--lockfiles.add
-  Function: lockfiles.add
-      Desc: add a lock file to lockfiles stack
-  Synopsis: lockfiles.add [filename [timeout]] [filename timeout]...
-   Example: files=$(lockfiles.add)
-    Source: /usr/share/okusi/entities/entities.d/files/dev/lockfiles/lockfiles.bash
-#-Function--lockfiles.add-----------------------------------------------------
