@@ -101,13 +101,29 @@ main "$@"
 ````
 ### Scripts
 
-#### hashbang
+#### `p`
+
+Script programmers Edit/syntax-check/shellcheck wrapper for bash/php files. Bash/php scripts without .sh/.bash/php extentions are autodetected from the header. Uses envvar EDITOR and shellcheck.
+
+##### Synopsis `p filename[{.sh,.bash,.php}] [-l|--line rownum] [-x]`
+
+#### `sqlh`
+
+MySQL helper script to quickly view data/structure.
+
+##### Synopsis `sqlh [database [table [command]]] [-p profile] [-V] [-h]`
+
+##### Examples 
+    0. sqlh         # direct to database selection
+    1. sqlh Users   # open db Userss, then to table selection.
+    2. sqlh Users users fields # open table Users:user and show fields. 
+    3. sqlh -p /root/my3.cnf   # open mysql with profile. 
+
+#### `hashbang`
 
 Search directory recursively for files with #!/bin/bash header.
 
-##### Synopsis 
-
-hashbang ["dir"] [--search "str"]  [-e|--exclude 'str'] [-p|--prefix "prefix"] [-x|--suffix "suffix"] 
+##### Synopsis `hashbang ["dir"] [--search "str"]  [--exclude 'str'] [--prefix "prefix"] [--suffix "suffix"]` 
  
 ##### Example
  
@@ -119,31 +135,13 @@ hashbang ["dir"] [--search "str"]  [-e|--exclude 'str'] [-p|--prefix "prefix"] [
     #    in format "p filename -s"
     hashbang . -s 'some_var_name' -p 'p' -x '-s' >editfiles
 
-#### lsd
+#### `lsd`
 
 Wrapper script for 'tree'. Display directory tree starting at {pathspec}.
 
-##### Synopsis lsd [-ls] [--levels num] [--treeopts...] [pathspec ...] 
+##### Synopsis `lsd [-ls] [--levels num] [--treeopts...] [pathspec ...]`
 
 If not specified, {pathspec} defaults to current directory.
-
-#### p
-
-Script programmers Edit/syntax-check/shellcheck wrapper for bash/php files. Bash/php scripts without .sh/.bash/php extentions are autodetected from the header. Uses envvar EDITOR
-
-##### Synopsis p filename[{.sh,.bash,.php}] [-l|--line rownum] [-x]
-
-#### sqlh
-
-MySQL helper script to quickly view data/structure.
-
-##### Synopsis sqlh [database [table [command]]] [-p profile] [-V] [-h]
-
-##### Examples 
-    0. sqlh         # direct to database selection
-    1. sqlh Users   # open db Userss, then to table selection.
-    2. sqlh Users users fields # open table Users:user and show fields. 
-    3. sqlh -p /root/my3.cnf   # open mysql with profile. 
 
 ### Help
 
