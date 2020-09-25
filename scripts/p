@@ -167,8 +167,8 @@ cleanup() {
 usage() {
 	cat >&2 <<-usage
 		Script  : $PRG
-		Desc    : Edit/Syntax-Check/ShellCheck/Execute wrapper for 
-		        : bash (and php) files.
+		Desc    : Edit/Syntax-Check/ShellCheck/Execute for 
+		        : bash and php files.
 		        : Bash/php scripts without .sh/.bash/.php extentions 
 		        : are autodetected from the header.
 		        : Uses envvar EDITOR ([$EDITOR])
@@ -177,6 +177,7 @@ usage() {
 		        :   +n      position at row n on entry to editor.
 		        :   -s      execute shellcheck after editing.
 		        :   -x      execute script after editting (asks first).
+		Requires: shellcheck
 	usage
 	return 0
 }

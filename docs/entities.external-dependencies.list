@@ -1,0 +1,36 @@
+#!/bin/bash
+#! shellcheck disable=SC2034
+
+# These packages are required by entities.bash
+declare -a _ent_ESSENTIAL_PACKAGES=(
+	errno
+	gzip
+	moreutils
+	shellcheck
+	tree
+	unzip
+	wget
+	zip
+)
+
+# Recommended for entities.bash (YMMV)
+declare -a _ent_RECOMMENDED_PACKAGES=(
+	bzip2
+	curl
+	git
+	hexedit
+	joe
+	lynx
+	w3m
+)
+
+# If you also use php/mysql 
+declare -a _ent_PHP_MYSQL_CLIENT_PACKAGES=(
+	php-cli
+	php-zip
+	mysql-client
+	php-mysql
+	php-xml
+)
+
+#fin
