@@ -8,6 +8,7 @@
 usage() {
 	local v PRG
 	PRG=$(basename "$0")
+	PRGDIR=$(dirname "$( readlink -f "$0")")
 	v="$(dirname "$(readlink "$0")")/entities.d/entities.version.bash"
 	# shellcheck disable=2015
 	[[ -f "$v" ]] && source "$v" 2>/dev/null || true	# yes, this is deliberate

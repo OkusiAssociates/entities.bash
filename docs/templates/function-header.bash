@@ -1,4 +1,4 @@
-#X Function|Global|Local|Script: 
+#X Script:Function:GlobalX:Global:Local: 
 #X Desc    : 
 #X Synopsis: 
 #X Options :

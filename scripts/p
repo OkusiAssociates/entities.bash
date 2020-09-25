@@ -4,8 +4,11 @@ source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!";
 	strict.set off
 	verbose.set on
 	trap.set on
+	# shellcheck disable=SC2154
+	version.set "$_ent_VERSION"
 	msg.prefix.set "$PRG"
-	
+
+	# global vars	
 	# if by some odd chance entities.bash has not already set EDITOR (it should have)
 	if [[ -z "$EDITOR" ]]; then
 		EDITOR="$(which joe)" #mefirst
@@ -16,7 +19,8 @@ source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!";
 	fi
 	export EDITOR
 	
-	tmpfile="/tmp/p-$RANDOM"
+	tmpfile="/tmp/$PRG-$$-$RANDOM"
+
 	CH9=$'\t'
 
 	declare -i shellcheck=0 syntaxcheck=1
@@ -99,7 +103,7 @@ main() {
 	if ((syntaxcheck)); then
 	syntaxerr=0	
 	if [[ "${ftype}" == 'php' ]]; then
-		msg.info "$(php -l "${file}" 2>&1 | tee "$tmpfile")"
+		msg.info  "$(php -l "${file}" 2>&1 | tee "$tmpfile")"
 		hd="$(head -n1 "$tmpfile")"
 		if [[ "${hd:0:9}" != 'No syntax' ]]; then
 			syntaxerr=1
@@ -110,9 +114,9 @@ main() {
 		fi
 	else
 		if [[ $ftype == 'sh' || $ftype == 'bash' ]]; then
-			msg.info "$(bash -n "${file}" 2>&1 | tee "$tmpfile")"
+			msg.info "$(bash -n "${file}" 2>&1 | tee "$tmpfile")Syntax checked"
 			hd="$(head -n1 "$tmpfile")"
-			if [[ "${hd}" != '' ]]; then
+			if [[ -n $hd ]]; then
 				syntaxerr=1
 				l="${hd##*: line }"
 				l=${l//${CH9}/ }
@@ -165,20 +169,21 @@ cleanup() {
 }
 
 usage() {
-	cat >&2 <<-usage
-		Script  : $PRG
-		Desc    : Edit/Syntax-Check/ShellCheck/Execute for 
-		        : bash and php files.
-		        : Bash/php scripts without .sh/.bash/.php extentions 
-		        : are autodetected from the header.
-		        : Uses envvar EDITOR ([$EDITOR])
-		Synopsis: $PRG filename{.sh|.bash|php} [-l row] [-s] [-x]
-		        :   -l row  position at row n on entry to editor.
-		        :   +n      position at row n on entry to editor.
-		        :   -s      execute shellcheck after editing.
-		        :   -x      execute script after editting (asks first).
-		Requires: shellcheck
-	usage
+	cat >&2 <<-etx
+	Script  : $PRG
+	Desc    : Edit/SyntaxCheck/ShellCheck/Execute for 
+	        : bash and php scripts.
+	        : Bash/php scripts without .sh/.bash/.php extensions 
+	        : are autodetected from the header.
+	        : Uses envvar EDITOR ([$EDITOR])
+	Synopsis: $PRG filename [-l row] [-s] [-x]
+	        :   -l row  position at row on entry to editor.
+	        :   -s      execute shellcheck after editing.
+	        :   +s      don't execute shellcheck after editing (default).
+	        :   -x      execute script after editing (asks first).
+	        :   +x      don't execute script after editing (default).
+	Requires: shellcheck
+	etx
 	return 0
 }
 
