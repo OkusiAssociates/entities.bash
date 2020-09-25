@@ -1,19 +1,19 @@
-##### Version [0.97.420.462.10]
+###### Version [0.97.420.462.10]
 # `entities.bash` Environment/Function Library
 
 `entities.bash` is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 18.04` or higher.
 
 The basic philosophy is to be simple, unobtrusive and as flexible as possible, with minimal dependencies, while providing a standard functionality across an entire network environment.
 
-#### `entities.bash` requires:
+### `entities.bash` requires:
 
 	* Ubuntu 18.04, or higher
 
-#### Quick Install:
+### Quick Install:
 
     sudo git clone https://github.com/OkusiAssociates/entities.bash.git && entities.bash/install.entities -y
 
-#### Invocation
+### Invocation
 
 To invoke `entities`, just enter `source entitites` at the top of your script, or invoke it at the command line.
     
@@ -25,7 +25,7 @@ Once loaded into the environment `entities` can be invoked without reloading the
 
 If `entities` is already loaded at the time a script is run, it is not loaded again, greatly speeding up load and execution time for downstream scripts that also use `entities` library functions.
 
-#### Functions
+### Functions
 
 Here are some of the functions:
 
@@ -33,10 +33,11 @@ Here are some of the functions:
 
 `entities.bash` can be easily extended with new functions.
 
-#### Templates
+### Templates
 
 Scripting templates are an important part of a programmer's armory.  `entitities.bash` comes with two simple but powerful templates, one for new scripts, one for new functions.
-##### Script Template
+
+#### Bash Script Template
 ````
 #!/bin/bash
 # #! shellcheck disable=SC0000
@@ -98,17 +99,17 @@ usage() {
 main "$@"
 #fin
 ````
-#### Scripts
+### Scripts
 
-##### hashbang
+#### hashbang
 
 Search directory recursively for files with #!/bin/bash header.
 
-###### Synopsis 
+##### Synopsis 
 
 hashbang ["dir"] [--search "str"]  [-e|--exclude 'str'] [-p|--prefix "prefix"] [-x|--suffix "suffix"] 
  
-###### Example
+##### Example
  
     # 0. print bash script filenames
     hashbang                   
@@ -118,37 +119,37 @@ hashbang ["dir"] [--search "str"]  [-e|--exclude 'str'] [-p|--prefix "prefix"] [
     #    in format "p filename -s"
     hashbang . -s 'some_var_name' -p 'p' -x '-s' >editfiles
 
-##### lsd
+#### lsd
 
 Wrapper script for 'tree'. Display directory tree starting at {pathspec}.
 
-###### Synopsis lsd [-ls] [--levels num] [--treeopts...] [pathspec ...] 
+##### Synopsis lsd [-ls] [--levels num] [--treeopts...] [pathspec ...] 
 
 If not specified, {pathspec} defaults to current directory.
 
-##### p
+#### p
 
 Script programmers Edit/syntax-check/shellcheck wrapper for bash/php files. Bash/php scripts without .sh/.bash/php extentions are autodetected from the header. Uses envvar EDITOR
 
-###### Synopsis p filename[{.sh,.bash,.php}] [-l|--line rownum] [-x]
+##### Synopsis p filename[{.sh,.bash,.php}] [-l|--line rownum] [-x]
 
-##### sqlh
+#### sqlh
 
 MySQL helper script to quickly view data/structure.
 
-###### Synopsis sqlh [database [table [command]]] [-p profile] [-V] [-h]
+##### Synopsis sqlh [database [table [command]]] [-p profile] [-V] [-h]
 
-###### Examples 
+##### Examples 
     0. sqlh         # direct to database selection
     1. sqlh Users   # open db Userss, then to table selection.
     2. sqlh Users users fields # open table Users:user and show fields. 
     3. sqlh -p /root/my3.cnf   # open mysql with profile. 
 
-#### Help
+### Help
 
 See `entities help` for full documentation.
 
-#### Developers
+### Developers
 
 Are you a bash programmer? If you would like to assist with this project, go to the repository at:
 
