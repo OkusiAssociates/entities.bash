@@ -1,4 +1,4 @@
-##### Version [0.97.420.463.15]
+##### Version [0.97.420.463.16]
 ###### Version [0.97.420.462.10]
 # `entities.bash` Environment/Function Library
 
@@ -73,7 +73,6 @@ main() {
 }
 
 # exit trap set to cleanup
-# shellcheck disable=SC2086
 cleanup() {
   local -i err=$?
   [[ -z ${1:-} ]] && err=$1
@@ -108,17 +107,17 @@ Script programmers Edit/syntax-check/shellcheck wrapper for bash/php files. Bash
 
 ##### Synopsis `p filename[{.sh,.bash,.php}] [-l|--line rownum] [-x]`
 
-#### `sqlh`
+#### `dbh`
 
 MySQL helper script to quickly view data/structure.
 
-##### Synopsis `sqlh [database [table [command]]] [-p profile] [-V] [-h]`
+##### Synopsis `dbh [database [table [command]]] [-p profile] [-V] [-h]`
 
 ##### Examples 
-    0. sqlh         # direct to database selection
-    1. sqlh Users   # open db Userss, then to table selection.
-    2. sqlh Users users fields # open table Users:user and show fields. 
-    3. sqlh -p /root/my3.cnf   # open mysql with profile. 
+    0. dbh         # direct to database selection
+    1. dbh Users   # open db Userss, then to table selection.
+    2. dbh Users users fields # open table Users:user and show fields. 
+    3. dbh -p /root/my3.cnf   # open mysql with profile. 
 
 #### `hashbang`
 
