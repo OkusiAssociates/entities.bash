@@ -25,7 +25,7 @@ main() {
 	(( ${#cmd[@]} )) || cmd=( '.' )
 	
 	while [ ! -x "$(which tree)" ]; do
-		ask.yn "$PRG: The 'tree' program has not been installed. Install now?" \
+		msg.yn "$PRG: The 'tree' program has not been installed. Install now?" \
 				|| msg.die "$PRG: tree is not installed."
 		msg.info "$PRG: Installing tree program..." ""
 		apt-get -qq install tree || msg.die "$PRG: Could not install tree."

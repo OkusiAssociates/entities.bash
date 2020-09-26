@@ -2,6 +2,6 @@
   Function: entities.help
       Desc: display help info about Entities functions and variables.
   Synopsis: entities.help [function|globalvar|localvar|file] | [-s|--search searchstring] [-h|--help]
-   Example: entities.help ask.yn msg.info
+   Example: entities.help msg.yn msg.info
     Source: /usr/share/okusi/entities/entities.bash
 #-Function--entities.help-----------------------------------------------------

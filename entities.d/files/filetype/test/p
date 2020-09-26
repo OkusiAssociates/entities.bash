@@ -68,7 +68,7 @@ if ((0)); then #skip
 			elif [[ $hd == "#!$(which php)" || "${hd:0:2}" == '<?' ]]; then 
 				ftype='php' 
 			else 
-				ask.yn "No hashbang found. Use bash?" || \
+				msg.yn "No hashbang found. Use bash?" || \
 					msg.die "$file is not a bash or php script!"
 				ftype='sh'
 				syntaxarg='-syntax sh'
@@ -104,7 +104,7 @@ fi #^^skip
 	fi
 
 	if ((syntaxerr)); then
-		if ask.yn "Re-edit $file [$line]?"; then
+		if msg.yn "Re-edit $file [$line]?"; then
 			$PRGDIR/$PRG "$file" --line $line $( ((execute)) && echo '-x' )
 			exit
 		fi
@@ -115,7 +115,7 @@ fi #^^skip
 	fi
 
 	if ((execute && syntaxerr==0)); then
-		if ask.yn "Execute $file?"; then
+		if msg.yn "Execute $file?"; then
 			if [[ $ftype == 'php' ]]; then
 				$(which php) "$file"
 			elif [[ $ftype == 'sh' ]]; then

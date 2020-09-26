@@ -127,7 +127,7 @@ main() {
 		fi
 	fi
 	if ((syntaxerr)); then
-		if ask.yn "Re-edit $file [$line]?"; then
+		if msg.yn "Re-edit $file [$line]?"; then
 			# shellcheck disable=SC2046
 			"$PRGDIR/$PRG" "$file" --line "$line" $( ((execute)) && echo '-x' )
 			exit
@@ -151,7 +151,7 @@ main() {
 	fi
 
 	if ((execute && !syntaxerr)); then
-		if ask.yn "Execute $file?"; then
+		if msg.yn "Execute $file?"; then
 			if [[ $ftype == 'php' ]]; then
 				$(which php) "$file"
 			elif [[ $ftype == 'sh' ]]; then

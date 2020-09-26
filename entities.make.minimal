@@ -43,7 +43,7 @@ main() {
 	tab=$(tab.set)
 	tab.set ++
 	if (( ! noprompt )); then
-		ask.yn "Do you wish to proceed?" || { tab.set "$tab"; return 1; }
+		msg.yn "Do you wish to proceed?" || { tab.set "$tab"; return 1; }
 		msg 'Proceeding'
 	fi
 

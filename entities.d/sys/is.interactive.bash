@@ -3,7 +3,7 @@
 #X Desc     : return 0 if tty available, otherwise 1.
 #X          : !!! this function requires attention
 #X Synopsis : is.interactive [report|noreport*]
-#X Example  : is.interactive && ask.yn "Continue?"
+#X Example  : is.interactive && msg.yn "Continue?"
 is.interactive() {
 	declare report=${1:-}
 	declare -i isit=0 echoit=0

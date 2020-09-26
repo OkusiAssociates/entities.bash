@@ -174,7 +174,7 @@ declare -ix _ent_VERBOSE
 #X Desc    : Set global verbose status for msg* functions. For shell 
 #X         : terminal verbose is ON by default, otherwise, when called 
 #X         : from another script, verbose is OFF by default.
-#X         : verbose.set() status is used in the ask.yn() and some msg.*() 
+#X         : verbose.set() status is used in the msg.yn() and some msg.*() 
 #X         : commands, except msg.sys(), msg.die() and msg.crit(), which will 
 #X         : always ignore verbose status and output to STDERR.
 #X Synopsis: verbose.set [on|1] | [off|0]
@@ -752,7 +752,7 @@ declare -fx exit_if_not_root
 #X Function : entities.help 
 #X Desc     : display help info about Entities functions and variables.
 #X Synopsis : entities.help [function|globalvar|localvar|file] | [-s|--search searchstring] [-h|--help]
-#X Example  : entities.help ask.yn msg.info
+#X Example  : entities.help msg.yn msg.info
 entities.help() {
 	"${ENTITIES:-/lib/include/entities}/entities.help" "$@" || return $?
 	return 0

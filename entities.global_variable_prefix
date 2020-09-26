@@ -25,7 +25,7 @@ main() {
 	msg.warn "Changing entities.bash global variable prefix"
 	msg.warn "in *all* files in directory $ENTITIES"
 	msg.warn "from [$OLDPREFIX] to [$NEWPREFIX]"
-	ask.yn   "Are you really sure about this?" || { echo; exit; }
+	msg.yn   "Are you really sure about this?" || { echo; exit; }
 	msg.info "Changing variable prefic [$OLDPREFIX] to [$NEWPREFIX] in [$ENTITIES]"
 
 	shopt -s globstar

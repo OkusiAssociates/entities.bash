@@ -146,7 +146,7 @@ main() {
 
 	if (( ! autoInstall)); then
 		infotext
-		ask.yn 'Install with these settings?' \
+		msg.yn 'Install with these settings?' \
 				|| { echo; return 0; }
 	fi
 
