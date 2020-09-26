@@ -1,6 +1,6 @@
 #!/bin/bash
 #! shellcheck disable=SC2034
-source "$(dirname "$0")/entities.bash" new || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
+source "$(dirname "$0")/entities.bash.min" new || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
 	strict.set off
 	msg.prefix.set "$(msg.prefix.set)help.make"
 	trap.set on
@@ -29,12 +29,13 @@ source "$(dirname "$0")/entities.bash" new || { echo >&2 "Could not open [$(dirn
 
 	# Category Labels
 	declare -a CatHdrs=( 
-			About 
-			XGlobal
-			Global 
-			Local 
-			Function 
-			File 
+			About
+			Globalx
+			Global
+			Local
+			Function
+			Script
+			File
 			)
 	# Subheader Labels
 	declare -a SubHdrs=(
@@ -49,7 +50,7 @@ source "$(dirname "$0")/entities.bash" new || { echo >&2 "Could not open [$(dirn
 			Author
 			Bugs
 			Copyright	
-			See_Also 
+			See_also 
 			Tags
 			)
 			
@@ -114,16 +115,17 @@ main() {
 	bashfiles="$(find "$EntitiesDir/" -name "*.bash"  -not -name "_*" -type f \
 								| grep -v '/docs/\|.gudang\|.min\|/dev/')"
 	for file in ${bashfiles[@]}; do
-		msg.info "Searching [$file]..."
+		msg.info "Searching [${file/${EntitiesDir}\//}]..."
 		hlp="$(grep '^#X\+' "$file" | grep ':')"
 		for hline in ${hlp[@]}; do 
 			lbl=$(str_str "$hline" '#X' ':')
 			lbl=$(trim "$lbl")
 			lbl=${lbl/ /_}
-			lbl=${lbl^} # normalise to Title case
-			[[ $lbl == 'Usage' || $lbl == 'Useage' ]] && lbl='Synopsis'
-			[[ $lbl == 'Examples' || $lbl == 'Eg' ]] && lbl='Example'
-			[[ $lbl == 'Requires' || $lbl == 'Dependencies' ]] && lbl='Depends'
+			# normalise to Title case
+			lbl=$(titlecase "$lbl")
+			[[ ${lbl} =~ ^Us[e]*age ]] && lbl='Synopsis'
+			[[ $lbl == 'Examples' || $lbl == 'Eg' ]] 						&& lbl='Example'
+			[[ $lbl == 'Requires' || $lbl == 'Dependencies' ]]	&& lbl='Depends'
 			
 			cmt="${hline#*:[[:blank:]]}"
 			cmt=$(rtrim "$cmt")
@@ -133,11 +135,12 @@ main() {
 				eval "$v"
 				continue
 			fi
-	
-			label=$lbl # there's a new label in town
-			if [[ "${CatHdrs[@]}" == *"$label"* ]]; then  # check if new label is a header category
+			
+			# change labels
+			label=$(titlecase "$lbl") 
+			if [[ "${CatHdrs[*]}" == *"${label}"* ]]; then  # check if new label is a header category
 				#msg.info "header [$label] found"
-		FinishFile="$file"
+			FinishFile="$file"
 				if (( ${#Label} )); then
 					destdir="$HelpFilesDir/$Label"
 					mkdir -p "$destdir"
@@ -179,7 +182,7 @@ main() {
 				v="${label}+=\${cmt}\"\${LF}\""
 				eval "$v"
 			else
-				msg.err "File [$file]:" "  bad label [$label]: Label not found in categories/subheaders."
+				msg.err "File [$file]:" "  bad label [$label] not found in categories/subheaders."
 			fi
 	
 			oldlabel=$label
@@ -221,8 +224,14 @@ printlines() {
 
 usage() {
 	cat <<-usage
-		$PRG - Create entities help files.
-		Usage: $PRG [--auto|-y] [--verbose|-v || --quiet|-q] [--help|-h]
+		Script  : $PRG
+		Desc    : Create entities.bash help files.
+		Synopsis: $PRG [-y] [-v][-q] [-V] [-h]
+		        :   -y|--auto
+		        :   -v|--verbose
+		        :   -q|--quiet
+		        :   -V|--verbose
+		        :   -h|--help
 	usage
 	exit 1
 }

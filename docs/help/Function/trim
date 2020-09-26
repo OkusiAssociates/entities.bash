@@ -5,5 +5,5 @@
           : rtrim  strip string of trailing space chars
   Synopsis: trim string
    Example: str=" 123 "; str=$(trim "$str")
-    Source: /usr/share/okusi/entities/entities.d/string/str_str.bash
+    Source: /usr/share/okusi/entities/entities.d/string/titlecase.bash
 #-Function--trim--------------------------------------------------------------

@@ -49,8 +49,8 @@ usage() {
 	Script:Function: 
 	Desc    : 
 	Synopsis: $PRG    [-v][-q] [-V] [-h]
-	        :  
-	        :  
+	        :  -|--)      
+	        :  -|--)      
 	        :  -v|--verbose   turn on  msg verbose. (default)
 	        :  -q|--quiet     turn off msg verbose.
 	        :  -V|--version   print version.

@@ -1,6 +1,6 @@
 #!/bin/bash
 ##!	shellcheck disable=SC2086
-source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!"; exit 1; }
+source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!"; exit 2; }
 	strict.set off
 	verbose.set on
 	trap.set on
@@ -23,11 +23,11 @@ source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!";
 
 	CH9=$'\t'
 
-	declare -i shellcheck=0 syntaxcheck=1
+	declare -i shellcheck=0 syntaxcheck=1 execute=0
 
 main() {
-	local file='' ftype='' ext
-	local -i line=0 syntaxerr=0 execute=0
+	local file='' ftype='' ext sx
+	local -i line=0 syntaxerr=0
 	local -a cmd=()
 	while (($#)); do
 		case "$1" in
@@ -39,22 +39,23 @@ main() {
 			+s|-+shellcheck)	shellcheck=0 ;;
 			-x|--execute)			execute=1 ;;
 			+x|-+execute)			execute=0 ;;
-			-h|--help)				usage; return 0 ;;
+			-V|--version)			echo "$PRG ${_ent_VERSION}"; return 0;;
 			-v|--verbose|+q)	verbose on ;;
 			-q|--quiet|+v)		verbose off ;;
+			-h|--help)				usage; return 0 ;;
 			-*)								msg.err "Bad option [$1]"; return 22 ;;
 			*)								cmd+=( "$1" ) ;;
 		esac
 		shift
 	done
-	(( ${#cmd[@]} == 1 )) || { usage; return 0; }
+	(( ${#cmd[@]} == 1 )) || { usage; return 1; }
 
-	file="$(readlink -f "${cmd[0]}")" || file="${cmd[0]}"
+	file=$(readlink -f "${cmd[0]}") || file="${cmd[0]}"
 	
 	# file not exist!
 	if [[ ! -f "$file" ]]; then
 		# look for likely executable script
-		sx="$(readlink -f "$(which "$(basename "$file")")")"
+		sx=$(readlink -f "$(which "$(basename "$file")")")
 		if [[ -z $sx ]]; then
 			# locate or create
 			sx="$(basename "$file")"

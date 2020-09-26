@@ -1,0 +1,8 @@
+#-Function--titlecase
+  Function: titlecase
+      Desc: Upper case first letter of each word, lowercase the rest.
+  Synopsis: titlecase "str" [...]
+   Example: str="dharmA bUms"
+          : titlecase "$str"
+    Source: /usr/share/okusi/entities/entities.d/string/str_str.bash
+#-Function--titlecase---------------------------------------------------------

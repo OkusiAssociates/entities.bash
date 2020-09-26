@@ -1,0 +1,13 @@
+#--Globalx--_ent_EDITOR
+   Globalx: _ent_EDITOR
+      Desc: Defines/validates default EDITOR setting.
+          : Sets value of EDITOR *if* EDITOR is unset/empty.
+          :   1. first priority is SUDO_EDITOR
+          :   2. then SELECTED_EDITOR
+          :   3. try sourcing .selected_editor
+          :   4. test for /etc/alternatives/editor
+          : If none of the above, EDITOR defaults to _ent_EDITOR
+          : The first argument is tested to see if it is executable.
+          : If it is not, then EDITOR defaults back to _ent_EDITOR.
+    Source: /usr/share/okusi/entities/entities.d/string/trim.bash
+#--Globalx--_ent_EDITOR-------------------------------------------------------

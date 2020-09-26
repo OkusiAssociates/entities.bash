@@ -1,10 +1,14 @@
 #-Function--msg.warn
   Function: msg.warn
-      Desc: output a warning message, with option to write to systemd journal.
-          : message is coloured red on terminals.
-  Synopsis: msg.warn [log] string [string ...]
-          :   'log'   if specified, write log entry to journal info.
-          :   string  if verbose() enabled, write string/s to stdout.
+      Desc: Output warning message, with option to write to log.
+  Synopsis: msg.warn [log] "str" ["str" ...]
+          :   log   If specified, write syslog entry. 'log' is positional,
+          :         and must appear first.
+          : If verbose.set is enabled, write to stdout, else return
+          : without processing further arguments.
+          : If color.set is enabled, use color.
+          : If msg.prefix is set, print prefix before string.
+          : If tab.set is enabled, print tabs.
    Example: msg.warn log "Pardon me, Sir." "Is this supposed to happen?"
     Source: /usr/share/okusi/entities/entities.bash
 #-Function--msg.warn----------------------------------------------------------

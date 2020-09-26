@@ -4,7 +4,6 @@
           : before every string output by the msg.* system.
   Synopsis: msg.prefix.set [-a] "msgprefix"
           : -a  makes msgprefix additive to the existing msg prefix.
-  See_Also: msg.prefix.separator.set
    Example: # 0. set a msg prefix
           : msg.prefix.set "$PRG"
           : # 1. retrieve current msgprefix

@@ -1,0 +1,7 @@
+#-Function--is.int
+  Function: is.int
+      Desc: Is parameter an integer? Return true/false
+  Synopsis: is.int "numstr"
+   Example: is.int "4.20" && echo "is number"
+    Source: /usr/share/okusi/entities/entities.d/string/elipstr.bash
+#-Function--is.int------------------------------------------------------------

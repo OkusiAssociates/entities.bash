@@ -1,0 +1,116 @@
+#!/bin/bash
+declare -- PRG='cln'
+declare -ax _ent_CLNTEMP
+(( ${#_ent_CLNTEMP[@]} )) || _ent_CLNTEMP=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
+
+cln() {
+	local PRG=cln
+	local -i maxdepth=2 isverbose=1 isdryrun=1 filecount=0
+	local -a addfiles=()
+	# ffcount: file-filecounter, try and open in /run if possible, otherwise much slower /tmp.
+	local ffcount
+	ffcount="$( [[ -w /run ]] && echo '/run' || echo '/tmp' )/${PRG}-$$-${RANDOM}"
+	local -a aDir
+	while (($#)); do
+		case $1 in
+			-a|-add)				shift; (($#)) && addfiles=( $1 );;
+			-h|--help)			usage; return 0 ;;
+			-n|--dryrun)		isdryrun=1 ;;
+			-N|--notdryrun)	isdryrun=0 ;;
+			-m|--depth|--maxdepth)	
+											shift; maxdepth=${1:- 2} ;;
+			-v|--verbose)		isverbose=1 ;;
+			-q|--quiet)			isverbose=0 ;;
+			*)							aDir+=( "$1" ) ;;
+		esac
+		shift
+	done
+	((${#aDir[@]})) || aDir=( $(readlink -f "$(pwd)") )
+	maxdepth=$((maxdepth)) || return $?	# must be numeric
+	((maxdepth < 1)) && maxdepth=1
+	
+	
+
+	local TempExpr='' r
+	for r in "${_ent_CLNTEMP[@]}"; do
+		[[ -z $r ]] && continue
+		TempExpr+="$( [[ -z $TempExpr ]] || echo '-o ')-name '$r' -type f "
+	done
+	for r in "${addfiles[@]}"; do
+		[[ -z $r ]] && continue
+		TempExpr+="$( [[ -z $TempExpr ]] || echo '-o ')-name '$r' -type f "
+	done
+
+	local dir 
+	local -i sx=0
+	echo -n '0' >"$ffcount" # zero file-filecounter
+	for dir in "${aDir[@]}"; do
+		dir="$(/bin/readlink -f "$dir")"
+		if [[ -d "$dir" ]]; then 
+			((isverbose)) && echo "$PRG: Searching directory [${dir}], maxdepth=$maxdepth"
+			eval "/usr/bin/find \"$dir\" -maxdepth ${maxdepth:- 1} $TempExpr" \
+					| while read -r line; do 
+							((isverbose)) && echo "$PRG:   $( ((isdryrun)) && echo '- remove' || echo '- removing') $line"
+							((isdryrun)) || rm "$line"
+							(( $? )) || {
+								# increment file-filecounter
+								sx=$(cat "$ffcount") || sx=0
+								echo -n $(( sx + 1 )) >"$ffcount"
+							}
+						done
+		else
+			echo >&2 "$PRG: Directory [${dir}] not found!"
+		fi
+	done
+	filecount=$(cat "$ffcount") || filecount=0; rm -f "$ffcount" # file-filecounter no longer needed
+	if ((isverbose)); then
+		if ((filecount)); then
+			echo "$PRG: $filecount file$( ((filecount==1)) || echo 's' ) $( ((isdryrun)) && echo 'would be ')deleted"
+		else
+			echo "$PRG: No temporary files found."
+			return 2
+		fi
+	fi
+
+	if ((isverbose && isdryrun && filecount > 0)) && [ -t 0 ]; then
+		read -t 0.2 -n 1024 # clear typeahead buffer
+		read -n1 -p "$PRG: Delete all these files? (y/N) " line
+		echo ''
+		if [[ ${line,,} == 'y' ]]; then
+			local -a adds=()
+			local sy
+			for sy in "${addfiles[@]}"; do adds+=( " -a '$sy'"); done
+			# shellcheck disable=SC2046,SC2086
+			cln --notdryrun --maxdepth ${maxdepth} ${adds[*]} $( ((isverbose)) && echo '--verbose' || echo '--quiet' ) "${aDir[@]}"
+			return $?
+		fi
+	fi
+	
+	return 0
+}
+
+usage() {
+	cat <<-etx
+	Script  : cln
+	Desc    : Search for and delete defined rubbish files.
+	Synopsis: ${PRG} [-m depth] [-n][-N] [-v][-q] [dirspec ...]
+	        :   dirspec           Default '.'
+	        :   -a|-add file      Add file to cleanup scan. Can be used 
+	        :                     multiple times.            
+	        :   -m|--depth depth  Maximum depth to recurse. Default 2.
+	        :   -n|--dryrun       Dry run. Default on.
+	        :   -N|--notdryrun    Not a dry run. Delete files straight away.
+	        :   -v|--verbose      Enable output to stdout. Default on.
+	        :   -q|--quiet        Disable output to stdout.
+	        :   -h|--help         This help.
+	        : Recursively remove all temporary files defined in 
+	        : Array envvar _ent_CLNTEMP defines temporary files to delete.
+	        : If not set, defaults to ( '*~' '~*' '.~*' )
+	        : _ent_CLNTEMP currently set to:
+	        :   ( ${_ent_CLNTEMP[@]} )
+	        : If not defined, _ent_CLNTEMP defaults to ( '*~' '~*' '.~*' )
+	etx
+}
+
+cln "$@"
+#fin

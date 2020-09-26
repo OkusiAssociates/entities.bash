@@ -1,8 +1,8 @@
 #-Function--color.set
   Function: color.set
       Desc: turn on/off colorized output from msg.* functions.
-          : color is turned off if verbose() is also set to off.
-  Synopsis: color.set [ON|1 | OFF|0 | auto]
+          : Color is turned off if verbose() is also set to off.
+  Synopsis: color.set [ON|1][OFF|0][auto]
           : curstatus=$(color.set)
           : oldstatus=$(color.set)
           : color.set off

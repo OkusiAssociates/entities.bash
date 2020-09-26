@@ -3,7 +3,6 @@
       Desc: Set/Retrieve value of _ent_MSG_PRE_SEP for appending as a separator for msg.prefix.
           : Default separator is ': '
   Synopsis: msg.prefix.separator.set ["separator"]
-  See_Also: msg.prefix.set
    Example: # 0. set a msg prefix with '>' separator
           : msg.prefix.separator.set '>'
           : msg.prefix.set "$PRG"

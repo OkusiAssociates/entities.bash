@@ -1,11 +1,15 @@
 #-Function--msg.crit
   Function: msg.crit
-      Desc: output a critical error message, with option to write to systemd journal.
-          : message is coloured red on terminals.
-          : immediately exit 1 from the script.
-  Synopsis: msg.crit [log] string [string ...]
-          :   'log'    if specified, write log entry to journal err.
-          :   string   write string/s to stderr.
+      Desc: Output critical error message to stderr, with option to write
+          : to log, and exit with error code.
+  Synopsis: msg.crit [log] "str" ["str" ...]
+          :   log   If specified, write syslog entry. 'log' is positional,
+          :         and must appear first.
+          : If verbose.set is enabled, write to stdout, else return
+          : without processing further arguments.
+          : If color.set is enabled, use color.
+          : If msg.prefix is set, print prefix before string.
+          : If tab.set is enabled, print tabs.
    Example: msg.crit log "Good god!" "Oh, the Humanity..."
     Source: /usr/share/okusi/entities/entities.bash
 #-Function--msg.crit----------------------------------------------------------

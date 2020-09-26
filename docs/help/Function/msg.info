@@ -1,10 +1,14 @@
 #-Function--msg.info
   Function: msg.info
-      Desc: output an information message, with option to write to systemd journal.
-  Synopsis: msg.info [log] string [string ...]
-          :   'log' if specified, write log entry to journal info. 'log' is positional,
-          : and must appear before the strings to be printed.
-          : if verbose() enabled, write string/s to stdout.
+      Desc: Output an informational message, with option to write to log.
+  Synopsis: msg.info [log] "str" ["str" ...]
+          :   log   If specified, write log entry. 'log' is positional,
+          :         and must appear first.
+          : If verbose.set is enabled, write to stdout, else return
+          : without processing further arguments.
+          : If color.set is enabled, use color.
+          : If msg.prefix is set, print prefix before string.
+          : If tab.set is enabled, print tabs.
    Example: msg.info "Sir. There's something I think you should know."
     Source: /usr/share/okusi/entities/entities.bash
 #-Function--msg.info----------------------------------------------------------

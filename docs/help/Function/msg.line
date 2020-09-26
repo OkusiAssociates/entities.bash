@@ -3,8 +3,14 @@
       Desc: Print a line of replicated characters (default underline)
           : from current cursor position to end of screen.
   Synopsis: msg.line [repchar [iterations]]
-          : Default repchar is '_'.
-          : Default iterations is number of screen columns - 1.
+          :   repchar     Default repchar is '_'.
+          :   iterations  Default iterations is number of screen
+          :               columns minus 1.
+          : If verbose.set is disabled, return without processing
+          : further arguments.
+          : If color.set is enabled, use color.
+          : If msg.prefix is set, print prefix before string.
+          : If tab.set is enabled, print tabs.
    Example: msg.line
           : msg.line '+'
           : msg.line '=' 42

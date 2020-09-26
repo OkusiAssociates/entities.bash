@@ -1,15 +1,15 @@
 #!/bin/bash
-#X GLOBAL: _ent_EDITOR	
-#X Desc  : Defines/validates default EDITOR setting.
-#X       : Sets value of EDITOR *if* EDITOR is unset/empty.
-#X			 :   1. first priority is SUDO_EDITOR
-#X 			 :   2. then SELECTED_EDITOR
-#X 			 :   3. try sourcing .selected_editor
-#X 			 :   4. test for /etc/alternatives/editor
-#X			 : If none of the above, EDITOR defaults to _ent_EDITOR
-#X 			 : The first argument is tested to see if it is executable.
-#X 			 : If it is not, then EDITOR defaults back to _ent_EDITOR.
-#X ENV   : EDITOR SUDO_EDITOR SELECTED_EDITOR _ent_EDITOR
+#X GLOBALX : _ent_EDITOR	
+#X Desc    : Defines/validates default EDITOR setting.
+#X         : Sets value of EDITOR *if* EDITOR is unset/empty.
+#X			   :   1. first priority is SUDO_EDITOR
+#X 			   :   2. then SELECTED_EDITOR
+#X 			   :   3. try sourcing .selected_editor
+#X 			   :   4. test for /etc/alternatives/editor
+#X			   : If none of the above, EDITOR defaults to _ent_EDITOR
+#X 			   : The first argument is tested to see if it is executable.
+#X 			   : If it is not, then EDITOR defaults back to _ent_EDITOR.
+#X See Also: EDITOR SUDO_EDITOR SELECTED_EDITOR _ent_EDITOR
 declare -gx _ent_EDITOR
 	# explicit LCD editor
 	_ent_EDITOR="$(which nano 2>/dev/null)"

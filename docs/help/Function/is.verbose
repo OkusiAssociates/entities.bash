@@ -1,0 +1,8 @@
+#-Function--is.verbose
+  Function: is.verbose
+      Desc: Return current _ent_VERBOSE status set by verbose.set().
+          : _ent_VERBOSE controls output from msg*() functions.
+  Synopsis: is.verbose
+          : is.verbose && echo "Verbose is on."
+    Source: /usr/share/okusi/entities/entities.bash
+#-Function--is.verbose--------------------------------------------------------

@@ -1,7 +1,7 @@
 #-Function--tab.set
   Function: tab.set tab.width
       Desc: tab.set    set tab position for output from msg.* functions.
-          : tab.width  set tab width (default 4).
+          :   tab.width  set tab width (default 4).
           : used for formatting output for msg.* and ask.* functions.
   Synopsis: tab.set [offset]; tab.width [tabvalue]
           : tab.set [reset | [forward|++] | [backward|--] [indent|+indent|-indent] ]

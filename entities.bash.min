@@ -11,30 +11,30 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			_ent_LOADED=0
 			while (( $# )); do
 				case "${1,,}" in
-					/\?|-\?|-h|--help|help)	
+					help|/\?|-\?|-h|--help)	
 								"${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
 								exit $?
 								break;;
-					-*)		echo >&2 "$0: Bad option [$1] in entities.bash";		exit 22;;
-					*)		echo >&2 "$0: Bad argument [$1] in entities.bash";	exit 22;;
+					-*)		echo >&2 "$(basename "$0"): Bad option [$1]";		exit 22;;
+					*)		echo >&2 "$(basename "$0"): Bad argument [$1]";	exit 22;;
 				esac
 				shift
 			done		
 			exit $?
 		fi
-		_ent_scriptstatus+="is.sourced-from-script|SHLVL=$SHLVL|"
-		PRG="$(/usr/bin/basename "${p_}")"
-		PRGDIR="$(/usr/bin/dirname "${p_}")"
+		_ent_scriptstatus+='is.sourced-from-script|SHLVL='"$SHLVL"'|'
+		PRG=$(/usr/bin/basename "${p_}")
+		PRGDIR=$(/usr/bin/dirname "${p_}")
 		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
 		unset p_
 		if (( ! $# )); then
 			(( ${_ent_LOADED:-0} )) && return 0
 		fi
 	else
-		_ent_scriptstatus+="sourced-from-shell|SHLVL=$SHLVL|"
-		p_="$(/bin/readlink -f "${BASH_SOURCE[0]}")"
-		PRG="$(/usr/bin/basename "${p_}")"
-		PRGDIR="$(/usr/bin/dirname "${p_}")"
+		_ent_scriptstatus+='sourced-from-shell|SHLVL='"$SHLVL"'|'
+		p_=$(/bin/readlink -f "${BASH_SOURCE[0]}")
+		PRG=$(/usr/bin/basename "${p_}")
+		PRGDIR=$(/usr/bin/dirname "${p_}")
 		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
 		unset _p
 		if [[ -n "${ENTITIES:-}" ]]; then
@@ -54,13 +54,13 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		shift
 	done
 ((_ent_LOADED)) && return 0;
-_ent_scriptstatus+="reloading|"
+_ent_scriptstatus+='reloading|'
 set +o errexit +o nounset +o pipefail
 shopt -s extglob
 shopt -s globstar
-declare -x	LF=$'\n' CR=$'\r' CH9=$'\t'
+declare -x	CR=$'\r' CH9=$'\t' LF=$'\n'
 declare -x	OLDIFS="$IFS" IFS=$' \t\n'
-declare -nx	OIFS="OLDIFS"
+declare -nx	OIFS='OLDIFS'
 onoff() {
 	local o="${1:-0}"
 	case "${o,,}" in
@@ -74,8 +74,9 @@ onoff() {
 declare -fx onoff
 declare -ix _ent_VERBOSE
 [ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
-verbose() { return $(( ! _ent_VERBOSE )); }
-declare -fx verbose
+is.verbose() { return $(( ! _ent_VERBOSE )); }
+declare -fx 'is.verbose'
+	alias verbose='is.verbose' #X legacy X#
 verbose.set() {
 	if (( ${#@} )); then
 		_ent_VERBOSE=$(onoff "${1}")
@@ -92,7 +93,7 @@ declare -fx color
 color.set() {
 	if (( ${#@} )); then 
 		if [[ $1 == 'auto' ]]; then
-			is.tty && status=1 || status=0
+			[ -t 1 ] && status=1 || status=0
 		else
 			status=$1
 		fi
@@ -173,12 +174,13 @@ msg.debug() {
 }
 declare -fx 'msg.debug'
 __msgx() {
-	local log="$1" msglevel="$2" verbose="$3"
+	local log="$1" msglevel="$2" 
+	local -i Verbose=$3
 	shift 3
 	[[ ${log} == 'log' ]] && systemd-cat -t "$PRG" -p "${msglevel}" echo "$@"
-	if ((_ent_VERBOSE)); then
+	if ((_ent_VERBOSE)) || ((Verbose)); then
 		((_ent_COLOR)) && { nc=color$msglevel; echo -ne "${!nc}"; }
-		_printmsg "$@"
+			_printmsg "$@"
 		((_ent_COLOR)) && echo -ne "${colorreset}"
 	fi
 	return 0
@@ -220,10 +222,11 @@ msg.err() {
 }
 declare -fx 'msg.err'
 msg.die() {
+	declare -i errcode=$?
 	declare log="${1:-}"
 	[[ ${log} == 'log' ]] && shift
 	__msgx >&2 "$log" "crit" "1" "$@"
-	exit 1
+	exit "$errcode"
 }
 declare -fx 'msg.die'
 	alias msgdie='msg.die'	#X legacy X#
@@ -231,10 +234,11 @@ declare -fx 'msg.die'
 	alias msgdir='msg.die'	#X for butter fingers #X
 	alias msg.dir='msg.die'	#X for butter fingers #X
 msg.crit() {
+	declare -i errcode=$?
 	declare log="${1:-}"
 	[[ "${log}" == 'log' ]] && shift
 	__msgx >&2 "$log" "emerg" "1" "$@" 'Call Sysadmin immediately.'
-	exit 1
+	exit "$errcode"
 }
 declare -fx 'msg.crit'
 	alias msgcrit='msg.crit' #X legacy X#
@@ -260,7 +264,7 @@ msg.line() {
 		fi
 		IFS=$' \t\n'
 	fi
-	sx="${_ent_MSG_PRE[*]}" || sx=''
+	sx="${_ent_MSG_PRE[*]}${_ent_MSG_PRE_SEP[*]}" || sx=''
 	plen=${#sx}
 	width=$(( (screencols - plen - (TABSET * TABWIDTH)) - 2))
   msg "$(head -c $width < /dev/zero | tr '\0' "${repchar:-_}")"
@@ -268,6 +272,24 @@ msg.line() {
 }
 declare -fx 'msg.line'
 	alias msgline='msg.line'
+msg.yn() {
+	((_ent_VERBOSE)) || return 0
+	[ -t 0 ] || return 0
+	local question="${1:-}" yn=''
+	question=$(msg.warn "${question} (y/n)")
+	question="${question//$'\n'/ }"
+	while true; do
+		read -e -n1 -r -p "${question}" yn
+		case "${yn,,}" in
+			[y]* ) return 0;;
+			[n]* ) return 1;;
+			* ) echo 'Please answer yes or no.';;
+		esac
+	done
+}
+declare -fx 'msg.yn'
+	alias askyn='msg.yn' #X legacy X#
+	alias ask.yn='msg.yn' #X legacy X#
 declare -ix TABWIDTH=4
 tab.width() {
 	if (( $# )); then
@@ -365,23 +387,6 @@ exit_if_not_root() {
 	return 0
 }
 declare -fx exit_if_not_root
-ask.yn() {
-	((_ent_VERBOSE)) || return 0
-	[ -t 0 ] || return 0
-	local question="${1:-}" yn=''
-	question=$(msg.warn "${question} (y/n)")
-	question="${question//$'\n'/ }"
-	while true; do
-		read -e -n1 -r -p "${question}" yn
-		case "${yn,,}" in
-			[y]* ) return 0;;
-			[n]* ) return 1;;
-			* ) echo "Please answer yes or no.";;
-		esac
-	done
-}
-declare -fx 'ask.yn'
-	alias askyn='ask.yn' #X legacy X#
 entities.help() {
 	"${ENTITIES:-/lib/include/entities}/entities.help" "$@" || return $?
 	return 0
@@ -448,79 +453,9 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 	fi 
 fi
 declare -xig _ent_LOADED=1
-declare -xng __entities__='_ent_LOADED' 	 #X legacy X#
+	declare -xng __entities__='_ent_LOADED' 	 #X legacy X#
 shopt -s expand_aliases # Enables alias expansion.
 _ent_scriptstatus+='entities loaded'
-declare -ax CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
-clntempfiles() {
-	(( ${#CLNTEMPFILES[@]} )) || CLNTEMPFILES=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
-	local PRG=cln
-	usage() {
-		echo "Usage: ${PRG} [--maxdepth|-m depth] [--dryrun|-n||--notdryrun|-N] [--quiet|-q||--verbose|-v] [dirspec]..."
-		echo "Desc : Recursively remove all temporary files defined in CLNTEMPFILES[] ( ${CLNTEMPFILES[@]} )"
-		echo '     : Defaults: maxdepth 2, verbose enabled, dryrun enabled'
-		echo '     : More than one dirspec can be specified. Default is current directory.'
-		echo "     : Envvar CLNTEMPFILES[] defines temporary files, default is ( '*~' '~*' '.~*' )"
-		echo "     : If not defined, CLNTEMPFILES[] defaults to ( '*~' '~*' '.~*' )"
-	}
-	local -i maxdepth=2 verbose=1 dryrun=1 filecount=0
-	local tmpfc="$( [[ -w /run ]] && echo '/run' || echo '/tmp' )/${PRG}-${RANDOM}"
-	local -a aDir
-	while (($#)); do
-		case $1 in
-			-h|--help)			usage; return 0 ;;
-			-n|--dryrun)		dryrun=1 ;;
-			-N|--notdryrun)	dryrun=0 ;;
-			-m|--maxdepth)	shift; maxdepth=${1:- 2} ;;
-			-v|--verbose)		verbose=1 ;;
-			-q|--quiet)			verbose=0 ;;
-			*)							aDir+=( "$1" ) ;;
-		esac
-		shift
-	done
-	((${#aDir[@]})) || aDir=( $(readlink -f "$(pwd)") )
-	maxdepth=$((maxdepth)) || return $?
-	((maxdepth < 1)) && maxdepth=1
-	local TempExpr=''
-	for r in "${CLNTEMPFILES[@]}"; do
-		TempExpr+="$( [[ -z $TempExpr ]] || echo '-o ')-name '$r' -type f "
-	done
-	local dir
-	echo -n '0' > $tmpfc # zero file-filecounter
-	for dir in "${aDir[@]}"; do
-		dir="$(/bin/readlink -f "$dir")"
-		if [[ -d "$dir" ]]; then 
-			((verbose)) && echo "$PRG: Searching directory [${dir}], maxdepth=$maxdepth"
-			eval "/usr/bin/find "$dir" -maxdepth ${maxdepth:- 1} $TempExpr" \
-					| while read -r line; do 
-							((verbose)) && echo "$PRG:   $( ((dryrun)) && echo '- would remove' || echo '- removing') $line"
-							((dryrun)) || rm "$line"
-							(( $? )) || echo -n $(( $(cat $tmpfc) + 1 )) > $tmpfc; # increment file-filecounter
-						done
-		else
-			echo >&2 "$PRG: Directory [${dir}] not found!"
-		fi
-	done
-	filecount=$(cat $tmpfc); rm $tmpfc # file-filecounter no longer needed
-	if ((verbose)); then
-		if ((filecount)); then
-			echo "$PRG: $filecount file$( ((filecount==1)) || echo 's' ) $( ((dryrun)) && echo 'would be ')deleted"
-		else
-			echo "$PRG: No temporary files found."
-		fi
-	fi
-	if ((verbose && dryrun && filecount > 0)) && [ -t 0 ]; then
-		read -t 0.2 -n 1024 # clear typeahead buffer
-		read -n1 -p "$PRG: Delete all these files? (y/N) " line
-		echo ''
-		if [[ ${line,,} == 'y' ]]; then
-			clntempfiles  --notdryrun --maxdepth ${maxdepth} $( ((verbose)) && echo '--verbose' || echo '--quiet' ) "${aDir[@]}"
-			return $?
-		fi
-	fi
-	return 0
-}
-declare -fx clntempfiles
 declare -gx _ent_EDITOR
 	_ent_EDITOR="$(which nano 2>/dev/null)"
 	declare -gx EDITOR
@@ -552,7 +487,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.462.12'
+_ent_VERSION='0.97.420.463.13'
 exit_if_already_running() {
 	return 0
 }
@@ -739,8 +674,10 @@ implode() {
 	printf -v x "${d}%s" "$@"
 	echo "${x:1}"
 }
-is.number() {	[[ ${1:-} =~ ^[-+]?[0-9]+$ ]] || return 1; }
-declare -fx is.number
+is.number() {	[[ ${1:-} =~ ^[-+]?[0-9.]+$ ]] || return 1; }
+declare -fx 'is.number'
+is.int() {	[[ ${1:-} =~ ^[-+]?[0-9]+$ ]] || return 1; }
+declare -fx 'is.int'
 shopt -s extglob
 post_slug() {
 	local str="${1:-}" repl="${2:--}" preserve_case="${3:-0}"
@@ -792,6 +729,13 @@ str_str() {
  	echo -n "$str"
 }
 declare -fx str_str
+titlecase() { 
+	(( $# )) || { echo ''; return 0; }
+	[[ -z $* ]] && { echo ''; return 0; } 
+	set ${*,,}
+	echo ${*^}
+}
+declare -fx titlecase
 trim()  { 
 	local v="$*"
 	v="${v#"${v%%[![:space:]]*}"}"
@@ -915,29 +859,29 @@ declare -fx 'is.tty'
 	alias is_tty='is.tty'
 pause() { echo; read -n1 -p "${1:-*Pause*}"; echo; }
 declare -fx pause
-declare -x perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"
+declare -x _ent_perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"
 perrno() {
 	(($#)) || return 0 
 	local OS=${2:-}
-	[[ ! -f $perrnoListFile ]] && _perrno_gen_errors
-	grep -i "$OS ${1}\:" "$perrnoListFile"
+	[[ ! -f ${_ent_perrnoListFile} ]] && _perrno_gen_errors
+	grep -i "$OS ${1}\:" "${_ent_perrnoListFile}" 2>/dev/null
 	return 0
 }
 	_perrno_gen_errors() {
 		(
-		local -i i=0
-		local t IFS=$'\n'
-		if [[ ! -d $(dirname "$perrnoListFile") ]]; then
-			mkdir -p "$(dirname "$perrnoListFile")"
-		fi
-		> "$perrnoListFile"
-		while ((i<500)); do 
-			t="$(perror $i)"
-			t="${t// error code/}"
-			t="${t/  / }"
-			[[ -n "$t" ]] && echo "$t" >> "$perrnoListFile"
-			((i++))
-		done
+			local -i i=0
+			local t IFS=$'\n'
+			if [[ ! -d $(dirname "${_ent_perrnoListFile}") ]]; then
+				mkdir -p "$(dirname "${_ent_perrnoListFile}")"
+			fi
+			> "${_ent_perrnoListFile}"
+			while ((i<513)); do 
+				t="$(perror $i)"
+				t="${t// error code/}"
+				t="${t/  / }"
+				[[ -n "$t" ]] && echo "$t" >> "${_ent_perrnoListFile}"
+				((i++))
+			done
 		) &>/dev/null
 		return 0
 	}

@@ -135,7 +135,7 @@ usage() {
 	cat <<-ETX
 	Script  : $PRG
 	Version : $(version.set)
-	Desc    : Used 'find' and 'grep' to search directory recursively for 
+	Desc    : Use 'find' and 'grep' to search directory recursively for 
 	        : files identified as bash scripts, ignoring all other files.
 	        : Identification is by filename extension, a hashbang 
 	        : containing '/bash', or by result from 'file' command.

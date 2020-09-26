@@ -195,8 +195,13 @@ main() {
 
 	install
 
-	install_externals || true
-
+	declare output
+	is.verbose && output='/dev/stdout' || output='/dev/null'
+	install_externals >$output 2>_errlog_ || true
+	cat _errlog_
+	rm -f _errlog_
+	unset output
+	
 	testit
 
 	msg.line '-'
