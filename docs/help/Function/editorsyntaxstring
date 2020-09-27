@@ -3,5 +3,5 @@
       Desc: Return full path and arguments to edit a text file.
           : Only editors 'joe' and 'nano' are supported at the moment.
   Synopsis: editorsyntaxstring filetype filename
-    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/files/filetype/textfiletype.bash
+    Source: /usr/share/okusi/entities/entities.d/files/filetype/textfiletype.bash
 #-Function--editorsyntaxstring------------------------------------------------

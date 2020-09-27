@@ -4,5 +4,5 @@
   Synopsis: is.root
    Depends: whoami
    Example: is.root || exit 1
-    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/sys/perrno.bash
+    Source: /usr/share/okusi/entities/entities.d/sys/perrno.bash
 #-Function--is.root-----------------------------------------------------------

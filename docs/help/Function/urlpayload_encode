@@ -1,5 +1,5 @@
 #-Function--urlpayload_encode
   Function: urlpayload_encode
   Synopsis: urlpayload_encode "payload_string"
-    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/sys/zippayload.bash
+    Source: /usr/share/okusi/entities/entities.d/sys/zippayload.bash
 #-Function--urlpayload_encode-------------------------------------------------

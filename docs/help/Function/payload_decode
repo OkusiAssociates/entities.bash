@@ -1,5 +1,5 @@
 #-Function--payload_decode
   Function: payload_decode
   Synopsis: payload_decode "encoded_payload_string"
-    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/sys/is.interactive.bash
+    Source: /usr/share/okusi/entities/entities.d/sys/is.interactive.bash
 #-Function--payload_decode----------------------------------------------------

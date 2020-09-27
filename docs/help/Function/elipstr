@@ -3,5 +3,5 @@
       Desc: Insert elipsis (...) into middle of fixed with string.
   Synopsis: elipstr "string" [maxwidth]
    Example: echo $(elipstr "the quick brown fox jumped over." 15)
-    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/string/addslashes.bash
+    Source: /usr/share/okusi/entities/entities.d/string/addslashes.bash
 #-Function--elipstr-----------------------------------------------------------

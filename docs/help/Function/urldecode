@@ -6,5 +6,5 @@
           :   name=${f##/*/}
           :   cat $f | urldecode > /opt/logs/processed/$HOSTNAME.$name
           : done
-    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/entities.location.bash
+    Source: /usr/share/okusi/entities/entities.d/entities.location.bash
 #-Function--urldecode---------------------------------------------------------

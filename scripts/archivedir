@@ -3,14 +3,14 @@
 source entities || exit 2
 	trap.set on
 	strict.set off
-	debug.set on
-	version.set '0.1'
+	# shellcheck disable=SC2154
+	version.set "${_ent_VERSION}"
 	msg.prefix.set "$PRG"
 	
 	# global vars
 	declare -- ArchiveDir='' \
 						 OldArchiveDir=''
-	declare -i ArchiveLimit=0
+	declare -i PruneLimit=0
 	
 # main
 main() {
@@ -18,7 +18,7 @@ main() {
 	local -a args=()
 	while (( $# )); do
 		case "$1" in
-			-l|--limit)			shift; ArchiveLimit=${1:-0};;
+			-P|--prune)			shift; PruneLimit=${1:-0};;
 			-H|--hidden)		hidden=1;;
 			-v|--verbose)		verbose.set on;;
 			-q|--quiet)			verbose.set off;;
@@ -42,21 +42,22 @@ main() {
 	ArchiveBase=$(basename "$ArchiveDir")
 
 	OldArchiveDir="$(dirname "$ArchiveDir")/$( ((hidden)) && echo '.' )${ArchiveBase}.old"	
+	# create the archive directory
 	mkdir -p "$OldArchiveDir" || msg.die "Could not create [$OldArchiveDir]"
 	chmod 755 "$OldArchiveDir"
 		
+	# make the zip file
 	zipfile="${OldArchiveDir}/${ArchiveBase}.$(date +%s).zip"
 	msg "Creating archive [$zipfile]"
 	zip -r "$zipfile" "${ArchiveDir}/" >/dev/null	|| msg.die "Error in zip [$zipfile]"
 	chmod 644 "$zipfile"
 
 	# shellcheck disable=SC2012
-#	msg.info "$(ls -lh "$zipfile" | cut -d ' ' -f5-)"
 	msg.info "[$zipfile $(int2hr "$(stat --printf=%s "$zipfile")")] was created. "
 
-	if ((ArchiveLimit)); then
+	if ((PruneLimit)); then
 		args=( $(find "$OldArchiveDir" -name "${ArchiveBase}*.zip" | sort -r) )
-		for file in "${args[@]:${ArchiveLimit}}"; do
+		for file in "${args[@]:${PruneLimit}}"; do
 			msg.info "Removing old archive [$file]"
 			rm "${file:?}"
 		done
@@ -75,25 +76,31 @@ cleanup() {
 }
 
 usage() {
-# 0#######:#|##|############|#################################################78
+#	0#######:#|##|############|#################################################78
 	cat <<-etx
 	Script  : $PRG 
-	Desc    : Create zip archive of directory, and store in directory 
-	        : {archive name}.old.
-	        : The zip archive name uses format {archivename}.{time}.old
+	Desc    : Create zip archive of a directory, and store in directory 
+	        : called [.]{DirNameBase}.old.  Multiple snap-shots of directores
+	        : can be maintained, with option to prune oldest files.    
+	        : The zip archive name uses the format {archiveName}.{time}.old
 	Synopsis: $PRG dirname [-l limit] [-H] [-v][-q] [-V] [-h]
-	        :  -l|--limit    Specify max number of archive files allowed, and
-	        :                delete oldest if necessary.      
-	        :  -H|--hidden   Create archive directory as hidden (prefix '.')      
+	        :  -P|--prune    Specify max number of archive files allowed, in
+	        :                archive directory, and delete oldest if necessary.      
+	        :  -H|--hidden   Create archive directory as hidden (prefix '.')
+	        :                Once created as hidden, -H must always be used to
+	        :                add new archives to the archive directory.
 	        :  -v|--verbose  turn on  msg verbose. (default)
 	        :  -q|--quiet    turn off msg verbose.
 	        :  -V|--version  print version.
 	        :  -h|--help     this help.
-	Example : # creates dir /usr/share/usr/.myscripts.old if it doesn't exist
-	        : # then makes zip archive.
+	Example : # 0. creates dir /usr/share/usr/.myscripts.old (if it doesn't exist)
+	        : #    then makes a zip archive called myscripts.1561065600.zip.
+	        : #    -H creates the .old directory as 'hidden', with a leading dot.
 	        : $PRG /usr/share/myscripts -H -l 15 
+	        : # 1. just archive a directory
+	        : $PRG myscripts
 	etx
-# 0#######:#|##|############|#################################################78
+#	0#######:#|##|############|#################################################78
 	return 0
 }
 
