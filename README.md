@@ -1,4 +1,4 @@
-##### Version [0.97.420.463.16]
+##### Version [0.97.420.464.4]
 ###### Version [0.97.420.462.10]
 # `entities.bash` Environment/Function Library
 
