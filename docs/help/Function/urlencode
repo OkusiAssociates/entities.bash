@@ -2,5 +2,5 @@
   Function: urlencode
       Desc: URL-encode string
   Synopsis: urlencode string
-    Source: /usr/share/okusi/entities/entities.d/sys/cleanup.bash
+    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/sys/cleanup.bash
 #-Function--urlencode---------------------------------------------------------

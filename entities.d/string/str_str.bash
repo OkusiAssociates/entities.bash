@@ -10,5 +10,4 @@ str_str() {
  	echo -n "$str"
 }
 declare -fx str_str
-
 #fin

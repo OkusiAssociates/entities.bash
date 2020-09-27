@@ -2,5 +2,5 @@
   Function: calcfp
       Desc: Simple bc wrapper
   Synopsis: calcfp numericExpression
-    Source: /usr/share/okusi/entities/entities.d/sys/hr2int.bash
+    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/sys/hr2int.bash
 #-Function--calcfp------------------------------------------------------------

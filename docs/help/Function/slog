@@ -16,5 +16,5 @@
           :   cat "$(slog.file)"
           : }
           : main "$@"
-    Source: /usr/share/okusi/entities/entities.d/files/mktempfile.bash
+    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/files/mktempfile.bash
 #-Function--slog--------------------------------------------------------------

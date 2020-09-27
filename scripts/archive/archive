@@ -1,0 +1,103 @@
+#!/bin/bash
+# #! shellcheck disable=SC
+source entities || exit 2
+	trap.set on
+	strict.set off
+	debug.set on
+	version.set '0.1'
+	msg.prefix.set "$PRG"
+	
+	# global vars
+	declare -- ArchiveDir='' \
+						 OldArchiveDir=''
+	declare -i ArchiveLimit=0
+	
+# main
+main() {
+	local -i hidden=0
+	local -a args=()
+	while (( $# )); do
+		case "$1" in
+			-l|--limit)			shift; ArchiveLimit=${1:-0};;
+			-H|--hidden)		hidden=1;;
+			-v|--verbose)		verbose.set on;;
+			-q|--quiet)			verbose.set off;;
+			-V|--version)		version.set; return 0;;
+			-h|--help)			usage; return 0;;
+			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
+			*)							(( ${#args[@]} > 1 )) \
+													&& { msg.err "Invalid argument [$1]"; return 22; }
+											ArchiveDir="$1" ;;
+		esac
+		shift
+	done
+	[[ -z $ArchiveDir ]] && { usage; return 1; }
+
+	# remove trailing /
+	[[ ${ArchiveDir: -1} == '/' ]] && ArchiveDir=${ArchiveDir:0: -1}
+
+	# test existance
+	[[ -d $ArchiveDir ]] || msg.die "Directory [$ArchiveDir] does not exist."	
+
+	ArchiveBase=$(basename "$ArchiveDir")
+
+	OldArchiveDir="$(dirname "$ArchiveDir")/$( ((hidden)) && echo '.' )${ArchiveBase}.old"	
+	mkdir -p "$OldArchiveDir" || msg.die "Could not create [$OldArchiveDir]"
+	chmod 755 "$OldArchiveDir"
+		
+	zipfile="${OldArchiveDir}/${ArchiveBase}.$(date +%s).zip"
+	msg "Creating archive [$zipfile]"
+	zip -r "$zipfile" "${ArchiveDir}/" >/dev/null	|| msg.die "Error in zip [$zipfile]"
+	chmod 644 "$zipfile"
+
+	# shellcheck disable=SC2012
+#	msg.info "$(ls -lh "$zipfile" | cut -d ' ' -f5-)"
+	msg.info "[$zipfile $(int2hr "$(stat --printf=%s "$zipfile")")] was created. "
+
+	if ((ArchiveLimit)); then
+		args=( $(find "$OldArchiveDir" -name "${ArchiveBase}*.zip" | sort -r) )
+		for file in "${args[@]:${ArchiveLimit}}"; do
+			msg.info "Removing old archive [$file]"
+			rm "${file:?}"
+		done
+	fi
+	msg "Archive for [$ArchiveBase] complete."
+}
+
+# exit trap set to cleanup
+# shellcheck disable=SC2086
+cleanup() {
+	local -i err=$?
+	[[ -z ${1:-} ]] && err=$1
+	#...
+	((err > 1)) && errno $err
+	exit $err
+}
+
+usage() {
+# 0#######:#|##|############|#################################################78
+	cat <<-etx
+	Script  : $PRG 
+	Desc    : Create zip archive of directory, and store in directory 
+	        : {archive name}.old.
+	        : The zip archive name uses format {archivename}.{time}.old
+	Synopsis: $PRG dirname [-l limit] [-H] [-v][-q] [-V] [-h]
+	        :  -l|--limit    Specify max number of archive files allowed, and
+	        :                delete oldest if necessary.      
+	        :  -H|--hidden   Create archive directory as hidden (prefix '.')      
+	        :  -v|--verbose  turn on  msg verbose. (default)
+	        :  -q|--quiet    turn off msg verbose.
+	        :  -V|--version  print version.
+	        :  -h|--help     this help.
+	Example : # creates dir /usr/share/usr/.myscripts.old if it doesn't exist
+	        : # then makes zip archive.
+	        : $PRG /usr/share/myscripts -H -l 15 
+	etx
+# 0#######:#|##|############|#################################################78
+	return 0
+}
+
+main "$@"
+#fin
+
+

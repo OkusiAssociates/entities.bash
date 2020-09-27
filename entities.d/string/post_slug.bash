@@ -31,6 +31,7 @@ post_slug() {
 	# translate non ascii chars
 	echo -n "$str"
 }
+declare -fx post_slug
 
 #X Function: remove_accents
 #X Desc    : Transliterate non-ASCII characters to an ASCII 
@@ -39,5 +40,5 @@ post_slug() {
 remove_accents() {
 	echo -n "${1:-}" | iconv -c -f UTF-8 -t ASCII//TRANSLIT//IGNORE
 }
-
+declare -fx remove_accents
 #fin

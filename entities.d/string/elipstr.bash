@@ -16,6 +16,5 @@ elipstr() {
 	echo "${str:0:$sx}${pd}..${str: -$sx}"
 }
 declare -fx elipstr
-
 #fin
 

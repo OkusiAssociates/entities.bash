@@ -1,7 +1,7 @@
 #!/bin/bash
 #X Function	: urlencode
-#X Desc			: URL-encode string 
-#X Synopsis	: urlencode string
+#X Desc			: URL-encode a string.
+#X Synopsis	: urlencode "string"
 urlencode() {
 	local LC_ALL=C encoded='' c
 	local -i i strlen=${#1}
@@ -15,5 +15,4 @@ urlencode() {
 	echo -n "$encoded"
 }
 declare -fx urlencode
-
 #fin

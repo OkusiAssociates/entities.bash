@@ -29,4 +29,4 @@ trap.set() {
 	return 0
 }
 declare -fx 'trap.set'
-
+#fin

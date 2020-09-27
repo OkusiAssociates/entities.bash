@@ -7,5 +7,5 @@
           : if you are not using the exit_if_already_running function
   Synopsis: cleanup [exitcode] [_LINENO_]
    Example: cleanup
-    Source: /usr/share/okusi/entities/entities.d/sys/zippayload.bash
+    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/sys/zippayload.bash
 #-Function--cleanup-----------------------------------------------------------

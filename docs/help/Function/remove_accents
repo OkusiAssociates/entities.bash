@@ -3,5 +3,5 @@
       Desc: Transliterate non-ASCII characters to an ASCII
           : near-equivalent. Uses iconv.
   Synopsis: remove_accents "string"
-    Source: /usr/share/okusi/entities/entities.d/string/is.number.bash
+    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/string/is.number.bash
 #-Function--remove_accents----------------------------------------------------

@@ -5,5 +5,5 @@
           : IFS=',' array=( "${cdstring" )
   Synopsis: explode "delimiter" "${array[@]}"
    Example: str=( $(explode '|' "${files[@]}") )
-    Source: /usr/share/okusi/entities/entities.d/string/remsp2.bash
+    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/string/remsp2.bash
 #-Function--explode-----------------------------------------------------------

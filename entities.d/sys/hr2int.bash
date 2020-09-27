@@ -7,7 +7,7 @@
 #X Example : hr2int 34M
 #X				 : hr2int 34m
 #X				 : hr2int 34000000
-declare -Aix HRint=( [b]=1 [k]=1024 [m]=1024000 [g]=1024000000 [t]=1024000000000 [p]=1024000000000000 \
+declare -Aix _ent_HRint=( [b]=1 [k]=1024 [m]=1024000 [g]=1024000000 [t]=1024000000000 [p]=1024000000000000 \
 										 [B]=1 [K]=1000 [M]=1000000 [G]=1000000000 [T]=1000000000000 [P]=1000000000000000 )
 hr2int() {
 	local num='' h=''
@@ -15,7 +15,7 @@ hr2int() {
 		num=${1:-0} 
  		h=${num: -1}
 		if [[ 'bBkKmMgGtTpP' == *"$h"* ]]; then
-			echo $(( ${HRint[$h]} * ${num:0:-1})) || return 1
+			echo $(( ${_ent_HRint[$h]} * ${num:0:-1})) || return 1
 		else
 			echo $(( num )) || return 1
 		fi
@@ -23,6 +23,7 @@ hr2int() {
 	done
 	return 0
 }
+declare -fx hr2int
 
 #X Function: int2hr 
 #X Synopsis: int2hr number hrchar [number hrchar]...
@@ -37,7 +38,7 @@ int2hr() {
 		num=$(( ${1:-0} )) || return 1 
  		h=${2:-b}
 		if [[ 'bBkKmMgGtTpP' == *"$h"* ]]; then
-			echo "$((num / ${HRint[$h]}))${h}" || return 1
+			echo "$((num / ${_ent_HRint[$h]}))${h}" || return 1
 		else
 			echo >&2 "Invalid hr code [$h]"; return 1
 		fi
@@ -46,8 +47,7 @@ int2hr() {
 	done
 	return 0	
 }
-
-#hrsize2int "$@"
+declare -fx int2hr
 #fin
 
  

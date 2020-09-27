@@ -4,5 +4,5 @@
   Synopsis: is.tty
    Depends: tty
    Example: is.tty && msg.yn "Continue?"
-    Source: /usr/share/okusi/entities/entities.d/sys/urldecode.bash
+    Source: /usr/share/okusi/entities/scripts/archive/srcarchive/entities.d/sys/urldecode.bash
 #-Function--is.tty------------------------------------------------------------

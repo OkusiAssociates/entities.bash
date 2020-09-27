@@ -44,6 +44,6 @@ declare -gx _ent_EDITOR
 		[[ $EDITOR != *' '* ]] && EDITOR='' 
 		EDITOR="${_ed_} ${EDITOR#* }"
 	fi
-	unset _ed_
-	export EDITOR _ent_EDITOR
+unset _ed_
+export EDITOR _ent_EDITOR
 #fin

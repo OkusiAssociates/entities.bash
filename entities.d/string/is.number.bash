@@ -12,5 +12,4 @@ declare -fx 'is.number'
 #X Example : is.int "4.20" && echo "is number"
 is.int() {	[[ ${1:-} =~ ^[-+]?[0-9]+$ ]] || return 1; }
 declare -fx 'is.int'
-
 #fin

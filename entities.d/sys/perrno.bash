@@ -9,6 +9,7 @@
 #X         : perrno 127       # returns texts of err 127 in both OS and MySQL
 #X         : mysql mydatabase || perrno $? mysql
 declare -x _ent_perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"
+
 perrno() {
 	(($#)) || return 0 
 	local OS=${2:-}

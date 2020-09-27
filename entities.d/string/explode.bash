@@ -6,4 +6,5 @@
 #X Synopsis: explode "delimiter" "${array[@]}"
 #X Example : str=( $(explode '|' "${files[@]}") )
 explode() {	IFS="$1" a=( "${@:2}" ); echo "${a[@]}"; }
+declare -fx explode
 #fin
