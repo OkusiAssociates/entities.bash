@@ -1,0 +1,17 @@
+#---Script--p
+    Script: p
+   Version: 0.98
+      Desc: Edit/SyntaxCheck/ShellCheck/Execute for
+          : bash and php scripts.
+          : Bash/php scripts without .sh/.bash/.php extensions
+          : are autodetected from the header.
+          : Uses envvar EDITOR ([/usr/bin/joe -tab 2 -autoindent --wordwrap])
+  Synopsis: p filename [-l row] [-s] [-x]
+          :   -l row  position at row on entry to editor.
+          :   -s      execute shellcheck after editing.
+          :   +s      don't execute shellcheck after editing (default).
+          :   -x      execute script after editing (asks first).
+          :   +x      don't execute script after editing (default).
+   Depends: shellcheck
+    Source: /usr/share/okusi/entities/scripts/scripts.help.bash
+#---Script--p-----------------------------------------------------------------

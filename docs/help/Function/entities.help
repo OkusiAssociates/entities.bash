@@ -1,5 +1,8 @@
 #-Function--entities.help
   Function: entities.help
+   Version: 0.98
+          : 0.97
+          : 0.97
       Desc: display help info about Entities functions and variables.
   Synopsis: entities.help [function|globalvar|localvar|file] | [-s|--search searchstring] [-h|--help]
    Example: entities.help msg.yn msg.info

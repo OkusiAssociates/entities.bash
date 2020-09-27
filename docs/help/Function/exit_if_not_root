@@ -1,5 +1,8 @@
 #-Function--exit_if_not_root
   Function: exit_if_not_root
+   Version: 0.98
+          : 0.97
+          : 0.97
       Desc: If not root user, print failure message and exit script.
   Synopsis: exit_if_not_root
     Source: /usr/share/okusi/entities/entities.bash

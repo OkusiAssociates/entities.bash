@@ -2,6 +2,8 @@
 #! shellcheck disable=SC2034
 source "$(dirname "$0")/entities.bash.min" new || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
 	strict.set off
+	# shellcheck disable=SC2154
+	version.set "${_ent_VERSION}"
 	msg.prefix.set "$(msg.prefix.set)help.make"
 	trap.set on
 		
@@ -39,6 +41,7 @@ source "$(dirname "$0")/entities.bash.min" new || { echo >&2 "Could not open [$(
 			)
 	# Subheader Labels
 	declare -a SubHdrs=(
+			Version
 			Desc 
 			Synopsis 
 			Options
@@ -57,6 +60,7 @@ source "$(dirname "$0")/entities.bash.min" new || { echo >&2 "Could not open [$(
 	# label output			
 	declare Label='' 		\
 					Header='' 	\
+					Version=''	\
 					Synopsis='' \
 					Desc='' 		\
 					Defaults='' \
@@ -83,6 +87,7 @@ main() {
 		case "$1" in
 			-y|--auto)			auto=1; wipe=1;;
 			-h|--help)			usage;;
+			-V|--version)		version.set; return 1;;
 			-v|--verbose)		verbose.set on;;
 			-q|--quiet)			verbose.set off=;;
 			*)							cmd+=( "$1" );;
@@ -153,6 +158,7 @@ main() {
 					endtag=$(printf "#%${sx}.${sx}s%s" "$dashes" "$endtag")
 					(	echo "${endtag}"
 						printlines "$Label"  	"$Header"
+						printlines 'Version'	"$Version"
 						printlines 'Tags' 		"$Tags"
 						printlines 'Desc' 		"$Desc"
 						printlines 'Synopsis' "$Synopsis"

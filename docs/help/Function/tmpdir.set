@@ -3,5 +3,5 @@
   Synopsis: tmpdir.set ["tmpdir"]
    Example: tmpdir.set '/run/entities
           : tmpdir="$(tmpdir.set)"
-    Source: /usr/share/okusi/entities/entities.bash
+    Source: /usr/share/okusi/entities/scripts/scripts.help.bash
 #-Function--tmpdir.set--------------------------------------------------------

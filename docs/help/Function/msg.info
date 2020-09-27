@@ -1,5 +1,8 @@
 #-Function--msg.info
   Function: msg.info
+   Version: 0.98
+          : 0.97
+          : 0.97
       Desc: Output an informational message, with option to write to log.
   Synopsis: msg.info [log] "str" ["str" ...]
           :   log   If specified, write log entry. 'log' is positional,

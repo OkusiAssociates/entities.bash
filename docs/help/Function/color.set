@@ -1,5 +1,8 @@
 #-Function--color.set
   Function: color.set
+   Version: 0.98
+          : 0.97
+          : 0.97
       Desc: turn on/off colorized output from msg.* functions.
           : Color is turned off if verbose() is also set to off.
   Synopsis: color.set [ON|1][OFF|0][auto]

@@ -1,5 +1,8 @@
 #-Function--verbose.set
   Function: verbose.set
+   Version: 0.98
+          : 0.97
+          : 0.97
       Desc: Set global verbose status for msg* functions. For shell
           : terminal verbose is ON by default, otherwise, when called
           : from another script, verbose is OFF by default.

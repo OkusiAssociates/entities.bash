@@ -1,5 +1,8 @@
 #-Function--msg
   Function: msg
+   Version: 0.98
+          : 0.97
+          : 0.97
       Desc: if verbose.set is enabled, send strings to output.
           : embedded chars (\n \t etc) enabled by default.
           : Tabs and prefixes (if set) are printed with the string.

@@ -1,5 +1,8 @@
 #-Function--debug
   Function: debug debug.set
+   Version: 0.98
+          : 0.97
+          : 0.97
       Desc: general purpose global setting for debugging.
           : debug.set sets the debug value (0|1) when a
           : parameter is passed. If a parameter is not passed,

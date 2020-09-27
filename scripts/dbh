@@ -12,16 +12,14 @@ source "$OKROOT/entities/entities.bash" new || exit 2
 	verbose.set on
 	trap.set on
 	strict.set on
-	tab.width 8
-	tabs 8			# for the select builtin
-	msg.prefix.set "$PRG"
-	msg.prefix.separator.set '> '
 	
 	declare -xg Profile='' Database='' DataTable='' DataCommand=''
 	
 	declare -xrg Profile_Default=/root/.my.cnf
 	 
 main() {
+	msg.prefix.set "$PRG"
+	msg.prefix.separator.set '> '
 	while (( $# )); do
 		case "$1" in
 			-p|--profile)	shift; Profile="${1:-}";;
@@ -42,6 +40,10 @@ main() {
 	[[ -z $DataCommand && -n $DataTable ]] && DataCommand='fields'
 	[[ -z $Profile ]] && Profile=$Profile_Default
 	[[ -f $Profile ]] || { msg.err "Profile [$Profile] not found."; return 2; }
+
+
+	tab.width 8
+	tabs 8			# for the select builtin
 	msg "Using profile [$Profile]"
 	msg "Select 0 to backup up, q to quit."		
 	while ((1)); do

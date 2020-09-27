@@ -1,5 +1,8 @@
 #-Function--is.verbose
   Function: is.verbose
+   Version: 0.98
+          : 0.97
+          : 0.97
       Desc: Return current _ent_VERBOSE status set by verbose.set().
           : _ent_VERBOSE controls output from msg*() functions.
   Synopsis: is.verbose
