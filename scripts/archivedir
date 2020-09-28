@@ -34,11 +34,11 @@ main() {
 	done
 	[[ -z $ArchiveDir ]] && { usage; return 1; }
 
-	# remove trailing /
-	[[ ${ArchiveDir: -1} == '/' ]] && ArchiveDir=${ArchiveDir:0: -1}
-
 	# test existance
 	[[ -d $ArchiveDir ]] || msg.die "Directory [$ArchiveDir] does not exist."	
+
+	# remove trailing /
+	[[ ${ArchiveDir: -1} == '/' ]] && ArchiveDir=${ArchiveDir:0: -1}
 
 	ArchiveBase=$(basename "$ArchiveDir")
 
@@ -61,7 +61,7 @@ main() {
 	chmod 644 "$zipfile"
 
 	# shellcheck disable=SC2012
-	msg.info "[$zipfile $(int2hr "$(stat --printf=%s "$zipfile")")] was created. "
+	msg.info "[$zipfile] was created [$( int2hr "$(stat --printf=%s "$zipfile")" iec)]."
 
 	if ((PruneLimit)); then
 		args=( $(find "$OldArchiveDir" -name "${ArchiveBase}*.zip" | sort -r) )
@@ -91,21 +91,26 @@ usage() {
 	        : called [.]{DirNameBase}.old.  Multiple snap-shots of directores
 	        : can be maintained, with option to prune oldest files.    
 	        : The zip archive name uses the format {archiveName}.{time}.old
-	Synopsis: $PRG dirname [-l limit] [-H] [-v][-q] [-V] [-h]
-	        :  -P|--prune    Specify max number of archive files allowed, in
-	        :                archive directory, and delete oldest if necessary.      
+	Synopsis: $PRG "dirname" [-H] [-l] [-P [limit]]  [-v][-q] [-V] [-h]
 	        :  -H|--hidden   Create archive directory as hidden (prefix '.')
 	        :                Once created as hidden, -H must always be used to
-	        :                add new archives to the archive directory.
-	        :  -v|--verbose  turn on  msg verbose. (default)
-	        :  -q|--quiet    turn off msg verbose.
-	        :  -V|--version  print version.
-	        :  -h|--help     this help.
-	Example : # 0. creates dir /usr/share/usr/.myscripts.old (if it doesn't exist)
+	        :                add new archives.
+	        :  -l|--list     List all files in the 'dirname.old' archive directory.
+	        :  -P|--prune limit  
+	        :                Specify max number of archive files allowed, in
+	        :                archive directory, and delete oldest if necessary.      
+	        :  -v|--verbose  Turn on  msg verbose. (default)
+	        :  -q|--quiet    Turn off msg verbose.
+	        :  -V|--version  Print version.
+	        :  -h|--help     This help.
+	Examples:
+	        : # 0. creates dir /usr/share/usr/.myscripts.old (if it doesn't exist)
 	        : #    then makes a zip archive called myscripts.1561065600.zip.
 	        : #    -H creates the .old directory as 'hidden', with a leading dot.
 	        : $PRG /usr/share/myscripts -H -l 15 
-	        : # 1. just archive a directory
+	        :
+	        : # 1. just make an archive of a directory
+	        : #    Zip file would be located in directory myscripts.old.
 	        : $PRG myscripts
 	etx
 #	0#######:#|##|############|#################################################78

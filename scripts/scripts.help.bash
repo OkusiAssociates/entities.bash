@@ -2,7 +2,7 @@
 #! shellcheck disable=SC1072
 
 #X    Script:  entities.scripts.create-help
-#X   Version:  entities 0.97.420.465.7
+#X   Version:  entities 0.97.420.465.10
 #X      Desc:  For developers of entities.bash functions and scripts.
 #X          :  Assists the entities help system gather documentation.
 #X          :  All scripts in the entities/scripts directory must be 
@@ -17,21 +17,29 @@
 #X          :    -h|--help           This help.
 
 #X    Script:  dbh
-#X   Version:  0.98
+#X   Version:  0.97.420.465.10
 #X      Desc:  MySQL helper script to quickly view data/structure/info, 
 #X          :  without a lot of typing long sql commands. Fast in, fast out.
 #X  Synopsis:  dbh [database [table [command]]] [-p profile] [-V] [-h]
-#X          :    -p|--profile  Specify mysql profile [eg, /root/.my3.cnf].
+#X          :    database      Database name.
+#X          :    table         Table name.
+#X          :    command       Valid commands are:
+#X          :                    columns select_fields sql_command 
+#X          :                    sql_prompt structure
+#X          :    -p|--profile  Specify MySQL profile [eg, /root/.my3.cnf].
 #X          :    -V|--version  Print version.
 #X          :    -h|--help     This help.
-#X          :  To back out of a menu, select 0.
-#X          :  To exit, select q.
-#X  Examples:  # 0. go direct to database selection menu.
+#X          :  To back out of a menu, select 0. To exit, select q.
+#X  Examples:  
+#X          :  # 0. go direct to database selection menu.
 #X          :  dbh
+#X          : 
 #X          :  # 1. open db Users, then to table selection.
 #X          :  dbh Users
-#X          :  # 2. open table Users:user and show fields.
-#X          :  dbh Users users fields 
+#X          : 
+#X          :  # 2. open table Users:user and show column names.
+#X          :  dbh Users users columns 
+#X          : 
 #X          :  # 3. open mysql with profile, open Essays:essays 
 #X          :  dbh -p /root/my3.cnf Essays essays
 
@@ -40,21 +48,26 @@
 #X          :  called [.]{DirNameBase}.old.  Multiple snap-shots of directores
 #X          :  can be maintained, with option to prune oldest files.    
 #X          :  The zip archive name uses the format {archiveName}.{time}.old
-#X  Synopsis:  archivedir dirname [-l limit] [-H] [-v][-q] [-V] [-h]
-#X          :   -P|--prune    Specify max number of archive files allowed, in
-#X          :                 archive directory, and delete oldest if necessary.      
+#X  Synopsis:  archivedir "dirname" [-H] [-l] [-P [limit]]  [-v][-q] [-V] [-h]
 #X          :   -H|--hidden   Create archive directory as hidden (prefix '.')
 #X          :                 Once created as hidden, -H must always be used to
-#X          :                 add new archives to the archive directory.
-#X          :   -v|--verbose  turn on  msg verbose. (default)
-#X          :   -q|--quiet    turn off msg verbose.
-#X          :   -V|--version  print version.
-#X          :   -h|--help     this help.
-#X   Example:  # 0. creates dir /usr/share/usr/.myscripts.old (if it doesn't exist)
+#X          :                 add new archives.
+#X          :   -l|--list     List all files in the 'dirname.old' archive directory.
+#X          :   -P|--prune limit  
+#X          :                 Specify max number of archive files allowed, in
+#X          :                 archive directory, and delete oldest if necessary.      
+#X          :   -v|--verbose  Turn on  msg verbose. (default)
+#X          :   -q|--quiet    Turn off msg verbose.
+#X          :   -V|--version  Print version.
+#X          :   -h|--help     This help.
+#X  Examples: 
+#X          :  # 0. creates dir /usr/share/usr/.myscripts.old (if it doesn't exist)
 #X          :  #    then makes a zip archive called myscripts.1561065600.zip.
 #X          :  #    -H creates the .old directory as 'hidden', with a leading dot.
 #X          :  archivedir /usr/share/myscripts -H -l 15 
-#X          :  # 1. just archive a directory
+#X          : 
+#X          :  # 1. just make an archive of a directory
+#X          :  #    Zip file would be located in directory myscripts.old.
 #X          :  archivedir myscripts
 
 #X    Script:  p
