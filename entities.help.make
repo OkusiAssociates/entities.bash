@@ -117,6 +117,9 @@ main() {
 		mkdir -p "$HelpFilesDir"
 	fi
 
+	"$EntitiesDir/scripts/entities.scripts.create-help" -y \
+		|| msg.die "Could not execute entities.scripts.create-help"
+
 	bashfiles="$(find "$EntitiesDir/" -name "*.bash"  -not -name "_*" -type f \
 								| grep -v '/docs/\|.gudang\|.min\|/dev/')"
 	for file in ${bashfiles[@]}; do

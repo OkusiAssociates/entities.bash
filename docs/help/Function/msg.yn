@@ -1,8 +1,9 @@
 #-Function--msg.yn
   Function: msg.yn
-   Version: 0.98
-          : 0.97
-          : 0.97
+   Version: entities 0.97.420.465.4
+          :  0.98
+          :  0.97
+          :  0.97
       Desc: Ask y/n question,d return 0/1
   Synopsis: msg.yn "str"
           : NOTE: if verbose.set is disabled, or there is no tty, msg.yn

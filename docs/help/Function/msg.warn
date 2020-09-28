@@ -1,8 +1,9 @@
 #-Function--msg.warn
   Function: msg.warn
-   Version: 0.98
-          : 0.97
-          : 0.97
+   Version: entities 0.97.420.465.4
+          :  0.98
+          :  0.97
+          :  0.97
       Desc: Output warning message, with option to write to log.
   Synopsis: msg.warn [log] "str" ["str" ...]
           :   log   If specified, write syslog entry. 'log' is positional,

@@ -1,8 +1,9 @@
 #-Function--msg.prefix.set
   Function: msg.prefix.set
-   Version: 0.98
-          : 0.97
-          : 0.97
+   Version: entities 0.97.420.465.4
+          :  0.98
+          :  0.97
+          :  0.97
       Desc: Set/Retrieve value of _ent_MSG_PRE for prefixing a string
           : before every string output by the msg.* system.
   Synopsis: msg.prefix.set [-a] "msgprefix"

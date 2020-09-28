@@ -1,8 +1,9 @@
 #-Function--msg.die
   Function: msg.die
-   Version: 0.98
-          : 0.97
-          : 0.97
+   Version: entities 0.97.420.465.4
+          :  0.98
+          :  0.97
+          :  0.97
       Desc: Output error message to stderr, with option to write to log,
           : and exit with error code.
   Synopsis: msg.die [log] "str" ["str" ...]

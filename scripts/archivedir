@@ -14,12 +14,13 @@ source entities || exit 2
 	
 # main
 main() {
-	local -i hidden=0
+	local -i hidden=0 listonly=0
 	local -a args=()
 	while (( $# )); do
 		case "$1" in
 			-P|--prune)			shift; PruneLimit=${1:-0};;
 			-H|--hidden)		hidden=1;;
+			-l|--list)			listonly=1;;
 			-v|--verbose)		verbose.set on;;
 			-q|--quiet)			verbose.set off;;
 			-V|--version)		version.set; return 0;;
@@ -45,10 +46,17 @@ main() {
 	# create the archive directory
 	mkdir -p "$OldArchiveDir" || msg.die "Could not create [$OldArchiveDir]"
 	chmod 755 "$OldArchiveDir"
-		
+	
+	# list only
+	if ((listonly)); then
+		echo "$( ((hidden)) && echo 'Hidden ' )Archive $OldArchiveDir:"
+		ls -la "$OldArchiveDir"
+		return 0
+	fi	
+
 	# make the zip file
 	zipfile="${OldArchiveDir}/${ArchiveBase}.$(date +%s).zip"
-	msg "Creating archive [$zipfile]"
+	msg "Creating $( ((hidden)) && echo 'Hidden ' )Archive [$zipfile]"
 	zip -r "$zipfile" "${ArchiveDir}/" >/dev/null	|| msg.die "Error in zip [$zipfile]"
 	chmod 644 "$zipfile"
 

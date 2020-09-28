@@ -1,8 +1,9 @@
 #-Function--onoff
   Function: onoff
-   Version: 0.98
-          : 0.97
-          : 0.97
+   Version: entities 0.97.420.465.4
+          :  0.98
+          :  0.97
+          :  0.97
       Desc: echo 1 if 'on', 0 if 'off'
   Synopsis: onoff on|1 || off|0 [defaultval]
           : for ambiguous value, returns defaultval if defined, otherwise 0.

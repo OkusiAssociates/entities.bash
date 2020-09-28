@@ -1,21 +1,22 @@
 #---Script--dbh
     Script: dbh
-   Version: 0.98
+   Version: entities 0.97.420.465.4
+          :  0.98
       Desc: MySQL helper script to quickly view data/structure/info,
-          : without a lot of typing long sql commands. Fast in, fast out.
+          :  without a lot of typing long sql commands. Fast in, fast out.
   Synopsis: dbh [database [table [command]]] [-p profile] [-V] [-h]
-          :   -p|--profile  Specify mysql profile [eg, /root/.my3.cnf].
-          :   -V|--version  Print version.
-          :   -h|--help     This help.
-          : To back out of a menu, select 0.
-          : To exit, select q.
+          :    -p|--profile  Specify mysql profile [eg, /root/.my3.cnf].
+          :    -V|--version  Print version.
+          :    -h|--help     This help.
+          :  To back out of a menu, select 0.
+          :  To exit, select q.
    Example: # 0. go direct to database selection menu.
-          : dbh
-          : # 1. open db Users, then to table selection.
-          : dbh Users
-          : # 2. open table Users:user and show fields.
-          : dbh Users users fields
-          : # 3. open mysql with profile, open Essays:essays
-          : dbh -p /root/my3.cnf Essays essays
+          :  dbh
+          :  # 1. open db Users, then to table selection.
+          :  dbh Users
+          :  # 2. open table Users:user and show fields.
+          :  dbh Users users fields
+          :  # 3. open mysql with profile, open Essays:essays
+          :  dbh -p /root/my3.cnf Essays essays
     Source: /usr/share/okusi/entities/scripts/scripts.help.bash
 #---Script--dbh---------------------------------------------------------------

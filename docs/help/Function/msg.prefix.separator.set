@@ -1,8 +1,9 @@
 #-Function--msg.prefix.separator.set
   Function: msg.prefix.separator.set
-   Version: 0.98
-          : 0.97
-          : 0.97
+   Version: entities 0.97.420.465.4
+          :  0.98
+          :  0.97
+          :  0.97
       Desc: Set/Retrieve value of _ent_MSG_PRE_SEP for appending as a separator for msg.prefix.
           : Default separator is ': '
   Synopsis: msg.prefix.separator.set ["separator"]

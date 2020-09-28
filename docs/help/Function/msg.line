@@ -1,8 +1,9 @@
 #-Function--msg.line
   Function: msg.line
-   Version: 0.98
-          : 0.97
-          : 0.97
+   Version: entities 0.97.420.465.4
+          :  0.98
+          :  0.97
+          :  0.97
       Desc: Print a line of replicated characters (default underline)
           : from current cursor position to end of screen.
   Synopsis: msg.line [repchar [iterations]]

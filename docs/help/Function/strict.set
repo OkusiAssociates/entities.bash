@@ -1,8 +1,9 @@
 #-Function--strict.set
   Function: strict.set
-   Version: 0.98
-          : 0.97
-          : 0.97
+   Version: entities 0.97.420.465.4
+          :  0.98
+          :  0.97
+          :  0.97
       Desc: sets/unsets options errexit, nounset and pipefail.
           : Default is OFF.
           : Use of "strict.set on" is recommended for development.

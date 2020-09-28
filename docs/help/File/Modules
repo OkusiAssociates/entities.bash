@@ -1,8 +1,9 @@
 #-----File--Modules
       File: Modules
-   Version: 0.98
-          : 0.97
-          : 0.97
+   Version: entities 0.97.420.465.4
+          :  0.98
+          :  0.97
+          :  0.97
       Desc: By default, *all* files with a '.bash' extension located in
           : $ENTITIES/entities.d/** are automatically included in the
           : entities.bash source file.

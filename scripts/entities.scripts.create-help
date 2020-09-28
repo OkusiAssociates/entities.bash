@@ -1,0 +1,100 @@
+#!/bin/bash
+#! shellcheck disable=SC2154
+PRG=$(basename "$0")
+PRGDIR=$(dirname "$(readlink -f "$0")")
+
+	declare outputfile
+	outputfile="$PRGDIR/scripts.help.bash"
+#	outputfile=/dev/stdout
+	declare -a files lines
+	declare line label text
+	declare -i prompt
+	prompt=$( [ -t 0 ] && echo 1 || echo 0 )
+	
+main() {
+	cd "$PRGDIR" || exit 2
+		
+	while (($#)); do
+		case $1 in
+			-y|--no-prompt)	prompt=0;;
+			-o|--output)		shift; outputfile=${1:-/dev/stdout};;
+			-V|--version)		echo "entities $_ent_VERSION"; return 0;;
+			-h|--help)			usage; return 0;;
+			*)							msg.err "Unknown argument [$1]"; return 22;;
+		esac
+		shift
+	done
+	
+	if ((prompt)); then
+		echo "Output to [$outputfile]?" 
+		msg.yn 'Create help file for all executable files in entities/scripts? ' \
+				|| { echo; exit 1; }
+	fi					
+	(	echo '#!/bin/bash'
+		echo '#! shellcheck disable=SC1072'
+		echo
+		IFS=$'\n'
+		files=( $(find -maxdepth 1 -type f -executable | grep -v "\./_" ) )
+		for file in "${files[@]}"; do
+			[[ $file == *'~'* ]] && continue			
+			lines=( $("$file" -h 2>&1) )
+			for line in "${lines[@]}"; do
+					[[ -z $line ]] && continue 
+
+					label="${line%%:*}"
+					if [[ -z ${label} ]]; then
+						echo >&2 " ** Malformed Stucture in [$file]"
+						echo >&2 " ** line [$line]."
+						echo >&2 " ** Label column separator ':' not found."
+						continue
+					fi
+					label="         $(trim "$label")"
+					label="${label: -9}"
+					text="${line#*:}"
+					echo "#X $label: $text"
+				done
+			echo
+		done
+		echo
+	) >"$outputfile"
+}
+usage() {
+	cat <<-etx
+	Script  : $PRG
+	Version : entities $_ent_VERSION
+	Desc    : For developers of entities.bash functions and scripts.
+	        : Assists the entities help system gather documentation.
+	        : All scripts in the entities/scripts directory must be 
+	        : mode executable, with no .bash extension,
+	        : Scripts must respond to a -h|--help option, output help
+	        : in entities.bash standard format.
+	Synopsis: $PRG [-y] [-o [output]] [-V] [-h]
+	        :   -y|--no-prompt      Do not prompt to ask before execution.
+	        :   -o|--output output  Change default output. 
+	        :                       Default is 'scripts.help.bash'
+	        :   -V|--version        Print version.
+	        :   -h|--help           This help.
+	etx
+}
+
+msg.yn () { 
+    [ -t 0 ] || return 0;
+    local question="${1:-}" yn=''
+    question="${question} (y/n) "
+    question="${question//'
+'/ }";
+    while true; do
+        read -e -n1 -r -p "${question}" yn;
+        case "${yn,,}" in 
+            [y]*) return 0
+            ;;
+            [n]*) return 1
+            ;;
+            *) echo 'Please answer yes or no.'
+            ;;
+        esac;
+    done
+}
+
+main "$@"
+#fin

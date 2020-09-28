@@ -1,8 +1,9 @@
 #----About--entities.bash
      About: entities.bash
-   Version: 0.98
-          : 0.97
-          : 0.97
+   Version: entities 0.97.420.465.4
+          :  0.98
+          :  0.97
+          :  0.97
       Desc: Entities Functions/Globals/Local Declarations and Initialisations.
           : entities.bash is a light-weight Bash function library for systems
           : programmers and administrators.
