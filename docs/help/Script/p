@@ -1,6 +1,6 @@
 #---Script--p
     Script: p
-   Version: entities 0.97.420.465.4
+   Version: entities 0.97.420.465.5
           :  0.98
       Desc: Edit/SyntaxCheck/ShellCheck/Execute for
           :  bash and php scripts.
