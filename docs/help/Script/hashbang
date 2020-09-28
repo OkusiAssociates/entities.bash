@@ -1,9 +1,6 @@
 #---Script--hashbang
     Script: hashbang
-   Version: entities 0.97.420.465.5
-          :  0.98
-          :  0.97
-          :  0.97
+   Version: 0.97
       Desc: Use 'find' and 'grep' to search directory recursively for
           :  files identified as bash scripts, ignoring all other files.
           :  Identification is by filename extension, a hashbang

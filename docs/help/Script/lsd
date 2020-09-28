@@ -1,8 +1,6 @@
 #---Script--lsd
     Script: lsd
-   Version: entities 0.97.420.465.5
-          :  0.98
-          :  0.97
+   Version: 0.97
       Desc: Display directory tree. Wrapper script for 'tree'.
   Synopsis: lsd [-ls] [-L num] [-n][-C] [pathspec ...] [-- ...]
           :  pathspec       If not specified, {pathspec} defaults to

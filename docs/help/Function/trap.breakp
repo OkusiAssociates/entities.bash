@@ -1,9 +1,5 @@
 #-Function--trap.breakp
   Function: trap.breakp
-   Version: entities 0.97.420.465.5
-          :  0.98
-          :  0.97
-          :  0.97
       Desc: prompt to exit script or continue.
   Synopsis: trap.breakp [msg]
     Source: /usr/share/okusi/entities/entities.bash

@@ -1,9 +1,5 @@
 #---Global--CR
     Global: CR CH9 LF OLDIFS IFS
-   Version: entities 0.97.420.465.5
-          :  0.98
-          :  0.97
-          :  0.97
       Desc: Constant global char values.
           : NOTE: IFS is 'normalised' on every 'new' execution of
           :       entities. OLDIFS retains the existing IFS.

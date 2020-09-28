@@ -1,9 +1,5 @@
 #-Function--check.dependencies
   Function: check.dependencies
-   Version: entities 0.97.420.465.5
-          :  0.98
-          :  0.97
-          :  0.97
       Desc: check for script dependencies (programs, scripts, or functions in the environment).
   Synopsis: check.dependencies [-q|--quiet] name...
           :   -q|--quiet  do not print 'dependency-not-found' messages.

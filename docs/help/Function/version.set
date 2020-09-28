@@ -1,9 +1,5 @@
 #-Function--version.set
   Function: version.set
-   Version: entities 0.97.420.465.5
-          :  0.98
-          :  0.97
-          :  0.97
       Desc: Set or return version number of the current script.
   Synopsis: version.set "verstring"
           : $(version.set)

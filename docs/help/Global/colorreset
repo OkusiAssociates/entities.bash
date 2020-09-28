@@ -1,9 +1,5 @@
 #---Global--colorreset
     Global: colorreset colordebug colorinfo colornotice colorwarning colorerr colorcrit coloralert coloremerg
-   Version: entities 0.97.420.465.5
-          :  0.98
-          :  0.97
-          :  0.97
       Desc: Colors used by entities msg.* functions.
           : emerg alert crit err warning notice info debug
           : panic (dep=emerg) err (dep=error) warning (dep=warn)

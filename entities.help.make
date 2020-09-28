@@ -184,7 +184,7 @@ main() {
 				fi
 				Label="$label"
 				Header="$cmt"
-				Synopsis='' Desc='' Defaults='' Depends='' Example='' See_Also='' Tags='' Source=''
+				Synopsis='' Version='' Desc='' Defaults='' Depends='' Example='' See_Also='' Tags='' Source=''
 	
 			elif [[ "${SubHdrs[@]}" == *"$label"* ]]; then  # check if new label is a subheader category
 				#msg.info "  subheader [$label] found"

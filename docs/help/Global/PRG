@@ -1,9 +1,5 @@
 #---Global--PRG
     Global: PRG PRGDIR
-   Version: entities 0.97.420.465.5
-          :  0.98
-          :  0.97
-          :  0.97
       Desc: PRG and PRGDIR are initialised every time entities.bash is
           : executed.
    Example: source entities.bash inherit

@@ -1,9 +1,5 @@
 #-Function--msg.sys
   Function: msg.sys
-   Version: entities 0.97.420.465.5
-          :  0.98
-          :  0.97
-          :  0.97
       Desc: Output system message, with option to write to log.
   Synopsis: msg.sys [log] "str" ["str" ...]
           :   log   If specified, write syslog entry. 'log' is positional,

@@ -1,9 +1,5 @@
 #-Function--msg.err
   Function: msg.err
-   Version: entities 0.97.420.465.5
-          :  0.98
-          :  0.97
-          :  0.97
       Desc: Output error message to stderr, with option to write to log.
   Synopsis: msg.err [log] "str" ["str" ...]
           :   log   If specified, write syslog entry. 'log' is positional,
