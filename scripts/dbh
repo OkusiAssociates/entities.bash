@@ -106,8 +106,8 @@ select_command() {
 	msg.prefix.set ++ "$Database:$DataTable"
 	PS3="$(msg.prefix.set)Select Command: "
 	local -a cmds
-	cmds=(	'structure' 
-					'columns'
+	cmds=(	'show_structure' 
+					'show_columns'
 					'select_fields'
 					'sql_command'
 					'sql_prompt' 
@@ -125,6 +125,7 @@ select_command() {
 	msg.prefix.set --
 }
 
+do_show_structure() { do_structure "$@"; }
 do_structure() {
 	mysql --defaults-file=$Profile --prompt="$(msg.prefix.set)" --no-auto-rehash  "$Database" -e "show columns from $DataTable" || perror $?
 	return 0
@@ -146,7 +147,7 @@ do_sql_command() {
 do_sql_prompt() {
 	msg.prefix.set '++' "$Database"
 	(mysql --defaults-file=$Profile --no-auto-rehash --prompt="$(msg.prefix.set)mysql> " "$Database"	|| perror $?) || true
-	msg.prefix.set --
+	msg.prefix.set '--'
 	return 0
 }
 
@@ -175,12 +176,14 @@ do_select_fields() {
 			mysql --defaults-file=$Profile --no-auto-rehash "$Database" -e "$selectstr" || perror $?
 		) || true
 	done
-	msg.prefix.set --
+	PS3=''
+	msg.prefix.set '--'
 	tabs 8
 	return 0
 }
 
-	do_fields() { do_columns "$@"; }
+do_show_columns() { do_columns "$@"; }
+do_fields() { do_columns "$@"; }
 do_columns() {
 	local -a flds
 	local fld
