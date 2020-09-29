@@ -88,8 +88,10 @@ verbose.set() {
 declare -fx 'verbose.set'
 declare -ix _ent_COLOR=1
 [ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
-color() { return $(( ! _ent_COLOR )); }
-declare -fx color
+is.color() { return $(( ! _ent_COLOR )); }
+declare -fx 'is.color'
+	alias is.colour='is.color'		# for the civilised world
+	alias color='is.color'
 color.set() {
 	if (( ${#@} )); then 
 		if [[ $1 == 'auto' ]]; then
@@ -126,8 +128,9 @@ version.set() {
 }
 declare -fx 'version.set'
 declare -ix _ent_DRYRUN=0
-dryrun() { return $(( ! _ent_DRYRUN )); }
-declare -fx dryrun
+is.dryrun() { return $(( ! _ent_DRYRUN )); }
+declare -fx 'is.dryrun'
+	alias dryrun='is.dryrun'
 dryrun.set() {
 	if (( $# )); then 
 		_ent_DRYRUN=$(onoff "${1}" "${_ent_DRYRUN}")
@@ -138,8 +141,9 @@ dryrun.set() {
 }
 declare -fx 'dryrun.set'
 declare -ix _ent_DEBUG=0
-debug() {	return $(( ! _ent_DEBUG )); }
-declare -fx debug
+is.debug() {	return $(( ! _ent_DEBUG )); }
+declare -fx 'is.debug'
+	alias debug='is.debug' #X legacy X#
 debug.set() {
 	if (( $# )); then _ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
 	else							echo "${_ent_DEBUG}"
@@ -148,8 +152,9 @@ debug.set() {
 }
 declare -fx 'debug.set'
 declare -ix _ent_STRICT=0
-strict() { return $(( ! _ent_STRICT )); }
-declare -fx strict
+is.strict() { return $(( ! _ent_STRICT )); }
+declare -fx 'is.strict'
+	alias strict='is.strict'
 strict.set() {
 	if (( $# )); then
 	 	local opt='+'
@@ -487,7 +492,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.465.11'
+_ent_VERSION='0.97.420.466.4'
 exit_if_already_running() {
 	return 0
 }
@@ -699,6 +704,22 @@ remove_accents() {
 	echo -n "${1:-}" | iconv -c -f UTF-8 -t ASCII//TRANSLIT//IGNORE
 }
 declare -fx remove_accents
+sqslash() {
+	if (($#)); then
+		echo "${@//\'/\\\'}"
+	else
+		while read -r l; do echo "${l//\'/\\\'}"; done
+	fi
+}
+declare -fx sqslash
+dqslash() {
+	if (($#)); then
+		echo "${@//\"/\\\"}"
+	else
+		while read -r l; do echo "${l//\"/\\\"}"; done
+	fi
+}
+declare -fx dqslash
 remsp2() { 
 	local -i incblank=0
 	if (($#)); then

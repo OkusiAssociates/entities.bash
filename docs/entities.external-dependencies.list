@@ -5,6 +5,7 @@
 declare -a _ent_ESSENTIAL_PACKAGES=(
 	errno
 	gzip
+	locate
 	moreutils
 	shellcheck
 	tree
@@ -24,7 +25,7 @@ declare -a _ent_RECOMMENDED_PACKAGES=(
 	w3m
 )
 
-# If you also use php/mysql 
+# If php/mysql is required
 declare -a _ent_PHP_MYSQL_CLIENT_PACKAGES=(
 	php-cli
 	php-zip

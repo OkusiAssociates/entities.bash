@@ -170,7 +170,7 @@ declare -fx onoff
 
 declare -ix _ent_VERBOSE
 [ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
-#X Function: verbose.set 
+#X Function: verbose.set is.verbose
 #X Desc    : Set global verbose status for msg* functions. For shell 
 #X         : terminal verbose is ON by default, otherwise, when called 
 #X         : from another script, verbose is OFF by default.
@@ -179,20 +179,14 @@ declare -ix _ent_VERBOSE
 #X         : always ignore verbose status and output to STDERR.
 #X Synopsis: verbose.set [on|1] | [off|0]
 #X         : curstatus=$(verbose.set)      
+#X         : is.verbose returns true if verbose is set, false if not.
 #X Example : 
 #X         : oldverbose=$(verbose.set)
 #X         : verbose.set on
 #X         : # do stuff... #
 #X         : verbose.set $oldverbose
-#X See Also: is.verbose
-
-#X Function: is.verbose
-#X Desc    : Return current _ent_VERBOSE status set by verbose.set().
-#X         : _ent_VERBOSE controls output from msg*() functions.
-#X Synopsis: is.verbose
-#X Example : 
 #X         : is.verbose && echo "Verbose is on."
-#X See Also: verbose.set
+#X         : _ent_VERBOSE controls output from msg*() functions.
 is.verbose() { return $(( ! _ent_VERBOSE )); }
 declare -fx 'is.verbose'
 	alias verbose='is.verbose' #X legacy X#
@@ -208,7 +202,7 @@ verbose.set() {
 }
 declare -fx 'verbose.set'
 
-#X Function: color.set
+#X Function: color.set is.color
 #X Desc    : turn on/off colorized output from msg.* functions.
 #X         : Color is turned off if verbose() is also set to off.
 #X Synopsis: color.set [ON|1][OFF|0][auto]
@@ -220,8 +214,11 @@ declare -fx 'verbose.set'
 #X         : color.set $oldstatus
 declare -ix _ent_COLOR=1
 [ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
-color() { return $(( ! _ent_COLOR )); }
-declare -fx color
+is.color() { return $(( ! _ent_COLOR )); }
+declare -fx 'is.color'
+	alias is.colour='is.color'		# for the civilised world
+	alias color='is.color'
+	
 color.set() {
 	if (( ${#@} )); then 
 		if [[ $1 == 'auto' ]]; then
@@ -273,16 +270,18 @@ version.set() {
 }
 declare -fx 'version.set'
 
-#X Function: dryrun.set
+#X Function: dryrun.set is.dryrun
 #X Desc    : general purpose global var for debugging. 
 #X Defaults: 0
 #X Synopsis: dryrun.set [[on|1] | [off|0]]
 #X         : $(dryrun.set)
 #X Example : dryrun.set off
-#X         : ((dryrun.set)) || doit.sh
+#X         : is.dryrun || doit.bash
 declare -ix _ent_DRYRUN=0
-dryrun() { return $(( ! _ent_DRYRUN )); }
-declare -fx dryrun
+is.dryrun() { return $(( ! _ent_DRYRUN )); }
+declare -fx 'is.dryrun'
+	alias dryrun='is.dryrun'
+
 dryrun.set() {
 	if (( $# )); then 
 		_ent_DRYRUN=$(onoff "${1}" "${_ent_DRYRUN}")
@@ -295,8 +294,8 @@ dryrun.set() {
 }
 declare -fx 'dryrun.set'
 
-#X Function: debug debug.set
-#X Desc    : general purpose global setting for debugging. 
+#X Function: debug.set is.debug
+#X Desc    : General purpose globalx setting for debugging. 
 #X         : debug.set sets the debug value (0|1) when a 
 #X         : parameter is passed. If a parameter is not passed, 
 #X         : the current status of debug is echoed.
@@ -310,8 +309,10 @@ declare -fx 'dryrun.set'
 #X         : debug && msg "my debug message"
 #X         : olddebug=$(debug.set)
 declare -ix _ent_DEBUG=0
-debug() {	return $(( ! _ent_DEBUG )); }
-declare -fx debug
+is.debug() {	return $(( ! _ent_DEBUG )); }
+declare -fx 'is.debug'
+	alias debug='is.debug' #X legacy X#
+	
 debug.set() {
 	if (( $# )); then _ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
 	else							echo "${_ent_DEBUG}"
@@ -321,18 +322,20 @@ debug.set() {
 declare -fx 'debug.set'
 
 
-#X Function: strict.set
-#X Desc    : sets/unsets options errexit, nounset and pipefail. 
-#X         : Default is OFF.
-#X         : Use of "strict.set on" is recommended for development.
-#X         : Without parameters, only echos current status (0|1)
+#X Function: strict.set is.strict
+#X Desc    : Sets/unsets options errexit, nounset and pipefail to
+#X         : enable a 'strict' enviroment. Default is off. 
+#X         : Use of strict.set on (-o errexit -o nounset -o pipefile)
+#X         : is particuarly recommended for development.
+#X         : Without parameters, strict.set echos current status (0|1).
 #X Synopsis: strict.set [[on|1] | [off|0*]]
-#X         : curstatus=$(strict.set)
 #X Example : strict.set on
 #X         : curstatus=$(strict.set)
 declare -ix _ent_STRICT=0
-strict() { return $(( ! _ent_STRICT )); }
-declare -fx strict
+is.strict() { return $(( ! _ent_STRICT )); }
+declare -fx 'is.strict'
+	alias strict='is.strict'
+	
 strict.set() {
 	if (( $# )); then
 	 	local opt='+'

@@ -2,9 +2,9 @@
 source entities || exit 2
 	strict.set off
 
-	if [[ -z "${hb_EXCLUDE[@]:-}" ]]; then
-		declare -ax hb_EXCLUDE
-		hb_EXCLUDE=( '~' '.gudang' 'gudang' '.old' '.bak' 'dev/' '.png' '.jpg' '.mp[34]' '.iso' )
+	declare -ax hb_EXCLUDE
+	if [[ -z "${hb_EXCLUDE[*]:-}" ]]; then
+		hb_EXCLUDE=( '~' 'gudang/' '.old' '.bak' 'dev/' '.png' '.jpg' '.mp3' '.mp4' '.iso' 'help/' '.zip' '.git' )
 	fi
 
 	declare -i hb_MAX_FILESIZE
@@ -62,12 +62,12 @@ hashbang_main() {
 #	(( ${#prefix} )) 		&& printf '%s\n' "$hashbang"
 	msg "# $PRG $dir --hashbang '$hashbang'"
 	(( ${#search} ))				&& msg " --search '$search'"
-	(( ${#gcmd[@]} ))				&& msg " --grep ${gcmd[*]}"
 	(( hbExclude ))					&& msg " --hb-exclude"
 	[[ ${padfix} != ' ' ]]	&& msg " --padfix '${padfix}'"
 	(( ${#prefix} ))				&& msg " --prefix '${prefix}'"
 	(( ${#suffix} ))				&& msg " --suffix '${suffix}'"
 	(( ! ${#LF} ))					&& msg " --nolf"
+	(( ${#gcmd[@]} ))				&& msg " --grep ${gcmd[*]}"
 	msg '\n'
 	
 	if ((hbExclude)) && [[ -z ${hb_EXCLUDE[@]} ]]; then
@@ -84,8 +84,8 @@ hashbang_main() {
 		# exclude files
 		if ((hbExclude)); then
 			for e in "${hb_EXCLUDE[@]}"; do
-				if [[ "$file" == *"${e}"* ]]; then
-					debug && msg.warn "Excluded [$file] because of [$e]"
+				if [[ $file == *"$e"* ]]; then
+					is.debug && msg.warn "Excluded [$file] because of [$e]"
 					incl=0
 					break
 				fi

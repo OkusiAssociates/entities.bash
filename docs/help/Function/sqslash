@@ -1,0 +1,11 @@
+#-Function--sqslash
+  Function: sqslash
+      Desc: Add backslash to every single quote char (').
+          : If specified, takes parameter argument first.
+          : if no parameters specifed, assume input from stdin.
+  Synopsis: sqslash [string]
+   Example: sqslash "Hello 'World'!
+          : echo "Hello 'World'! | sqslash
+          : sqslash <myfile.txt
+    Source: /usr/share/okusi/entities/entities.d/string/quoteslash.bash
+#-Function--sqslash-----------------------------------------------------------

@@ -314,12 +314,11 @@ install() {
 	ln -fs entities.bash.min entities						|| exit $?
 	ln -fs entities.bash.min entities.min				|| exit $?
 
-	# MAIN EXECUTABLE in /usr/local/bin/ || /usr/bin
-	if [[ -d /usr/local/bin ]]; then
-		ln -fs "$ENTITIES/entities.bash" /usr/local/bin/entities || exit $?
-	else
-		ln -fs "$ENTITIES/entities.bash" /usr/bin/entities || exit $?
-	fi
+	# MAIN EXECUTABLE in /usr/local/bin
+	ln -fs "$ENTITIES/entities.bash" /usr/local/bin/entities || exit $?
+	# INSTALL EXECUTABLE points to entities.bash installation directory
+	ln -fs "$PRGDIR/entities.install" /usr/local/bin/entities.install || exit $?
+	ln -fs "$PRGDIR/entities.install" /usr/local/bin/install.entities || exit $?
 
 	# symlink to bundled utility scripts
 	declare -a arr
