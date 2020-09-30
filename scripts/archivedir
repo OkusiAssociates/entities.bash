@@ -4,7 +4,7 @@ source entities || exit 2
 	trap.set on
 	strict.set off
 	# shellcheck disable=SC2154
-	version.set "${_ent_VERSION}"
+	version.set "entities ${_ent_VERSION}"
 	msg.prefix.set "$PRG"
 	
 	# global vars
@@ -23,7 +23,7 @@ main() {
 			-l|--list)			listonly=1;;
 			-v|--verbose)		verbose.set on;;
 			-q|--quiet)			verbose.set off;;
-			-V|--version)		version.set; return 0;;
+			-V|--version)		version.set; echo; return 0;;
 			-h|--help)			usage; return 0;;
 			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
 			*)							(( ${#args[@]} > 1 )) \
@@ -43,16 +43,19 @@ main() {
 	ArchiveBase=$(basename "$ArchiveDir")
 
 	OldArchiveDir="$(dirname "$ArchiveDir")/$( ((hidden)) && echo '.' )${ArchiveBase}.old"	
-	# create the archive directory
-	mkdir -p "$OldArchiveDir" || msg.die "Could not create [$OldArchiveDir]"
-	chmod 755 "$OldArchiveDir"
-	
 	# list only
 	if ((listonly)); then
 		echo "$( ((hidden)) && echo 'Hidden ' )Archive $OldArchiveDir:"
-		ls -la "$OldArchiveDir"
+		if [[ -d $OldArchiveDir ]]; then
+			ls -lA "$OldArchiveDir/"
+		else
+			msg.err "Archive directory [$OldArchiveDir] not found."
+		fi
 		return 0
 	fi	
+	# create the archive directory
+	mkdir -p "$OldArchiveDir" || msg.die "Could not create [$OldArchiveDir]"
+	chmod 755 "$OldArchiveDir"
 
 	# make the zip file
 	zipfile="${OldArchiveDir}/${ArchiveBase}.$(date +%s).zip"

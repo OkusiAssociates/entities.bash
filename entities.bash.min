@@ -492,7 +492,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.466.7'
+_ent_VERSION='0.97.420.467.1'
 exit_if_already_running() {
 	return 0
 }
