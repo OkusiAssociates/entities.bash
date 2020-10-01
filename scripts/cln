@@ -33,8 +33,6 @@ cln() {
 	maxdepth=$((maxdepth)) || return $?	# must be numeric
 	((maxdepth < 1)) && maxdepth=1
 	
-	
-
 	local TempExpr='' r
 	for r in "${_ent_CLNTEMP[@]}"; do
 		[[ -z $r ]] && continue
@@ -96,6 +94,7 @@ cln() {
 usage() {
 	cat <<-etx
 	Script  : cln
+	Version : entities ${_ent_VERSION:-}
 	Desc    : Search for and delete defined rubbish files.
 	Synopsis: ${PRG} [-m depth] [-n][-N] [-v][-q] [dirspec ...]
 	        :   dirspec           Default '.'
@@ -110,9 +109,10 @@ usage() {
 	        : Recursively remove all temporary files defined in 
 	        : Array envvar _ent_CLNTEMP defines temporary files to delete.
 	        : If not set, defaults to ( '*~' '~*' '.~*' )
-	        : _ent_CLNTEMP currently set to:
+	        : _ent_CLNTEMP is currently set to:
 	        :   ( ${_ent_CLNTEMP[@]} )
-	        : If not defined, _ent_CLNTEMP defaults to ( '*~' '~*' '.~*' )
+	        : If not defined, _ent_CLNTEMP defaults to:
+	        :   ( '*~' '~*' '.~*' )
 	etx
 }
 

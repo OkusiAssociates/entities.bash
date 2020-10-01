@@ -4,7 +4,7 @@ source entities || exit 2
 
 	declare -ax hb_PRUNE
 	if [[ -z "${hb_PRUNE[*]:-}" ]]; then
-		hb_PRUNE=( '~*' 'gudang' '.gudang' '*.old' '*.bak' 'dev' 'help' 'cctv' '.git' 'git' )
+		hb_PRUNE=( '~*' '*gudang' '*.gudang' '*.old' '*.bak' '*dev' '*help' '*cctv' '*.git' '*git' )
 	fi
 
 	declare -ax hb_EXCLUDE
@@ -80,8 +80,6 @@ hashbang_main() {
 		hbExclude=0
 	fi
 
-	#find -O1 / -maxdepth 6 -type d -path '*/PROGRAMS' -prune -o -path '*/proc' -prune -o -path '*/KLIEN' -prune -o -type d -print >/dev/null
-	
 	# execute
 	local xpath='' xdot=''
 	if ((hbExclude)); then
@@ -89,7 +87,7 @@ hashbang_main() {
 		[[ ${dir:0:3} == '../' ]] && xdot='../'
 		for p in "${hb_PRUNE[@]}"; do xpath+="-type d -path '${xdot}${p}' -prune -o "; done
 	fi
-	files=( $(find -O2 "${dir}" -maxdepth "${maxdepth}" $xpath -type f -print) )
+	files=( $(find -O2 "${dir}" -maxdepth "${maxdepth}" $xpath \( -type f -print \)) )
 	local file='' e
 	local -i incl=1
 	for file in "${files[@]:-}"; do

@@ -1,13 +1,13 @@
 #!/bin/bash
 declare -ix _ent_MINIMAL=1
 declare -- PRG PRGDIR 
-declare -x _ent_scriptstatus="\$0=$0|"
+declare -x _ent_scriptstatus="[\$0=$0]"
 	declare p_
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
-		p_="$(/bin/readlink -f "${0}")" || p_=''
-		_ent_scriptstatus+="is.script|\$p_=$p_|"
-		if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
-			_ent_scriptstatus+='is.execute|'
+		p_="$(/bin/readlink -fn -- "${0}")" || p_=''
+		_ent_scriptstatus+="[is.script][\$p_=$p_]"
+		if [[ "$(/bin/readlink -fn -- "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
+			_ent_scriptstatus+='[is.execute]'
 			_ent_LOADED=0
 			while (( $# )); do
 				case "${1,,}" in
@@ -22,20 +22,20 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			done		
 			exit $?
 		fi
-		_ent_scriptstatus+='is.sourced-from-script|SHLVL='"$SHLVL"'|'
+		_ent_scriptstatus+='[is.sourced-from-script][SHLVL='"$SHLVL"']'
 		PRG=$(/usr/bin/basename "${p_}")
 		PRGDIR=$(/usr/bin/dirname "${p_}")
-		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
+		_ent_scriptstatus+="[PRGDIR=$PRGDIR]"
 		unset p_
 		if (( ! $# )); then
 			(( ${_ent_LOADED:-0} )) && return 0
 		fi
 	else
-		_ent_scriptstatus+='sourced-from-shell|SHLVL='"$SHLVL"'|'
-		p_=$(/bin/readlink -f "${BASH_SOURCE[0]}")
+		_ent_scriptstatus+='[sourced-from-shell][SHLVL='"$SHLVL"']'
+		p_=$(/bin/readlink -fn -- "${BASH_SOURCE[0]}")
 		PRG=$(/usr/bin/basename "${p_}")
 		PRGDIR=$(/usr/bin/dirname "${p_}")
-		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
+		_ent_scriptstatus+="[PRGDIR=$PRGDIR]"
 		unset _p
 		if [[ -n "${ENTITIES:-}" ]]; then
 			PATH="${PATH//\:${ENTITIES}/}"
@@ -54,7 +54,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 		shift
 	done
 ((_ent_LOADED)) && return 0;
-_ent_scriptstatus+='reloading|'
+_ent_scriptstatus+='[reloading]'
 set +o errexit +o nounset +o pipefail
 shopt -s extglob
 shopt -s globstar
@@ -339,7 +339,7 @@ msg.prefix.separator.set() {
 	fi
 	return 0
 }
-declare -fx msg.prefix.separator.set
+declare -fx 'msg.prefix.separator.set'
 declare -ax _ent_MSG_PRE
 _ent_MSG_PRE=()
 msg.prefix.set() {
@@ -371,7 +371,7 @@ msg.prefix.set() {
 	fi
 	return 0
 }
-declare -fx msg.prefix.set
+declare -fx 'msg.prefix.set'
 _printmsg() {
 	local line IFS=$'\t\n' lf=''
 	for line in "$@"; do
@@ -460,7 +460,7 @@ fi
 declare -xig _ent_LOADED=1
 	declare -xng __entities__='_ent_LOADED' 	 #X legacy X#
 shopt -s expand_aliases # Enables alias expansion.
-_ent_scriptstatus+='entities loaded'
+_ent_scriptstatus+='[entities loaded]'
 declare -gx _ent_EDITOR
 	_ent_EDITOR="$(which nano 2>/dev/null)"
 	declare -gx EDITOR
@@ -492,7 +492,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.467.1'
+_ent_VERSION='0.97.420.468.6'
 exit_if_already_running() {
 	return 0
 }

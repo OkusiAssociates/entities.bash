@@ -34,11 +34,11 @@
 #X        : resolved to actual location.
 #X        : PRG/PRGDIR are *always* initialised as local vars regardless of 
 #X        : 'inherit' status when loading entities.bash.
-#X Depends: basename dirname readlink mkdir ln cat systemd-cat stty
+#X Depends: basename dirname readlink mkdir ln cat stty
 
 #X Global  : PRG PRGDIR 
-#X Desc    : PRG and PRGDIR are initialised every time entities.bash is
-#X         : executed.
+#X Desc    : PRG and PRGDIR are global variables reinitialised every time 
+#X         : entities.bash is sourced/executed.
 #X Examples: source entities.bash inherit 
 #X         :       # ^ if entities.bash has already been loaded, 
 #X         :       # init PRGDIR/PRG globals only then return.
@@ -49,16 +49,16 @@
 #X         :       # do not use any existing instance already loaded.
 declare -- PRG PRGDIR 
 
-declare -x _ent_scriptstatus="\$0=$0|"
+declare -x _ent_scriptstatus="[\$0=$0]"
 
 	declare p_
 	# Is entities.bash being executed as a script?
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
-		p_="$(/bin/readlink -f "${0}")" || p_=''
-		_ent_scriptstatus+="is.script|\$p_=$p_|"
+		p_="$(/bin/readlink -fn -- "${0}")" || p_=''
+		_ent_scriptstatus+="[is.script][\$p_=$p_]"
 		# Has entities.bash been executed?
-		if [[ "$(/bin/readlink -f "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
-			_ent_scriptstatus+='is.execute|'
+		if [[ "$(/bin/readlink -fn -- "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
+			_ent_scriptstatus+='[is.execute]'
 			_ent_LOADED=0
 			# do options for execute mode
 			while (( $# )); do
@@ -75,10 +75,10 @@ declare -x _ent_scriptstatus="\$0=$0|"
 			done		
 			exit $?
 		fi
-		_ent_scriptstatus+='is.sourced-from-script|SHLVL='"$SHLVL"'|'
+		_ent_scriptstatus+='[is.sourced-from-script][SHLVL='"$SHLVL"']'
 		PRG=$(/usr/bin/basename "${p_}")
 		PRGDIR=$(/usr/bin/dirname "${p_}")
-		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
+		_ent_scriptstatus+="[PRGDIR=$PRGDIR]"
 		unset p_
 
 		# `entities` is already loaded, and no other parameters have 
@@ -89,11 +89,11 @@ declare -x _ent_scriptstatus="\$0=$0|"
 	
 	# `source entities` has been executed at the shell command prompt
 	else
-		_ent_scriptstatus+='sourced-from-shell|SHLVL='"$SHLVL"'|'
-		p_=$(/bin/readlink -f "${BASH_SOURCE[0]}")
+		_ent_scriptstatus+='[sourced-from-shell][SHLVL='"$SHLVL"']'
+		p_=$(/bin/readlink -fn -- "${BASH_SOURCE[0]}")
 		PRG=$(/usr/bin/basename "${p_}")
 		PRGDIR=$(/usr/bin/dirname "${p_}")
-		_ent_scriptstatus+="PRGDIR=$PRGDIR|"
+		_ent_scriptstatus+="[PRGDIR=$PRGDIR]"
 		unset _p
 		if [[ -n "${ENTITIES:-}" ]]; then
 			PATH="${PATH//\:${ENTITIES}/}"
@@ -128,7 +128,7 @@ declare -x _ent_scriptstatus="\$0=$0|"
 #X         :     || { echo >&2 'entities.bash not loaded!'; exit; }
 ((_ent_LOADED)) && return 0;
 
-_ent_scriptstatus+='reloading|'
+_ent_scriptstatus+='[reloading]'
 
 # turn off 'strict' by default
 set +o errexit +o nounset +o pipefail
@@ -137,7 +137,7 @@ set +o errexit +o nounset +o pipefail
 shopt -s extglob
 shopt -s globstar
 
-#X Global  : CR CH9 LF OLDIFS IFS
+#X GlobalX : CR CH9 LF OLDIFS IFS
 #X Desc    : Constant global char values.
 #X         : NOTE: IFS is 'normalised' on every 'new' execution of 
 #X         :       entities. OLDIFS retains the existing IFS.
@@ -235,7 +235,7 @@ color.set() {
 declare -fx 'color.set'
 	alias colour.set='color.set'		# for the civilised world
 
-#X Global   : colorreset colordebug colorinfo colornotice colorwarning colorerr colorcrit coloralert coloremerg
+#X GlobalX  : colorreset colordebug colorinfo colornotice colorwarning colorerr colorcrit coloralert coloremerg
 #X Desc     : Colors used by entities msg.* functions.
 #X          : emerg alert crit err warning notice info debug
 #X          : panic (dep=emerg) err (dep=error) warning (dep=warn)
@@ -675,8 +675,7 @@ msg.prefix.separator.set() {
 	fi
 	return 0
 }
-# shellcheck disable=SC2154
-declare -fx msg.prefix.separator.set
+declare -fx 'msg.prefix.separator.set'
 
 #X Function: msg.prefix.set
 #X Desc    : Set/Retrieve value of _ent_MSG_PRE for prefixing a string 
@@ -722,8 +721,7 @@ msg.prefix.set() {
 	fi
 	return 0
 }
-# shellcheck disable=SC2154
-declare -fx msg.prefix.set
+declare -fx 'msg.prefix.set'
 
 _printmsg() {
 	local line IFS=$'\t\n' lf=''
@@ -856,5 +854,5 @@ shopt -s expand_aliases # Enables alias expansion.
 
 #-Function Declarations End --------------------------------------------------
 
-_ent_scriptstatus+='entities loaded'
+_ent_scriptstatus+='[entities loaded]'
 #fin

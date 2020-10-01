@@ -1,5 +1,5 @@
-#---Global--CR
-    Global: CR CH9 LF OLDIFS IFS
+#--Globalx--CR
+   Globalx: CR CH9 LF OLDIFS IFS
       Desc: Constant global char values.
           : NOTE: IFS is 'normalised' on every 'new' execution of
           :       entities. OLDIFS retains the existing IFS.
@@ -10,4 +10,4 @@
    Example: str="${LF}${CH9}This is a line.${LF}{$CH9}This is another line."
           : echo -e "$str"
     Source: /usr/share/okusi/entities/entities.bash
-#---Global--CR----------------------------------------------------------------
+#--Globalx--CR----------------------------------------------------------------

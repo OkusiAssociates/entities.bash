@@ -2,7 +2,7 @@
 #! shellcheck disable=SC1072
 
 #X    Script:  entities.scripts.create-help
-#X   Version:  entities 0.97.420.466.8
+#X   Version:  entities 0.97.420.468.5
 #X      Desc:  For developers of entities.bash functions and scripts.
 #X          :  Assists the entities help system gather documentation.
 #X          :  All scripts in the entities/scripts directory must be 
@@ -17,7 +17,7 @@
 #X          :    -h|--help           This help.
 
 #X    Script:  dbh
-#X   Version:  0.97.420.466.8
+#X   Version:  0.97.420.468.5
 #X      Desc:  MySQL helper script to quickly view data/structure/info, 
 #X          :  without a lot of typing long sql commands. Fast in, fast out.
 #X  Synopsis:  dbh [database [table [command]]] [-p profile] [-V] [-h]
@@ -42,6 +42,24 @@
 #X          : 
 #X          :  # 3. open mysql with profile, open Essays:essays 
 #X          :  dbh -p /root/my3.cnf Essays essays
+
+#X    Script:  findrecent
+#X      Desc:  Find 'n' most recently updated files in directory.
+#X  Synopsis:  findrecent [-n num] [-p "dir"][-N] ["dir"]
+#X          :    dir        Directory spec. Default '.'
+#X          :    -n|--headnum num  
+#X          :               Number of files to display. Default 10
+#X          :    -p|--prune "dir"
+#X          :               Add dir to hb_PRUNE. Enable Prune.
+#X          :    -N|--no-prune
+#X          :               Clear hb_PRUNE. Disable Prune.
+#X          :  Prune is enabled by default.
+#X          :  Current hb_PRUNE value is:
+#X          :    ( ~* *~ *gudang *.gudang *.old *.bak *dev *help *cctv *.git git )
+#X          : 
+#X   Example:  findrecent /var/www -n 15
+#X          : 
+#X          :  findrecent /internet -N -p '*KLIEN'
 
 #X    Script:  archivedir 
 #X      Desc:  Create zip archive of a directory, and store in directory 
@@ -138,6 +156,7 @@
 #X          :  hashbang -s 'some_var_name' -p 'p' -x '-s' >editfiles
 
 #X    Script:  cln
+#X   Version:  entities 0.97.420.468.5
 #X      Desc:  Search for and delete defined rubbish files.
 #X  Synopsis:  cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
 #X          :    dirspec           Default '.'
@@ -152,8 +171,9 @@
 #X          :  Recursively remove all temporary files defined in 
 #X          :  Array envvar _ent_CLNTEMP defines temporary files to delete.
 #X          :  If not set, defaults to ( '*~' '~*' '.~*' )
-#X          :  _ent_CLNTEMP currently set to:
+#X          :  _ent_CLNTEMP is currently set to:
 #X          :    ( *~ ~* .~* DEADJOE dead.letter )
-#X          :  If not defined, _ent_CLNTEMP defaults to ( '*~' '~*' '.~*' )
+#X          :  If not defined, _ent_CLNTEMP defaults to:
+#X          :    ( '*~' '~*' '.~*' )
 
 

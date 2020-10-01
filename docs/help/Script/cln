@@ -1,5 +1,6 @@
 #---Script--cln
     Script: cln
+   Version: entities 0.97.420.468.5
       Desc: Search for and delete defined rubbish files.
   Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
           :    dirspec           Default '.'
@@ -14,8 +15,9 @@
           :  Recursively remove all temporary files defined in
           :  Array envvar _ent_CLNTEMP defines temporary files to delete.
           :  If not set, defaults to ( '*~' '~*' '.~*' )
-          :  _ent_CLNTEMP currently set to:
+          :  _ent_CLNTEMP is currently set to:
           :    ( *~ ~* .~* DEADJOE dead.letter )
-          :  If not defined, _ent_CLNTEMP defaults to ( '*~' '~*' '.~*' )
+          :  If not defined, _ent_CLNTEMP defaults to:
+          :    ( '*~' '~*' '.~*' )
     Source: /usr/share/okusi/entities/entities.bash
 #---Script--cln---------------------------------------------------------------

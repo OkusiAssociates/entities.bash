@@ -2,13 +2,13 @@
 	declare _u
 	_u=$(cat /etc/issue)
 	[[ "${_u:0:12}" < 'Ubuntu 16.04' ]] \
-			&& msg.die 'entities.bash requires Ubuntu 16.04 or higher.'
+			&& { echo  >&2 '[entities.bash] requires [Ubuntu 16.04] or higher.'; exit 1; }
 	unset _u
 
 usage() {
-	local v PRG
+	local v PRG PRGDIR
 	PRG=$(basename "$0")
-	PRGDIR=$(dirname "$( readlink -f "$0")")
+	PRGDIR=$(dirname "$( readlink -fn -- "$0")")
 	v="$(dirname "$(readlink "$0")")/entities.d/entities.version.bash"
 	# shellcheck disable=2015
 	[[ -f "$v" ]] && source "$v" 2>/dev/null || true	# yes, this is deliberate
@@ -34,11 +34,15 @@ usage() {
 	        :   -q|--quiet        turn message verbose off. Default off.
 	        :   -V|--version      print entities.bash version.
 	        :   -h|--help         print help message.
-	Examples: # 0. Just install it.
+	        : 
+	Examples: # 0. Don't ask. Just install it.
 	        : $PRG -y
+	        :
 	        : # 1. Do everything.
 	        : $PRG -y -u -c -l
-	        : # 2. Do everything quietly.
+	        :
+	        : # 2. Do everything quietly. 
+	        : #    (Useful for autoinstalling over networks)
 	        : $PRG -y -u -c -l -q
 	etx
 	((EUID)) && echo >&2 "        : Current user is [${EUID:-} ${USER:-}]"
@@ -60,11 +64,10 @@ usage() {
 	declare etc_profile_d='/etc/profile.d/entities.env.sh'
 
 	# make absolutely certain we have identified the canonical entities.bash script
-	PRG="$(basename "$(/bin/readlink -f "${0:-}")")"
-	PRGDIR="$(/usr/bin/dirname "$(/bin/readlink -f "${0:-}")")"
-	if [[ -f "$PRGDIR/entities.bash" ]]; then	# located in the same directory as this script.
-		canonical="$PRGDIR/entities.bash"
-	else
+	PRG=$(basename "$(/bin/readlink -fn -- "${0:-}")")
+	PRGDIR=$(/usr/bin/dirname "$(/bin/readlink -fn -- "${0:-}")")
+	canonical="$PRGDIR/entities.bash"
+	if [[ ! -f "$PRGDIR/entities.bash" ]]; then	# located in the same directory as this script.
 		echo >&2 "$PRG: Could not find entities.bash in the [$PRGDIR] directory."
 		echo >&2 "$PRG: Check that it has been installed properly."
 		exit 2
@@ -98,10 +101,11 @@ usage() {
 	env_entities="$(cat <<-eot
 
 			#X entities.bash begin
-			#X entities $_ent_VERSION
+			#X entities ${_ent_VERSION}
 			#X   * export ENTITIES='${ENTITIES}'
-			#X Installed by $(readlink -f "$0")
-			#X   on $(date +'%F %T').420 by ${USER:-}@${HOSTNAME}
+			#X Installed from $(readlink -f "$0")
+			#X   on $(date +'%F %T').420 
+			#X   by ${USER:-}@${HOSTNAME}
 			#X https://github.com/OkusiAssociates/entities.bash
 			ENTITIES="${ENTITIES}"
 			export ENTITIES
@@ -155,6 +159,7 @@ main() {
 	if ((Production)); then
 		msg.info 'Creating Help Files'
 		"$PRGDIR/entities.help.make" --auto	|| msg.die "[$PRGDIR/entities.help.make] failed!"
+
 		msg.info 'Create new entities.bash version/build file'
 		[[ -z ${_ent_VERSION:-} ]] && msg.die "Version has not been set. See [$_verfile]"
 		declare -ia _arr
@@ -189,11 +194,11 @@ main() {
 	"$PRGDIR/entities.make.minimal" --no-prompt \
 			|| msg.die "[$PRGDIR/entities.make.minimal] failed!"
 
-	makeprofile
+	make_profile_d
 
-	makeenvirnonment
+	mod_environment
 
-	install
+	install_files
 
 	declare output
 	is.verbose && output='/dev/stdout' || output='/dev/null'
@@ -215,7 +220,7 @@ main() {
 	rm -f "$SyncExclude"
 }
 
-makeprofile() {
+make_profile_d() {
 	msg.info "Creating [${etc_profile_d}]"
 	mkdir -p "$(dirname "$etc_profile_d")" || msg.die "Could not create [$(dirname "$etc_profile_d")]"
 	echo -e "${env_entities}"	> "$etc_profile_d"		
@@ -224,12 +229,12 @@ makeprofile() {
 }
 
 # Dep: /etc/environment cat
-makeenvirnonment() {
+mod_environment() {
 	envfile=/etc/environment
 	msg.info "Modifying [$envfile]"
 	tmpfile="$(mktemp --tmpdir 'ent-XXXX')"
 	grep -v '^[[:blank:]]*ENTITIES=' "$envfile" >"$tmpfile" || true
-	echo "ENTITIES=\"$ENTITIES\"" >> "$tmpfile"
+	echo "ENTITIES=\"$ENTITIES\"" >>"$tmpfile"
 	cp -p "$envfile" "${envfile}~"	|| msg.die "Could not backup [$envfile] to [${envfile}~]"
 	chown root:root "$tmpfile"			|| msg.die "[$tmpfile] chown error!"
 	chmod 644 "$tmpfile" 						|| msg.die "[$tmpfile] chmod error!"
@@ -261,7 +266,7 @@ infotext() {
 }
 
 # Dep: mkdir cd rsync find ln touch cp
-install() {
+install_files() {
 	msg.info "Installing Entities to [${ENTITIES}]"
 
 	cd "$PRGDIR" || exit 2
@@ -311,14 +316,13 @@ install() {
 	# execute permissions on entities
 	chmod 775 entities.bash entities.bash.min			|| exit $?
 	# in production, entities points to the min version
-	ln -fs entities.bash.min entities						|| exit $?
-	ln -fs entities.bash.min entities.min				|| exit $?
+	ln -fs entities.bash.min entities							|| exit $?
+	ln -fs entities.bash.min entities.min					|| exit $?
 
 	# MAIN EXECUTABLE in /usr/local/bin
 	ln -fs "$ENTITIES/entities.bash" /usr/local/bin/entities || exit $?
-	# INSTALL EXECUTABLE points to entities.bash installation directory
+	# this INSTALL EXECUTABLE points to entities.bash *installation* directory
 	ln -fs "$PRGDIR/entities.install" /usr/local/bin/entities.install || exit $?
-	ln -fs "$PRGDIR/entities.install" /usr/local/bin/install.entities || exit $?
 
 	# symlink to bundled utility scripts
 	declare -a arr
@@ -338,21 +342,23 @@ install() {
 	# touch420 all files in $ENTITIES directory
 	msg.info "Change permissions in [$ENTITIES] directory"
 	cd "$ENTITIES" || exit 2
-	chown root:root ${ENTITIES}/* -R
-	local IFS=$'\n'
-	for f in $(/usr/bin/find | grep -v ".g"); do
+	chown root:root ${ENTITIES}/* -R || exit $?
+	local IFS=$'\n' f fd
+	local -a arr
+	arr=( $(/usr/bin/find | grep -v '.g') )
+  for f in "${arr[@]}"; do
 		if [[ -d "$f" ]]; then
 			chmod 775 "$f"
 		else
-			chmod u+rw,g+rw,o+rw "$f"	#should this be 555?? ###
+			chmod u+rw,g+rw,o+rw "$f"	#should this be 555 perhaps?? ###
 		fi
 		fd=$(stat "$f" -c '%y');
 		fd=${fd%% *}
 		/usr/bin/touch -h -d "$(date +'%F 04:20:00' -d "$fd")" "$f"
 	done
-
+	
 	# back to base
-	cd "$PRGDIR"
+	cd "$PRGDIR" || exit 2
 }
 
 # test installation

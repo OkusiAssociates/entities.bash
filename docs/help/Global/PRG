@@ -1,7 +1,7 @@
 #---Global--PRG
     Global: PRG PRGDIR
-      Desc: PRG and PRGDIR are initialised every time entities.bash is
-          : executed.
+      Desc: PRG and PRGDIR are global variables reinitialised every time
+          : entities.bash is sourced/executed.
    Example: source entities.bash inherit
           :       # ^ if entities.bash has already been loaded,
           :       # init PRGDIR/PRG globals only then return.

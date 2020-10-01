@@ -9,6 +9,6 @@
           : resolved to actual location.
           : PRG/PRGDIR are *always* initialised as local vars regardless of
           : 'inherit' status when loading entities.bash.
-   Depends: basename dirname readlink mkdir ln cat systemd-cat stty
+   Depends: basename dirname readlink mkdir ln cat stty
     Source: /usr/share/okusi/entities/entities.bash
 #----About--entities.bash-----------------------------------------------------
