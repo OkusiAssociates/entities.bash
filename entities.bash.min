@@ -492,7 +492,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.468.8'
+_ent_VERSION='0.97.420.468.9'
 exit_if_already_running() {
 	return 0
 }
@@ -648,7 +648,7 @@ slog.prefix.eval() {
 }
 slog.truncate() {
 	_slog_count=0
-	> "$(slog.file)"
+	>"$(slog.file)"
 }
 addslashes() {
 	read line; 

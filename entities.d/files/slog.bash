@@ -2,7 +2,7 @@
 #X Function : slog slog.file slog.prefix slog.prefix.eval slog.truncate
 #X Desc     : Write strings to user log file
 #X Synopsis : slog string [...]
-#X Example  : source entities.bash new \\
+#X Example  : source entities \\
 #X          : 		|| { echo &>2 "source entities.bash not found!"; exit 1; }
 #X          : main() {
 #X          : 	slog.file "mylog.log"
@@ -53,7 +53,7 @@ slog.prefix.eval() {
 }
 slog.truncate() {
 	_slog_count=0
-	> "$(slog.file)"
+	>"$(slog.file)"
 }
 
 #fin

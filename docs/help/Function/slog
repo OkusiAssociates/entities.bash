@@ -2,7 +2,7 @@
   Function: slog slog.file slog.prefix slog.prefix.eval slog.truncate
       Desc: Write strings to user log file
   Synopsis: slog string [...]
-   Example: source entities.bash new \\
+   Example: source entities \\
           :     || { echo &>2 "source entities.bash not found!"; exit 1; }
           : main() {
           :   slog.file "mylog.log"
