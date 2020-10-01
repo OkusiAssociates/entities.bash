@@ -1,5 +1,5 @@
 #!/bin/bash
-source $(dirname "$0")/entities.bash new || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
+source "$(dirname "$0")/entities.bash" || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
 	strict.set off
 	trap.set on
 	
@@ -10,7 +10,7 @@ main() {
 	[[ ! -d "$HelpFilesDir" ]]	&& msg.die "Help files directory [$HelpFilesDir] not found."
 
 	# everything happens here
-	cd "$HelpFilesDir" 					|| msg.die "Could not cd into '$HelpFilesDir'!"
+	cd "$HelpFilesDir" 					|| msg.die "Could not cd into [$HelpFilesDir]!"
 
 	local -a HelpFile=() 
 	local Search=''
@@ -19,12 +19,12 @@ main() {
 	while (($#)); do
 		case "$1" in
 			-a|--all)				HelpFile+=( '*' ) 			;;
-			-S|--synopsis)	synopsis=1							;;
+			-s|--search)		shift; Search="${1:-}"	;;
 			-t|--tree)			display_tree; return $?	;;
-			-h|--help)			usage; return 1					;;
+			-V|--version)		echo "entities ${_ent_VERSION:-}"; return 0;;
 			-v|--verbose)		verbose.set on					;;
 			-q|--quiet)			verbose.set off			 		;;
-			-s|--search)		shift; Search="${1:-}"	;;
+			-h|--help)			usage; return 1					;;
 			--reentry)			reentry=1								;;
 			*)							HelpFile+=( "${1}" )		;;
 		esac
@@ -32,29 +32,29 @@ main() {
 	done
 
 	# nothing specified, so present helpfiles tree
-	if (( !( ${#HelpFile[@]} || ${#Search} || ${synopsis}) )); then
+	if (( !( ${#HelpFile[@]} || ${#Search} || synopsis) )); then
 		display_tree
 		return $?
 	fi
 
 	# present a synopsis #TODO
 	if ((synopsis)); then
-		synopsis=$(grep --color=never -sih '^Synopsis' *)
+		synopsis=$(grep --color=never -sih '^Synopsis' ./*)
 		#synopsis=$(sed '/Synopsis :/d' <<<$synopsis))
 		echo -e "$synopsis"
 		return $?
 	fi
 	
 	# re-entry for Search
-	if [[ -n "$Search" && reentry==0 ]]; then
-		s=( $(grep --color=never -silr ${Search} "$HelpFilesDir/" ) )
+	if [[ -n "$Search" ]] && (( ! reentry )); then
+		s=( $(grep --color=never -silr "${Search}" "$HelpFilesDir/" ) )
 		main "${s[@]}" --reentry
 		return $?
 	fi
 	
 	# lookup function/topic name as filename 
 	numhelpfiles=$(( ${#HelpFile[@]} ))
-	for s in ${HelpFile[@]}; do
+	for s in $"{HelpFile[@]}"; do
 		if [[ -f "${s}" ]]; then
 			if ((numhelpfiles<2)); then
 				grep --color=never -v "#-" "${s}"
@@ -63,7 +63,7 @@ main() {
 			fi
 		else
 			err=1
-			msg.err "Help file '${s}' not found."
+			msg.err "Help file [${s}] not found."
 		fi
 	done
 	return $err
@@ -72,13 +72,13 @@ main() {
 display_tree() {
 	local tmp
 	local htmfile='index.html'
-	local pwd="$(pwd)"
+	local pwd="$PWD"
 	local browser
 	browser="$(which lynx || which w3m)"
 	
 	if [[ ! -f "$HelpFilesDir/$htmfile" ]]; then
 		msg.info "Creating [$htmfile]..."
-		cd "$HelpFilesDir" || msg.die "Could not cd into $HelpFilesDir."
+		cd "$HelpFilesDir" || msg.die "Could not cd into [$HelpFilesDir]."
 
 		/usr/bin/tree --dirsfirst --noreport -H ./ -T 'entities.bash help files' "$(pwd)" > "$htmfile"
 		
@@ -102,19 +102,23 @@ display_tree() {
 cleanup() {
 	local -i exitcode=$?
 	(($#)) && exitcode=$1
-	exit $exitcode
+	exit "$exitcode"
 }
 
 usage() {
 	cat <<-usage
-		Usage  : $PRG [intro|functionname|globalvarname|localvarname|filename]
-		       :        -t|--tree     # show interactive web tree of all functions.
-		       :        -s|--search   # search all help files for keyword
-		       :        -a|--all      # show all help
-		       :        -S|--synopsis # only show synopsis (usage)
-		       :        -v|--verbose
-		       :        -q|--quiet
-		Example: $PRG msg.line 
+	Script  : $PRG
+	Version : entities ${_ent_VERSION:-}
+	Synopsis: $PRG [-a][-t][-s "search"][name]  [-v][-q] [-V] [-h] 
+	        :  name          Any entities function|globalx|global|file
+	        :  -a|--all      Show all help files in using BROWSER.
+	        :  -t|--tree     Show interactive web tree of all functions.
+	        :  -s|--search   Wildcard search all help files for keyword.
+	        :  -v|--verbose  Turn on  msg verbose. (default)
+	        :  -q|--quiet    Turn off msg verbose.
+	        :  -V|--version  Print version.
+	        :  -h|--help     This help.
+	Example : $PRG msg.info msg.line 
 	usage
 }
 
