@@ -471,7 +471,7 @@ declare -gx _ent_EDITOR
 		elif [[ -n "${SELECTED_EDITOR:-}" ]]; then
 			EDITOR="${SELECTED_EDITOR}"
 		elif [[ -r "${HOME:-}/.selected_editor" ]]; then
-			source "${HOME:-}/.selected_editor"
+			source "${HOME:-}/.selected_editor" || true
 			[[ -n "${SELECTED_EDITOR:-}" ]] && EDITOR="${SELECTED_EDITOR}"
 		elif [[ -x /etc/alternatives/editor ]]; then
 			EDITOR='/etc/alternatives/editor'
@@ -492,7 +492,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.468.9'
+_ent_VERSION='0.97.420.469.5'
 exit_if_already_running() {
 	return 0
 }
@@ -930,15 +930,16 @@ perrno() {
 declare -fx perrno
 rtfm() { 
 	if [[ -z ${1:-} || ${1:-} == '-h' || ${1:-} == '--help' ]]; then
-		echo 'rtfm - read the fucking manual'
-		echo "Searches command in 'help', 'man', 'entities.help', then tries to google it."
-		echo "See 'entities.help rtfm', or 'rtfm rtfm'"
+		echo 'Script  : rtfm'
+		echo 'Desc    : read-the-fucking-manual wrapper for help -> man -> entities.help -> google'
+		echo 'Synopsis: rtfm "command"'
 		return 1
 	fi
 	builtin help -m "$@" 2>/dev/null && return 0
 	$(which man) 		"$@" 2>/dev/null && return 0
 	entities.help 	"$@" 2>/dev/null && return 0 
-	${BROWSER:-$(which w3m || which lynx)} "http://www.google.com/search?q=linux+bash+%2B$@" && return 0
+	"${BROWSER:-$(which w3m || which lynx)}" "http://www.google.com/search?q=linux+bash+%2B$*" \
+			&& return 0
 }
 declare -fx rtfm
 declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? ${LINENO:-0}; }'

@@ -10,10 +10,12 @@
 #X 			   : The first argument is tested to see if it is executable.
 #X 			   : If it is not, then EDITOR defaults back to _ent_EDITOR.
 #X See Also: EDITOR SUDO_EDITOR SELECTED_EDITOR _ent_EDITOR
-declare -gx _ent_EDITOR
+
+	# default entitites fallback EDITOR setting
+	declare -gx _ent_EDITOR
 	# explicit LCD editor
 	_ent_EDITOR="$(which nano 2>/dev/null)"
-#	_ent_EDITOR="$(which joe 2>/dev/null) -tab 2 -autoindent --wordwrap"
+
 	declare -gx EDITOR
 	if [[ -z "${EDITOR:-}" ]]; then
 		# default bottom line editor, in the absense of all others
@@ -26,7 +28,7 @@ declare -gx _ent_EDITOR
 			EDITOR="${SELECTED_EDITOR}"
 		# then try sourcing .selected_editor
 		elif [[ -r "${HOME:-}/.selected_editor" ]]; then
-			source "${HOME:-}/.selected_editor"
+			source "${HOME:-}/.selected_editor" || true
 			[[ -n "${SELECTED_EDITOR:-}" ]] && EDITOR="${SELECTED_EDITOR}"
 		# is the alt-editor home?
 		elif [[ -x /etc/alternatives/editor ]]; then

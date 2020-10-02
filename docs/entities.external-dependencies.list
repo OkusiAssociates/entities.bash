@@ -3,6 +3,7 @@
 
 # These packages are required by entities.bash
 declare -a _ent_ESSENTIAL_PACKAGES=(
+	binutils
 	errno
 	gzip
 	locate
