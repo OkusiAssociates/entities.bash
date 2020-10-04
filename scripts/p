@@ -1,5 +1,5 @@
 #!/bin/bash
-##!	shellcheck disable=SC2086
+#	shellcheck source=../entities.bash.min
 source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!"; exit 2; }
 	strict.set off
 	verbose.set on
@@ -58,7 +58,7 @@ main() {
 		sx=$(readlink -f "$(which "$(basename "$file")")")
 		if [[ -z $sx ]]; then
 			# locate or create
-			sx="$(basename "$file")"
+			sx=$(basename "$file")
 			arr=( $(locate -b "\\$sx") )
 			arr+=( "Create: ${file}"  )
 		 	select file in "${arr[@]}"; do 
@@ -67,6 +67,10 @@ main() {
 				break
 		 	done
 		 	[[ ${file:0:8} == 'Create: ' ]] && file="${file:8}"
+		else
+			msg.warn -n "Edit executable [$sx]? (yN) "
+			read -r -n 1 yn; echo
+			[[ ${yn,} == 'y' ]] || exit 1  
 		fi
 		file="$sx"	
 	fi
@@ -146,7 +150,7 @@ main() {
 				scdisable="--exclude ${scdisable// /,}"
 			fi
 			# shellcheck disable=SC2086
-			$(which shellcheck) --shell=bash ${scdisable} "$file"
+			$(which shellcheck) --shell=bash ${scdisable} -x "$file"
 		fi
 	fi
 

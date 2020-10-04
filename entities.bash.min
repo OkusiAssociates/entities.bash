@@ -71,7 +71,7 @@ onoff() {
 	echo -n $((o))
 	return 0
 }
-declare -fx onoff
+declare -fx 'onoff'
 declare -ix _ent_VERBOSE
 [ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
 is.verbose() { return $(( ! _ent_VERBOSE )); }
@@ -119,7 +119,7 @@ declare -x coloralert="\x1b[1;33;41m"
 declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 declare -x _ent_SCRIPT_VERSION='0.0.0'
 version() { echo -n "$_ent_SCRIPT_VERSION"; return 0; }
-declare -fx version
+declare -fx 'version'
 version.set() {
 	if (( ${#@} )); then _ent_SCRIPT_VERSION="$1"
 								else echo -n "${_ent_SCRIPT_VERSION}"
@@ -168,7 +168,7 @@ strict.set() {
 }
 declare -fx 'strict.set'
 msg() { ((_ent_VERBOSE)) && _printmsg "$@"; }
-declare -fx msg
+declare -fx 'msg'
 msg.debug() {
 	((_ent_DEBUG)) || return 0
 	declare log="${1:-}"
@@ -190,7 +190,7 @@ __msgx() {
 	fi
 	return 0
 }
-declare -fx __msgx
+declare -fx '__msgx'
 msg.info() {
 	declare log="${1:-}"
 	[[ "${log}" == 'log' ]] && shift
@@ -362,7 +362,7 @@ msg.prefix.set() {
 		fi
 		return 0
 	fi
-	if [[ -n ${_ent_MSG_PRE[@]:-} ]]; then
+	if [[ -n ${_ent_MSG_PRE[*]:-} ]]; then
 		local p
 		p=${_ent_MSG_PRE[*]}
     echo -n "${p//[[:blank:]]/${_ent_MSG_PRE_SEP}}${_ent_MSG_PRE_SEP}"
@@ -386,12 +386,12 @@ _printmsg() {
 	done
 	return 0
 }
-declare -fx	_printmsg
+declare -fx	'_printmsg'
 exit_if_not_root() {
 	is.root || msg.die "$PRG can only be executed by root user."
 	return 0
 }
-declare -fx exit_if_not_root
+declare -fx 'exit_if_not_root'
 entities.help() {
 	"${ENTITIES:-/lib/include/entities}/entities.help" "$@" || return $?
 	return 0
@@ -426,7 +426,7 @@ declare -fx 'check.dependencies'
 trap.breakp() { 
 	local b='' prompt=${1:-}
 	(( ${#prompt} )) && prompt=" $prompt"
-	read -e -n1 -p "breakpoint${prompt}: continue? y/n " b
+	read -r -e -n1 -p "breakpoint${prompt}: continue? y/n " b
 	[[ "${b,,}" == 'y' ]] || exit 1
 	return 0
 }
@@ -492,7 +492,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.469.5'
+_ent_VERSION='0.97.420.471.2'
 exit_if_already_running() {
 	return 0
 }

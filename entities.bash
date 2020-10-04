@@ -1,6 +1,6 @@
 #!/bin/bash
 # global shellcheck 'disables' used by 'p' editor
-#! shellcheck disable=SC0000,SC0000
+#! shellcheck disable=SC1090
 
 # entities.bash - Bash programming environment and library
 # Copyright (C) 2019-2020  Gary Dean <garydean@okusi.id>
@@ -166,7 +166,7 @@ onoff() {
 	echo -n $((o))
 	return 0
 }
-declare -fx onoff
+declare -fx 'onoff'
 
 declare -ix _ent_VERBOSE
 [ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
@@ -261,7 +261,7 @@ declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 #X          : ver=$(version.set)	# store current version setting to variable.
 declare -x _ent_SCRIPT_VERSION='0.0.0'
 version() { echo -n "$_ent_SCRIPT_VERSION"; return 0; }
-declare -fx version
+declare -fx 'version'
 version.set() {
 	if (( ${#@} )); then _ent_SCRIPT_VERSION="$1"
 								else echo -n "${_ent_SCRIPT_VERSION}"
@@ -358,7 +358,7 @@ declare -fx 'strict.set'
 #X          :        string argument
 #X Example  : msg "hello world!" "it's so nice to be back!"
 msg() { ((_ent_VERBOSE)) && _printmsg "$@"; }
-declare -fx msg
+declare -fx 'msg'
 
 msg.debug() {
 	((_ent_DEBUG)) || return 0
@@ -390,7 +390,7 @@ __msgx() {
 	fi
 	return 0
 }
-declare -fx __msgx
+declare -fx '__msgx'
 
 #X Function: msg.info
 #X Desc    : Output an informational message, with option to write to log.
@@ -712,7 +712,7 @@ msg.prefix.set() {
 		return 0
 	fi
 
-	if [[ -n ${_ent_MSG_PRE[@]:-} ]]; then
+	if [[ -n ${_ent_MSG_PRE[*]:-} ]]; then
 		local p
 		p=${_ent_MSG_PRE[*]}
     echo -n "${p//[[:blank:]]/${_ent_MSG_PRE_SEP}}${_ent_MSG_PRE_SEP}"
@@ -739,7 +739,7 @@ _printmsg() {
 	done
 	return 0
 }
-declare -fx	_printmsg
+declare -fx	'_printmsg'
 
 #X Function : exit_if_not_root
 #X Desc     : If not root user, print failure message and exit script.
@@ -748,7 +748,7 @@ exit_if_not_root() {
 	is.root || msg.die "$PRG can only be executed by root user."
 	return 0
 }
-declare -fx exit_if_not_root
+declare -fx 'exit_if_not_root'
 
 #X Function : entities.help 
 #X Desc     : display help info about Entities functions and variables.
@@ -801,7 +801,7 @@ declare -fx 'check.dependencies'
 trap.breakp() { 
 	local b='' prompt=${1:-}
 	(( ${#prompt} )) && prompt=" $prompt"
-	read -e -n1 -p "breakpoint${prompt}: continue? y/n " b
+	read -r -e -n1 -p "breakpoint${prompt}: continue? y/n " b
 	[[ "${b,,}" == 'y' ]] || exit 1
 	return 0
 }
