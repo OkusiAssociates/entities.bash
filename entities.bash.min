@@ -310,10 +310,10 @@ declare -ix TABSET=0
 tab.set() {
 	if (( $# )); then
 		case "${1}" in
-			'0'|reset) 		TABSET=0;;
+			'0'|reset)		TABSET=0;;
 			'++'|forward)	TABSET=$((TABSET+1))			;;
-			'--'|back	 	)	TABSET=$((TABSET-1))			;;
-			 * 					)	if [[ "${1:0:1}" == '+' ]]; then
+			'--'|back)		TABSET=$((TABSET-1))			;;
+			 *)						if [[ "${1:0:1}" == '+' ]]; then
 											TABSET=$(( TABSET + ${1:1} ))
 										elif [[ "${1:0:1}" == '-' ]]; then
 											TABSET=$(( TABSET - ${1:1} ))
@@ -492,7 +492,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.471.2'
+_ent_VERSION='0.97.420.472.3'
 exit_if_already_running() {
 	return 0
 }

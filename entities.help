@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=./entities.bash.min
+# shellcheck disable=SC1091
 source "$(dirname "$0")/entities.bash" || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
 	strict.set off
 	trap.set on
@@ -55,7 +56,7 @@ main() {
 	
 	# lookup function/topic name as filename 
 	numhelpfiles=$(( ${#HelpFile[@]} ))
-	for s in $"{HelpFile[@]}"; do
+	for s in "${HelpFile[@]}"; do
 		if [[ -f "${s}" ]]; then
 			if ((numhelpfiles<2)); then
 				grep --color=never -v "#-" "${s}"
@@ -73,28 +74,27 @@ main() {
 display_tree() {
 	local tmp
 	local htmfile='index.html'
-	local pwd="$PWD"
 	local browser
 	browser="$(which lynx || which w3m)"
 	
 	if [[ ! -f "$HelpFilesDir/$htmfile" ]]; then
 		msg.info "Creating [$htmfile]..."
-		cd "$HelpFilesDir" || msg.die "Could not cd into [$HelpFilesDir]."
-
-		/usr/bin/tree --dirsfirst --noreport -H ./ -T 'entities.bash help files' "$(pwd)" > "$htmfile"
-		
-		# clean up html output
-		tmp=$(cat "$htmfile")
-		tmp="${tmp//<!--/}" 
-		tmp="${tmp//-->${LF}/}" 
-		tmp="${tmp//<p class=\"VER*\/p>/}" 
-		tmp="${tmp//<\/style>/H1,h1 \{text-align:left;color:green;\}${LF}<\/style>}"
-		# blast it back to the html file
-		echo "$tmp" > $htmfile
+		(
+			cd "$HelpFilesDir" || msg.die "Could not cd into [$HelpFilesDir]."
+			/usr/bin/tree --dirsfirst --noreport -H ./ -T 'entities.bash help files' "$(pwd)"
+			# clean up html output
+			tmp=$(cat "$htmfile")
+			tmp="${tmp//<!--/}" 
+			tmp="${tmp//-->${LF}/}" 
+			tmp="${tmp//<p class=\"VER*\/p>/}" 
+			tmp="${tmp//<\/style>/H1,h1 \{text-align:left;color:green;\}${LF}<\/style>}"
+			# blast it back to the html file
+			echo "$tmp"
+		) >$htmfile
 		chmod 666 "$htmfile"
-		cd "$pwd"
 	fi
-	
+
+	## open up helpfiles	
 	$browser "$HelpFilesDir/index.html" 
 
 	return 0 
