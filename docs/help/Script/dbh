@@ -1,6 +1,6 @@
 #---Script--dbh
     Script: dbh
-   Version: 0.97.420.473.5
+   Version: 0.97.420.473.7
       Desc: MySQL helper script to quickly view data/structure/info,
           :  without a lot of typing long sql commands. Fast in, fast out.
   Synopsis: dbh [database [table [command]]] [-p profile] [-V] [-h]
