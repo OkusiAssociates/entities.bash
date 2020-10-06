@@ -492,7 +492,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.473.8'
+_ent_VERSION='0.97.420.473.11'
 chgConfigVar()	{
 	local Profile=${1:-} key
 	shift
@@ -516,6 +516,27 @@ chgConfigVar()	{
 	done
 }
 declare -fx chgConfigVar
+convertCfg2php() {
+	local infile='/dev/stdin' outfile='/dev/stdout'
+	if (($#)); then
+		infile="$1"
+		shift
+		(($#)) && outfile="$1"
+	fi
+	(	echo '<?'
+		while read -r line; do
+			[[ -z $line || ${line:0:2} == '#!' ]] && continue
+			if [[ ${line:0:1} == '#' ]]; then
+				line="//${line:1}"
+			elif [[ $line == *'='* ]]; then
+				line="\$${line};"; line=${line//;;/;}		
+			fi
+			echo "$line"
+		done <"$infile"
+		echo '?>'
+	) >"$outfile"
+}
+declare -fx 'convertCfg2php'
 editorsyntaxstring() {
 	local FileType="${1:-text}"
 	local FileName="${2:-}"

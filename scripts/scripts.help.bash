@@ -2,7 +2,7 @@
 #! shellcheck disable=SC1072
 
 #X    Script:  entities.scripts.create-help
-#X   Version:  entities 0.97.420.473.7
+#X   Version:  entities 0.97.420.473.10
 #X      Desc:  For developers of entities.bash functions and scripts.
 #X          :  Assists the entities help system gather documentation.
 #X          :  All scripts in the entities/scripts directory must be 
@@ -17,7 +17,7 @@
 #X          :    -h|--help           This help.
 
 #X    Script:  dbh
-#X   Version:  0.97.420.473.7
+#X   Version:  0.97.420.473.10
 #X      Desc:  MySQL helper script to quickly view data/structure/info, 
 #X          :  without a lot of typing long sql commands. Fast in, fast out.
 #X  Synopsis:  dbh [database [table [command]]] [-p profile] [-V] [-h]
@@ -156,12 +156,13 @@
 #X          :  hashbang -s 'some_var_name' -p 'p' -x '-s' >editfiles
 
 #X    Script:  cln
-#X   Version:  entities 0.97.420.473.7
+#X   Version:  entities 0.97.420.473.10
 #X      Desc:  Search for and delete defined rubbish files.
 #X  Synopsis:  cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
-#X          :    dirspec           Default '.'
+#X          :    dirspec           Path to clean. Default '.'
 #X          :    -a|-add file      Add file to cleanup scan. Can be used 
-#X          :                      multiple times.            
+#X          :                      multiple times, and filesname can comma
+#X          :                      delimited.
 #X          :    -m|--depth depth  Maximum depth to recurse. Default 2.
 #X          :    -n|--dryrun       Dry run. Default on.
 #X          :    -N|--notdryrun    Not a dry run. Delete files straight away.
@@ -169,7 +170,7 @@
 #X          :    -q|--quiet        Disable output to stdout.
 #X          :    -h|--help         This help.
 #X          :  Recursively remove all temporary files defined in 
-#X          :  Array envvar _ent_CLNTEMP defines temporary files to delete.
+#X          :  envvar _ent_CLNTEMP that defines temporary files to delete.
 #X          :  If not set, defaults to ( '*~' '~*' '.~*' )
 #X          :  _ent_CLNTEMP is currently set to:
 #X          :    ( *~ ~* .~* DEADJOE dead.letter )

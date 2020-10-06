@@ -1,11 +1,12 @@
 #---Script--cln
     Script: cln
-   Version: entities 0.97.420.473.7
+   Version: entities 0.97.420.473.10
       Desc: Search for and delete defined rubbish files.
   Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
-          :    dirspec           Default '.'
+          :    dirspec           Path to clean. Default '.'
           :    -a|-add file      Add file to cleanup scan. Can be used
-          :                      multiple times.
+          :                      multiple times, and filesname can comma
+          :                      delimited.
           :    -m|--depth depth  Maximum depth to recurse. Default 2.
           :    -n|--dryrun       Dry run. Default on.
           :    -N|--notdryrun    Not a dry run. Delete files straight away.
@@ -13,7 +14,7 @@
           :    -q|--quiet        Disable output to stdout.
           :    -h|--help         This help.
           :  Recursively remove all temporary files defined in
-          :  Array envvar _ent_CLNTEMP defines temporary files to delete.
+          :  envvar _ent_CLNTEMP that defines temporary files to delete.
           :  If not set, defaults to ( '*~' '~*' '.~*' )
           :  _ent_CLNTEMP is currently set to:
           :    ( *~ ~* .~* DEADJOE dead.letter )
