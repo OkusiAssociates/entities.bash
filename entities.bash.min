@@ -492,11 +492,30 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.472.3'
-exit_if_already_running() {
-	return 0
+_ent_VERSION='0.97.420.473.6'
+chgConfigVar()	{
+	local Profile=${1:-} key
+	shift
+	if [[ ! -f $Profile ]]; then
+		cat >"$Profile" <<-etx
+		etx
+	fi
+	while (($#)); do
+		key="$1"
+		if [[ "${key:0:1}" == '!' ]]; then
+			sed -i "/^\s*${key:1}=.*/d" "$Profile"
+			shift; continue
+		fi
+		keyval="$key='${2:-}'"
+		if grep -q "^[[:blank:]]*${key}=" "$Profile"; then
+			sed -i "s!^\s*${key}=.*!${keyval}!" "$Profile"
+		else
+			echo "$keyval" >>"$Profile"
+		fi
+		shift; (($#)) && shift
+	done
 }
-declare -fx exit_if_already_running
+declare -fx chgConfigVar
 editorsyntaxstring() {
 	local FileType="${1:-text}"
 	local FileName="${2:-}"
@@ -605,51 +624,22 @@ declare -fx mktempfile
 declare -x TMPDIR="${TMPDIR:-/tmp}"
 tmpdir.set() {
 	if (( $# )); then
-		tmp="${1}"
-		mkdir -p "$tmp" && cd "$tmp" && TMPDIR="$(pwd)" && cd -
+		tmp=$1
+		[[ -d "$tmp" ]] || mkdir -m 777 -p "$tmp"
+		if [[ -w "$tmp" ]]; then
+			TMPDIR="$tmp"
+		elif [[ -n "${2:-}" ]]; then
+			[[ -d "$2" ]] || mkdir -m 777 -p "$2"
+			if [[ -w "$2" ]]; then
+				TMPDIR="$2"
+			fi
+		fi
 	fi
 	echo "$TMPDIR:-/tmp"
 }
 declare -fx 'tmpdir.set'
-declare -ix _slog_count=0
-slog() {
-	for log in "${@}"; do
-		((++_slog_count))
-		echo "$(slog.prefix.eval) ${log}" >> $(slog.file)
-	done
-}
-declare -x _slog_file=''
-slog.file() {
-	if ((${#@})); then
-		_slog_file="$1"
-		_slog_count=0
-	else
-		[[ -z "$_slog_file" ]] && _slog_file="$PRGDIR/$PRG.log"
-		echo -n "$_slog_file"
-	fi
-}
-declare -x _slog_prefix=''
-slog.prefix() {
-	if ((${#@})); then
-		if [[ "$1" == '--long' ]]; then
-			_slog_prefix="$(date -Ins) $USER"
-		elif [[ "$1" == '--short' ]]; then
-			_slog_prefix='$(date +"%s.%N")'
-		else
-			_slog_prefix="$1"
-		fi
-	else
-		[[ -z "$_slog_prefix" ]] && _slog_prefix="$(date -Ins) $USER"
-		echo -n "$_slog_prefix"
-	fi
-}
-slog.prefix.eval() {
-	eval "echo -n $(slog.prefix)"
-}
-slog.truncate() {
-	_slog_count=0
-	>"$(slog.file)"
-}
+rmslash2() { echo "${@//+(\/)\//\/}"; }
+declare -fx rmslash2
 addslashes() {
 	read line; 
 	while [[ "$line" != "" ]]; do 
@@ -800,6 +790,10 @@ cleanup() {
 	exit "$exitcode"
 }
 declare -fx cleanup
+exit_if_already_running() {
+	return 0
+}
+declare -fx exit_if_already_running
 declare -Aixg _ent_HRint=( [b]=1 [k]=1024 [m]=1024000 [g]=1024000000 [t]=1024000000000 [p]=1024000000000000 \
 										 [B]=1 [K]=1000 [M]=1000000 [G]=1000000000 [T]=1000000000000 [P]=1000000000000000 )
 hr2int() {

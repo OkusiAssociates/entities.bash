@@ -1,7 +1,8 @@
 #!/bin/bash
 	declare -ax hb_PRUNE
-	[[ -z "${hb_PRUNE[*]:-}" ]] \
-			&& hb_PRUNE=( '~*' '*~' '*gudang' '*.gudang' '*.old' '*.bak' '*dev' '*help' '*cctv' '*.git' 'git' )
+	if [[ -z "${hb_PRUNE[*]:-}" ]]; then
+		hb_PRUNE=( '~*' '*~' '*gudang' '*.gudang' '*.old' '*.bak' '*dev' '*help' '*cctv' '*.git' 'git' )
+	fi
 	export hb_PRUNE
 	
 main() {
@@ -30,7 +31,7 @@ main() {
 			[[ ${dir:0:3} == '../' ]] && xdot='../' 
 			[[ ${dir:0:4} == '.../' ]] && xdot='../../'
 			for p in "${hb_PRUNE[@]}"; do 
-				xpath+="-type d -path ${xdot}${p} -prune -o "
+				xpath+="-type d -path '${xdot}${p}' -prune -o "
 			done
 		fi
 		#dir=$(readlink -f "$dir")

@@ -1,4 +1,5 @@
 #!/bin/bash
+#! shellcheck disable=SC2154
 #X Function: rmslash2
 #X Desc    : Remove double slashes in filename
 #X Usage   : rmslash string

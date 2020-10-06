@@ -1,4 +1,5 @@
 #!/bin/bash
+#! shellcheck disable=SC2174,SC2154
 #X Function: mktempfile 
 #X         : Make a temporary file located in /tmp/entities 
 #X         : Template format is /tmp/{base_subdir}/{$PRG|basename_script}_XXXX
@@ -15,14 +16,27 @@ mktempfile() {
 declare -fx mktempfile
 
 #X Function: tmpdir.set
-#X Synopsis: tmpdir.set ["tmpdir"]
-#X Example : tmpdir.set '/run/entities
+#X Desc    : Sets TMPDIR location, with optional fallback if first 
+#X         : option not writable. Final fallback is always /tmp.
+#X         :
+#X Synopsis: tmpdir.set ["tmpdir" ["fallbackdir"]] 
+#X         :
+#X Example : tmpdir.set '/run/entities' '/tmp/entities'
 #X         : tmpdir="$(tmpdir.set)"
 declare -x TMPDIR="${TMPDIR:-/tmp}"
 tmpdir.set() {
 	if (( $# )); then
-		tmp="${1}"
-		mkdir -p "$tmp" && cd "$tmp" && TMPDIR="$(pwd)" && cd -
+		tmp=$1
+		# fail silently if not found; do not change TMPDIR
+		[[ -d "$tmp" ]] || mkdir -m 777 -p "$tmp"
+		if [[ -w "$tmp" ]]; then
+			TMPDIR="$tmp"
+		elif [[ -n "${2:-}" ]]; then
+			[[ -d "$2" ]] || mkdir -m 777 -p "$2"
+			if [[ -w "$2" ]]; then
+				TMPDIR="$2"
+			fi
+		fi
 	fi
 	echo "$TMPDIR:-/tmp"
 }

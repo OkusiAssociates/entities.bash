@@ -3,5 +3,5 @@
       Desc: Return type of text.
   Synopsis: textfiletype [-t] filename
           :   -t  Return type only without filename.
-    Source: /usr/share/okusi/entities/entities.d/files/exit_if_already_running.bash
+    Source: /usr/share/okusi/entities/entities.d/files/rmslash2.bash
 #-Function--textfiletype------------------------------------------------------

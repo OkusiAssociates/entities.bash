@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1090
 	declare _u
 	_u=$(cat /etc/issue)
 	[[ "${_u:0:12}" < 'Ubuntu 16.04' ]] \
@@ -19,6 +20,7 @@ usage() {
 	        : Requires root to install.
 	        : Dependencies are defined in 
 	        : [$PRGDIR/docs/entities.external.dependencies.list]
+	        :
 	Synopsis: $PRG [-y][-i] [-u][-c][-l] [-p] [-v][-q] [-V] [-h]
 	        :   -y|--auto         install without prompting.
 	        :   -i|--install      install with prompt.
@@ -49,7 +51,7 @@ usage() {
 	exit "${1:-0}"
 }
 	# cries for help.
-	[[ "$@" == '' || "$@" == *"--help"* || "$@" == *"/?"* || "$@" == *-h* ]] && usage 0
+	[[ "$*" == '' || "$*" == *"--help"* || "$*" == *"/?"* || "$*" == *-h* ]] && usage 0
 	# not root say bye
 	[[ "${USER:-}" == 'root' || $EUID == 0 ]] || usage 1
 
@@ -100,7 +102,7 @@ usage() {
 	# shellcheck disable=SC2154
 	env_entities="$(cat <<-eot
 
-			#X entities.bash begin
+			#X entities.bash.begin
 			#X entities ${_ent_VERSION}
 			#X   * export ENTITIES='${ENTITIES}'
 			#X Installed from $(readlink -f "$0")
@@ -109,7 +111,7 @@ usage() {
 			#X https://github.com/OkusiAssociates/entities.bash
 			ENTITIES="${ENTITIES}"
 			export ENTITIES
-			#X entities.bash end
+			#X entities.bash.end
 
 		eot
 		)"
@@ -117,7 +119,7 @@ usage() {
 	# Exclusions for rsync
 	declare -a exclude=( 't' 'tt' 't1' 't2' '*~' '*.bak' '*.old' 'gudang/' '.gudang/' '*.zip' 'dev/' 'test/' 'tmp/' 'temp/' )
 	declare SyncExclude="/tmp/$PRG-exclusions-$RANDOM"
-	>"$SyncExclude"
+	echo -n >"$SyncExclude"
 	declare _l; for _l in "${exclude[@]}"; do	echo "${_l}"; done >>"$SyncExclude"; unset _l
 		
 main() {
@@ -216,7 +218,10 @@ main() {
 			'For help:' \
 			'    entities help ' \
 			'Repository:' \
-			'    https://github.com/OkusiAssociates/entities.bash'
+			'    https://github.com/OkusiAssociates/entities.bash' \
+			'Issue Reports:' \
+			'    sysadmin@okusi.id' \
+
 	rm -f "$SyncExclude"
 }
 
@@ -345,12 +350,12 @@ install_files() {
 	chown root:root ${ENTITIES}/* -R || exit $?
 	local IFS=$'\n' f fd
 	local -a arr
-	arr=( $(/usr/bin/find | grep -v '.g') )
+	arr=( $(/usr/bin/find "$ENTITIES" | grep -v '.g\|~') )
   for f in "${arr[@]}"; do
 		if [[ -d "$f" ]]; then
 			chmod 775 "$f"
 		else
-			chmod u+rw,g+rw,o+rw "$f"	#should this be 555 perhaps?? ###
+			chmod u+rw,g+rw,o+rw "$f"	### should this be 555 perhaps?? ###
 		fi
 		fd=$(stat "$f" -c '%y');
 		fd=${fd%% *}

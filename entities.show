@@ -70,18 +70,18 @@ main() {
 cleanup() {
 	local -i err=$?
 	[[ -z ${1:-} ]] && err=$1
-	((err > 1)) && errno $err
+	(( err > 1 )) && errno $err
 	exit $err
 }
 
 usage() {
 	cat <<-usage
-		Script  : $PRG
-		Desc    : Show all entities.bash functions and variables.
-		Synopsis: $PRG [-f] [-v] [-V] [-h]
-		        :   -f|--funcs  Show entities functions
-		        :   -v|--vars   Show entities variables
-	          : If no options specified, show all.
+	Script  : $PRG
+	Desc    : Show all entities.bash functions and variables.
+	Synopsis: $PRG [-f] [-v] [-V] [-h]
+	        :   -f|--funcs  Show entities functions
+	        :   -v|--vars   Show entities variables
+	        : If no options specified, show all.
 	usage
 	return 0
 }
