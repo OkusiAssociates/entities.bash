@@ -26,7 +26,7 @@ source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!";
 	declare -i shellcheck=0 syntaxcheck=1 execute=0
 
 main() {
-	local file='' ftype='' ext sx
+	local File='' ftype='' ext sx
 	local -i line=0 syntaxerr=0
 	local -a cmd=()
 	while (($#)); do
@@ -49,53 +49,77 @@ main() {
 		shift
 	done
 	(( ${#cmd[@]} == 1 )) || { usage; return 1; }
-
-	file=$(readlink -f "${cmd[0]}") || file="${cmd[0]}"
 	
-	# file not exist!
-	if [[ ! -f "$file" ]]; then
+	File=$(readlink -f "${cmd[0]}") || File="${cmd[0]}"
+	[[ $(basename "$File") == "$(basename "$0")" ]] && msg.die "Not a good idea."
+	
+	# File not exist!
+	if [[ ! -f "$File" ]]; then
 		# look for likely executable script
-		sx=$(readlink -f "$(which "$(basename "$file")")")
+		sx=$(readlink -f "$(which "$(basename "$File")")")
 		if [[ -z $sx ]]; then
-			# locate or create
-			sx=$(basename "$file")
-			arr=( $(locate -b "\\$sx") )
-			arr+=( "Create: ${file}"  )
-		 	select file in "${arr[@]}"; do 
-				[[ 'q0' == *"$REPLY"* ]] && return 1
-				[[ -z $file ]] && continue
+			select sx in "Create New [$File]" "Locate [$(basename "$File")]" "Exit"; do
+				[[ 'q0' == *"$REPLY"* ]] && return 1; [[ -z $sx ]] && continue; [[ $sx == 'Exit' ]] && msg.die 'Exit'
+				File=$(str_str "$sx" '[' ']')
 				break
-		 	done
-		 	[[ ${file:0:8} == 'Create: ' ]] && file="${file:8}"
+			done
+			if [[ "${sx:0:6}" == 'Create' ]]; then
+				select ftype in bash php other Exit; do
+					[[ 'q0' == *"$REPLY"* ]] && return 1; [[ -z $ftype ]] && continue; [[ $ftype == 'Exit' ]] && msg.die 'Exit'
+					break
+				done
+				if [[ $ftype == 'bash' ]]; then
+					local templ
+					select templ in "$ENTITIES/docs/templates/"*.bash Exit; do
+						[[ 'q0' == *"$REPLY"* ]] && return 1; [[ -z $templ ]] && continue; [[ $templ == 'Exit' ]] && msg.die 'Exit'
+						break
+					done
+					[[ -f "$templ" ]] && { cp "$templ" "$File" && chmod 666 "$File" && chown "$USER" "$File"; }
+				elif [[ $ftype == 'other' ]]; then
+					ftype='text'
+				fi
+			else
+				# locate or create
+				sx=$(basename "$File")
+				arr=( $(locate -b "\\$sx") )
+				arr+=( "Create: ${File}"  )
+			 	select File in "${arr[@]}"; do 
+					[[ 'q0' == *"$REPLY"* ]] && return 1; [[ -z $File ]] && continue
+					break
+			 	done
+			 	[[ ${File:0:8} == 'Create: ' ]] && File="${File:8}"
+			fi
 		else
 			msg.warn -n "Edit executable [$sx]? (yN) "
 			read -r -n 1 yn; echo
-			[[ ${yn,} == 'y' ]] || exit 1  
+			[[ ${yn,} == 'y' ]] || exit 1
+			File="$sx"
 		fi
-		file="$sx"	
 	fi
-	
-	ext="${file##*.}"
-	if 		[[ $ext == 'php' ]];	then 
-		ftype='php'
-		shellcheck=0
-	elif 	[[ $ext == 'sh'	|| $ext == 'bash' ]]; then 
-		ftype='sh'
-	else
-		ftype=$(textfiletype -t "$file")
-#		[[ $ftype == 'text' || -z $ftype ]]  && ftype='sh'
-		[[ $ext == 'sh'	|| $ext == 'bash' ]] && ftype='sh' 
+
+	if [[ -z $ftype ]]; then	
+		ext="${File##*.}"
+		if 		[[ $ext == 'php' ]];	then 
+			ftype='php'
+			shellcheck=0
+		elif 	[[ $ext == 'sh'	|| $ext == 'bash' ]]; then 
+			ftype='sh'
+		else
+			ftype=$(textfiletype -t "$File")
+	#		[[ $ftype == 'text' || -z $ftype ]]  && ftype='sh'
+			[[ $ext == 'sh'	|| $ext == 'bash' ]] && ftype='sh' 
+		fi
 	fi
-	
+		
 	# Edit it.
 	# shellcheck disable=2046
-	$EDITOR $( ((line)) && echo "+${line}" ) "$file"
+	$EDITOR $( ((line)) && echo "+${line}" ) "$File"
 
-	[[ ! -f $file ]] && return 1
-	# has file changed type?
+	[[ ! -f $File ]] && return 1
+	# has File changed type?
 	if [[ $ftype == 'text' || -z $ftype ]]; then
-		if [[ ! -z $file ]]; then
-			h=$(head -n 1 "$file")
+		if [[ ! -z $File ]]; then
+			h=$(head -n 1 "$File")
 			if [[ $h =~ ^\#\!.*/bash.* ]];  then  
 				ftype=sh
 			elif [[ $h =~ ^\#\!.*/php.*  || ${h:0:2} == '<?' || ${h:0:5} == '<?php' ]]; then  
@@ -108,7 +132,7 @@ main() {
 	if ((syntaxcheck)); then
 	syntaxerr=0	
 	if [[ "${ftype}" == 'php' ]]; then
-		msg.info  "$(php -l "${file}" 2>&1 | tee "$tmpfile")"
+		msg.info  "$(php -l "${File}" 2>&1 | tee "$tmpfile")"
 		hd="$(head -n1 "$tmpfile")"
 		if [[ "${hd:0:9}" != 'No syntax' ]]; then
 			syntaxerr=1
@@ -119,7 +143,7 @@ main() {
 		fi
 	else
 		if [[ $ftype == 'sh' || $ftype == 'bash' ]]; then
-			msg.info "$(bash -n "${file}" 2>&1 | tee "$tmpfile")Syntax checked"
+			msg.info "$(bash -n "${File}" 2>&1 | tee "$tmpfile")Syntax checked"
 			hd="$(head -n1 "$tmpfile")"
 			if [[ -n $hd ]]; then
 				syntaxerr=1
@@ -131,9 +155,9 @@ main() {
 		fi
 	fi
 	if ((syntaxerr)); then
-		if msg.yn "Re-edit $file [$line]?"; then
+		if msg.yn "Re-edit $File [$line]?"; then
 			# shellcheck disable=SC2046
-			"$PRGDIR/$PRG" "$file" --line "$line" $( ((execute)) && echo '-x' )
+			"$PRGDIR/$PRG" "$File" --line "$line" $( ((execute)) && echo '-x' )
 			exit
 		fi
 	fi
@@ -141,25 +165,25 @@ main() {
 	
 	## shellcheck
 	if ((shellcheck)) && [[ $ftype == 'sh' || $ftype == 'bash'  ]] ; then
-		if [[ -f "$file" ]]; then
+		if [[ -f "$File" ]]; then
 			local -- scdisable
-			scdisable="$( grep -m 1 '^#\![[:blank:]]*shellcheck[[:blank:]]*disable=' "$file" 2>/dev/null )"
+			scdisable="$( grep -m 1 '^#\![[:blank:]]*shellcheck[[:blank:]]*disable=' "$File" 2>/dev/null )"
 			if [[ -n $scdisable ]]; then
 				scdisable=${scdisable#*=}
 				scdisable=${scdisable//,/ }
 				scdisable="--exclude ${scdisable// /,}"
 			fi
 			# shellcheck disable=SC2086
-			$(which shellcheck) --shell=bash ${scdisable} -x "$file"
+			$(which shellcheck) --shell=bash ${scdisable} -x "$File"
 		fi
 	fi
 
 	if ((execute && !syntaxerr)); then
-		if msg.yn "Execute $file?"; then
+		if msg.yn "Execute $File?"; then
 			if [[ $ftype == 'php' ]]; then
-				$(which php) "$file"
+				$(which php) "$File"
 			elif [[ $ftype == 'sh' ]]; then
-				$(which bash) "$file"
+				$(which bash) "$File"
 			fi
 		fi
 	fi

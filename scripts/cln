@@ -3,7 +3,7 @@
 declare -- PRG='cln'
 
 declare -ax _ent_CLNTEMP
-(( ${#_ent_CLNTEMP[@]} )) || _ent_CLNTEMP=( '*~' '~*' '.~*' 'DEADJOE' 'dead.letter' )
+(( ${#_ent_CLNTEMP[@]} )) || _ent_CLNTEMP=( '*~' '~*' '.~*' '.*~' 'DEADJOE' 'dead.letter' )
 
 cln() {
 	local PRG=cln
@@ -110,11 +110,10 @@ usage() {
 	        :   -h|--help         This help.
 	        : Recursively remove all temporary files defined in 
 	        : envvar _ent_CLNTEMP that defines temporary files to delete.
-	        : If not set, defaults to ( '*~' '~*' '.~*' )
+	        : If not defined, _ent_CLNTEMP defaults to:
+	        :   ( '*~' '~*' '.~*' '.*~' )
 	        : _ent_CLNTEMP is currently set to:
 	        :   ( ${_ent_CLNTEMP[@]} )
-	        : If not defined, _ent_CLNTEMP defaults to:
-	        :   ( '*~' '~*' '.~*' )
 	etx
 }
 

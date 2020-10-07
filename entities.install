@@ -15,27 +15,28 @@ usage() {
 	[[ -f "$v" ]] && source "$v" 2>/dev/null || true	# yes, this is deliberate
 	cat <<-etx
 	Script  : $PRG
-	Version : ${_ent_VERSION:-Version Not Found}
+	Version : entities ${_ent_VERSION:-Version Not Found}
 	Desc    : entities.bash installation program.
 	        : Requires root to install.
 	        : Dependencies are defined in 
 	        : [$PRGDIR/docs/entities.external.dependencies.list]
 	        :
 	Synopsis: $PRG [-y][-i] [-u][-c][-l] [-p] [-v][-q] [-V] [-h]
-	        :   -y|--auto         install without prompting.
-	        :   -i|--install      install with prompt.
-	        :   -u|--apt-upgrade  before external dependencies are installed
+	        :   -y|--auto         Install without prompting.
+	        :   -i|--install      Install with prompt.
+	        :   -u|--apt-upgrade  Before external dependencies are installed
 	        :                     perform apt upgrade.
-	        :   -c|--apt-clean    after external dependencies are installed
+	        :   -c|--apt-clean    After external dependencies are installed
 	        :                     perform apt autoremove and apt clean.
-	        :   -l|--mlocate      update mlocate database. (This could take
+	        :   -l|--mlocate      Update mlocate database. (This could take
 	        :                     some time.)
-	        :   -p|--prod         make new build of help files and increment
+	        :   -p|--prod         Make new build of help files and increment
 	        :                     version build numbers (for developers).
-	        :   -v|--verbose      turn message verbose on. Default on.
-	        :   -q|--quiet        turn message verbose off. Default off.
-	        :   -V|--version      print entities.bash version.
-	        :   -h|--help         print help message.
+	        :   -clp              Do -p -l -u.
+	        :   -v|--verbose      Turn message verbose on. Default on.
+	        :   -q|--quiet        Turn message verbose off. Default off.
+	        :   -V|--version      Print entities.bash version.
+	        :   -h|--help         Print help message.
 	        : 
 	Examples: # 0. Don't ask. Just install it.
 	        : $PRG -y
@@ -43,9 +44,9 @@ usage() {
 	        : # 1. Do everything.
 	        : $PRG -y -u -c -l
 	        :
-	        : # 2. Do everything quietly. 
+	        : # 2. Do everything. Quietly. 
 	        : #    (Useful for autoinstalling over networks)
-	        : $PRG -y -u -c -l -q
+	        : $PRG -y --clp -q
 	etx
 	((EUID)) && echo >&2 "        : Current user is [${EUID:-} ${USER:-}]"
 	exit "${1:-0}"
@@ -133,6 +134,7 @@ main() {
 			-u|--apt-upgrade)	AptUpgrade=1;;
 			-c|--apt-clean)		AptClean=1;;
 			-l|--mlocate)			MLocate=1;;
+			--clp)						AptUpgrade=1; AptClean=1; MLocate=1;;
 			-v|--verbose|+q)	verbose.set on;;
 			-q|--quiet|+v)		verbose.set off;;
 			-V|--version)			echo "$PRG ${_ent_VERSION}"; return 0;;
