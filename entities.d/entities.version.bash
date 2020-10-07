@@ -7,9 +7,9 @@
 #X       :   majorver  1
 #X       :   minorver  0
 #X       :   420       constant
-#X       :   day0      days since 2019-06-21 (473)
-#X       :   build     this is build #11 on day 473
-#X       : This is entities.bash version 0.97.420.473.11
+#X       :   day0      days since 2019-06-21 (474)
+#X       :   build     this is build #2 on day 474
+#X       : This is entities.bash version 0.97.420.474.2
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.473.11'
+_ent_VERSION='0.97.420.474.2'
 #fin

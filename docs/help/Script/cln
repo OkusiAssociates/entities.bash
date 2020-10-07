@@ -1,6 +1,6 @@
 #---Script--cln
     Script: cln
-   Version: entities 0.97.420.473.10
+   Version: entities 0.97.420.474.1
       Desc: Search for and delete defined rubbish files.
   Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
           :    dirspec           Path to clean. Default '.'
