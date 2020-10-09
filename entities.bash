@@ -1,5 +1,5 @@
 #!/bin/bash
-# global shellcheck 'disables' used by 'p' editor
+# *global* !shellcheck 'disables' used by 'p' editor
 #! shellcheck disable=SC1090
 
 # entities.bash - Bash programming environment and library
@@ -47,17 +47,15 @@
 #X         : source entities.bash new 
 #X         :       # ^ load new instance of entities.bash; 
 #X         :       # do not use any existing instance already loaded.
-declare -- PRG PRGDIR 
-
+declare -- _ent_0 PRG PRGDIR
 declare -x _ent_scriptstatus="[\$0=$0]"
 
-	declare p_
 	# Is entities.bash being executed as a script?
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
-		p_="$(/bin/readlink -fn -- "${0}")" || p_=''
-		_ent_scriptstatus+="[is.script][\$p_=$p_]"
+		_ent_0="$(/bin/readlink -fn -- "$0")" || _ent_0=''
+		_ent_scriptstatus+="[is.script][\$_ent_0=${_ent_0}]"
 		# Has entities.bash been executed?
-		if [[ "$(/bin/readlink -fn -- "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
+		if [[ "$(/bin/readlink -fn -- "${BASH_SOURCE[0]:-}")" == "${_ent_0}" ]]; then
 			_ent_scriptstatus+='[is.execute]'
 			_ent_LOADED=0
 			# do options for execute mode
@@ -76,10 +74,9 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 			exit $?
 		fi
 		_ent_scriptstatus+='[is.sourced-from-script][SHLVL='"$SHLVL"']'
-		PRG=$(/usr/bin/basename "${p_}")
-		PRGDIR=$(/usr/bin/dirname "${p_}")
+		PRG=$(/usr/bin/basename "${_ent_0}")
+		PRGDIR=$(/usr/bin/dirname "${_ent_0}")
 		_ent_scriptstatus+="[PRGDIR=$PRGDIR]"
-		unset p_
 
 		# `entities` is already loaded, and no other parameters have 
 		# been given, so do not reload.
@@ -87,14 +84,13 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 			(( ${_ent_LOADED:-0} )) && return 0
 		fi
 	
-	# `source entities` has been executed at the shell command prompt
 	else
+		# [source entities] has been executed at the shell command prompt
 		_ent_scriptstatus+='[sourced-from-shell][SHLVL='"$SHLVL"']'
-		p_=$(/bin/readlink -fn -- "${BASH_SOURCE[0]}")
-		PRG=$(/usr/bin/basename "${p_}")
-		PRGDIR=$(/usr/bin/dirname "${p_}")
+		_ent_0=$(/bin/readlink -fn -- "${BASH_SOURCE[0]}") || _ent_0=''
+		PRG=$(/usr/bin/basename "${_ent_0}")
+		PRGDIR=$(/usr/bin/dirname "${_ent_0}")
 		_ent_scriptstatus+="[PRGDIR=$PRGDIR]"
-		unset _p
 		if [[ -n "${ENTITIES:-}" ]]; then
 			PATH="${PATH//\:${ENTITIES}/}"
 			PATH="${PATH//\:\:/\:}"

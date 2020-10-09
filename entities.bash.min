@@ -1,12 +1,11 @@
 #!/bin/bash
 declare -ix _ent_MINIMAL=1
-declare -- PRG PRGDIR 
+declare -- _ent_0 PRG PRGDIR
 declare -x _ent_scriptstatus="[\$0=$0]"
-	declare p_
 	if ((SHLVL > 1)) || [[ ! $0 == ?'bash' ]]; then
-		p_="$(/bin/readlink -fn -- "${0}")" || p_=''
-		_ent_scriptstatus+="[is.script][\$p_=$p_]"
-		if [[ "$(/bin/readlink -fn -- "${BASH_SOURCE[0]:-}")" == "$p_" ]]; then
+		_ent_0="$(/bin/readlink -fn -- "$0")" || _ent_0=''
+		_ent_scriptstatus+="[is.script][\$_ent_0=${_ent_0}]"
+		if [[ "$(/bin/readlink -fn -- "${BASH_SOURCE[0]:-}")" == "${_ent_0}" ]]; then
 			_ent_scriptstatus+='[is.execute]'
 			_ent_LOADED=0
 			while (( $# )); do
@@ -23,20 +22,18 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 			exit $?
 		fi
 		_ent_scriptstatus+='[is.sourced-from-script][SHLVL='"$SHLVL"']'
-		PRG=$(/usr/bin/basename "${p_}")
-		PRGDIR=$(/usr/bin/dirname "${p_}")
+		PRG=$(/usr/bin/basename "${_ent_0}")
+		PRGDIR=$(/usr/bin/dirname "${_ent_0}")
 		_ent_scriptstatus+="[PRGDIR=$PRGDIR]"
-		unset p_
 		if (( ! $# )); then
 			(( ${_ent_LOADED:-0} )) && return 0
 		fi
 	else
 		_ent_scriptstatus+='[sourced-from-shell][SHLVL='"$SHLVL"']'
-		p_=$(/bin/readlink -fn -- "${BASH_SOURCE[0]}")
-		PRG=$(/usr/bin/basename "${p_}")
-		PRGDIR=$(/usr/bin/dirname "${p_}")
+		_ent_0=$(/bin/readlink -fn -- "${BASH_SOURCE[0]}") || _ent_0=''
+		PRG=$(/usr/bin/basename "${_ent_0}")
+		PRGDIR=$(/usr/bin/dirname "${_ent_0}")
 		_ent_scriptstatus+="[PRGDIR=$PRGDIR]"
-		unset _p
 		if [[ -n "${ENTITIES:-}" ]]; then
 			PATH="${PATH//\:${ENTITIES}/}"
 			PATH="${PATH//\:\:/\:}"
@@ -492,7 +489,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.474.5'
+_ent_VERSION='0.97.420.476.2'
 chgConfigVar()	{
 	local Profile=${1:-} key
 	shift
@@ -692,6 +689,12 @@ implode() {
 	echo "${x:1}"
 }
 declare -fx implode
+in_array() { 
+	local t; 
+	for t in ${2:-}; do [[ $t == "$1" ]] && return 0; done
+	return 1 
+}
+declare -fx 'in_array'
 is.number() {	[[ ${1:-} =~ ^[-+]?[0-9.]+$ ]] || return 1; }
 declare -fx 'is.number'
 is.int() {	[[ ${1:-} =~ ^[-+]?[0-9]+$ ]] || return 1; }

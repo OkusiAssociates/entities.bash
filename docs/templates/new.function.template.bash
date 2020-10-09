@@ -1,12 +1,13 @@
+#!/bin/bash
 #X Script:Function:GlobalX:Global:Local: 
 #X Desc    : 
 #X Synopsis: 
-#X Options :
-#X Example : 
-#X Depends :
+#X Examples: 
 #X See Also:
 X() {
-	local -i i=0
 	
+	
+	
+	return 0	
 }
-
+#fin

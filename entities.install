@@ -32,7 +32,7 @@ usage() {
 	        :                     some time.)
 	        :   -p|--prod         Make new build of help files and increment
 	        :                     version build numbers (for developers).
-	        :   -clp              Do -p -l -u.
+	        :   --ucl             Do -u -c -l.
 	        :   -v|--verbose      Turn message verbose on. Default on.
 	        :   -q|--quiet        Turn message verbose off. Default off.
 	        :   -V|--version      Print entities.bash version.
@@ -134,7 +134,7 @@ main() {
 			-u|--apt-upgrade)	AptUpgrade=1;;
 			-c|--apt-clean)		AptClean=1;;
 			-l|--mlocate)			MLocate=1;;
-			--clp)						AptUpgrade=1; AptClean=1; MLocate=1;;
+			--ucl)						AptUpgrade=1; AptClean=1; MLocate=1;;
 			-v|--verbose|+q)	verbose.set on;;
 			-q|--quiet|+v)		verbose.set off;;
 			-V|--version)			echo "$PRG ${_ent_VERSION}"; return 0;;
@@ -416,31 +416,31 @@ install_externals() {
 	declare -a _ent_RECOMMENDED_PACKAGES=()
 	declare -a _ent_PHP_MYSQL_CLIENT_PACKAGES=()
 	source "$PRGDIR/docs/entities.external-dependencies.list" \
-			|| { msg.err "Dependencies file not found."; return 2; }
+			|| { msg.err 'Dependencies file not found.'; return 2; }
 
 	# update/upgrade
 	if ((AptUpgrade)); then
-		msg.info "Updating Installed Packages"
-		apt-get --yes update 	|| msg.die 'Error updating packages.'
-		apt-get --yes upgrade	|| msg.die 'Error upgrading packages.'
+		msg.info 'Updating Installed Packages'
+		apt-get -qq --yes update 	|| msg.die 'Error updating packages.'
+		apt-get -qq --yes upgrade	|| msg.die 'Error upgrading packages.'
 	fi
 
-	msg.info "Installing External Dependencies"
+	msg.info 'Installing External Packages'
 	# shellcheck disable=2068
-	apt-get install --yes ${_ent_ESSENTIAL_PACKAGES[@]} ${_ent_RECOMMENDED_PACKAGES[@]} ${_ent_PHP_MYSQL_CLIENT_PACKAGES[@]} \
-			||	msg.err "Error/s installing external dependencies."
+	apt-get -qq install --yes ${_ent_ESSENTIAL_PACKAGES[@]} ${_ent_RECOMMENDED_PACKAGES[@]} ${_ent_PHP_MYSQL_CLIENT_PACKAGES[@]} \
+			||	msg.err 'Error/s installing External Packages.'
 
 	if ((AptClean)); then
-		msg.info "Performing apt Cleanup"
-		apt-get --yes autoremove	|| true
-		apt-get --yes clean				|| true
+		msg.info 'Performing apt Cleanup'
+		apt-get -qq --yes autoremove	|| true
+		apt-get -qq --yes clean				|| true
 	fi
 	if ((MLocate)); then
-		msg.info "Updating mlocate Database"
+		msg.info 'Updating mlocate Database'
 		updatedb || true
 	fi
 	
-	msg.info "All external packages installed."
+	msg.info 'All External Packages have been installed.'
 	return 0
 }
 

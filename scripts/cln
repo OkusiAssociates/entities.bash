@@ -96,7 +96,7 @@ usage() {
 	cat <<-etx
 	Script  : cln
 	Version : entities ${_ent_VERSION:-}
-	Desc    : Search for and delete defined rubbish files.
+	Desc    : Search for and delete defined junk/trash/rubbish files.
 	Synopsis: ${PRG} [-m depth] [-n][-N] [-v][-q] [dirspec ...]
 	        :   dirspec           Path to clean. Default '.'
 	        :   -a|-add file      Add file to cleanup scan. Can be used 
