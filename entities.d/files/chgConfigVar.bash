@@ -22,7 +22,7 @@ chgConfigVar()	{
 		cat >"$Profile" <<-etx
 		#!/bin/bash
 		#! shellcheck disable=SC2034
-		#  [$Profile] created $(date +'%F %T')$( [[ ! -z ${PRG:-} ]] && echo " by $PRG" )
+		#  [$Profile] created $(date +'%F %T')$( [[ -n ${PRG:-} ]] && echo " by $PRG" )
 		etx
 	fi
 	while (($#)); do

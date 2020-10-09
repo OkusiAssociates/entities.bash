@@ -118,7 +118,7 @@ main() {
 	[[ ! -f $File ]] && return 1
 	# has File changed type?
 	if [[ $ftype == 'text' || -z $ftype ]]; then
-		if [[ ! -z $File ]]; then
+		if [[ -n $File ]]; then
 			h=$(head -n 1 "$File")
 			if [[ $h =~ ^\#\!.*/bash.* ]];  then  
 				ftype=sh
