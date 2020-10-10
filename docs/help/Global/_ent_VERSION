@@ -7,8 +7,8 @@
           :   majorver  1
           :   minorver  0
           :   420       constant
-          :   day0      days since 2019-06-21 (476)
-          :   build     this is build #4 on day 476
-          : This is entities.bash version 0.97.420.476.4
+          :   day0      days since 2019-06-21 (477)
+          :   build     this is build #1 on day 477
+          : This is entities.bash version 0.97.420.477.1
     Source: /usr/share/okusi/entities/entities.d/sys/trap.bash
 #---Global--_ent_VERSION------------------------------------------------------

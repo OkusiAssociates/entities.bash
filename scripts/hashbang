@@ -1,6 +1,8 @@
 #!/bin/bash
+# shellcheck disable=SC1091
 source entities || exit 2
 	strict.set off
+	verbose.set "$([[ -z $PS1 ]] && echo 'on' || echo 'off')"
 
 	declare -ax hb_PRUNE
 	if [[ -z "${hb_PRUNE[*]:-}" ]]; then
@@ -59,7 +61,7 @@ hashbang_main() {
 	done
 	
 	[[ -z "${dir}" ]] 			&& dir='.'
-	[[ -z "${gcmd[@]:-}" ]]	|| gcmd+=( '-l' )
+	[[ -z "${gcmd[*]:-}" ]]	|| gcmd+=( '-l' )
 	# shellcheck disable=SC2154
 	((_ent_VERBOSE))				|| gcmd+=( '-s' )
 	
@@ -75,7 +77,7 @@ hashbang_main() {
 	(( ${#gcmd[@]} ))				&& msg " --grep ${gcmd[*]}"
 	msg '\n'
 	
-	if ((hbExclude)) && [[ -z ${hb_EXCLUDE[@]} ]]; then
+	if ((hbExclude)) && [[ -z ${hb_EXCLUDE[*]} ]]; then
 		((_ent_VERBOSE)) && msg.warn "hb_EXCLUDE array envvar has not been set."
 		hbExclude=0
 	fi
@@ -146,8 +148,8 @@ usage() {
 	cat <<-ETX
 	Script  : $PRG
 	Version : $(version.set)
-	Desc    : Use 'find' and 'grep' to search directory recursively for 
-	        : files identified as bash scripts, ignoring all other files.
+	Desc    : Use 'find' and 'grep' to search directory recursively for files 
+	        : identified as bash scripts, ignoring all other files. 
 	        : Identification is by filename extension, a hashbang 
 	        : containing '/bash', or by result from 'file' command.
 	Synopsis: $PRG ["dir"] [-s str] [-b php|php] [-X][-Y][-e]

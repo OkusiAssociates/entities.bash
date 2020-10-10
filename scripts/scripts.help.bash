@@ -2,7 +2,7 @@
 #! shellcheck disable=SC1072
 
 #X    Script:  entities.scripts.create-help
-#X   Version:  entities 0.97.420.476.4
+#X   Version:  entities 0.97.420.477.1
 #X      Desc:  For developers of entities.bash functions and scripts.
 #X          :  Assists the entities help system gather documentation.
 #X          :  All scripts in the entities/scripts directory must be 
@@ -17,21 +17,25 @@
 #X          :    -h|--help           This help.
 
 #X    Script:  dbh
-#X   Version:  0.97.420.476.4
-#X      Desc:  MySQL helper script to quickly view data/structure/info, 
-#X          :  without a lot of typing long sql commands. Fast in, fast out.
+#X   Version:  0.97.420.477.1
+#X      Desc:  MySQL helper script to quickly view data/structure/info.
+#X          :  Fast in, fast out.
 #X  Synopsis:  dbh [database [table [command]]] [-p profile] [-V] [-h]
 #X          :    database      Database name.
 #X          :    table         Table name.
 #X          :    command       Valid commands are:
-#X          :                    columns select_fields sql_command 
-#X          :                    sql_prompt structure
+#X          :                    columns
+#X          :                    select_fields 
+#X          :                    sql_command 
+#X          :                    sql_prompt 
+#X          :                    structure
 #X          :    -p|--profile  Specify MySQL profile [eg, /root/.my3.cnf].
+#X          :    -x|--exit     Exit after executing command (if specified).
 #X          :    -V|--version  Print version.
 #X          :    -h|--help     This help.
 #X          :  To back out of a menu, select 0. To exit, select q.
-#X  Examples:  
-#X          :  # 0. go direct to database selection menu.
+#X          : 
+#X  Examples:  # 0. go direct to database selection menu.
 #X          :  dbh
 #X          : 
 #X          :  # 1. open db Users, then to table selection.
@@ -120,8 +124,8 @@
 
 #X    Script:  hashbang
 #X   Version:  0.97
-#X      Desc:  Use 'find' and 'grep' to search directory recursively for 
-#X          :  files identified as bash scripts, ignoring all other files.
+#X      Desc:  Use 'find' and 'grep' to search directory recursively for files 
+#X          :  identified as bash scripts, ignoring all other files. 
 #X          :  Identification is by filename extension, a hashbang 
 #X          :  containing '/bash', or by result from 'file' command.
 #X  Synopsis:  hashbang ["dir"] [-s str] [-b php|php] [-X][-Y][-e]
@@ -156,7 +160,7 @@
 #X          :  hashbang -s 'some_var_name' -p 'p' -x '-s' >editfiles
 
 #X    Script:  cln
-#X   Version:  entities 0.97.420.476.4
+#X   Version:  entities 0.97.420.477.1
 #X      Desc:  Search for and delete defined junk/trash/rubbish files.
 #X  Synopsis:  cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
 #X          :    dirspec           Path to clean. Default '.'

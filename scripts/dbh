@@ -1,7 +1,7 @@
 #!/bin/bash
-#! shellcheck disable=SC2154
-#X Script  : dbh 
-#X Desc    : See dbh --help
+#! shellcheck disable=SC2154,SC1090
+# Script  : dbh 
+# Desc    : See dbh --help
 source "$OKROOT/entities/entities.bash" || exit 2
 	version.set "${_ent_VERSION}"
 	verbose.set on
@@ -9,6 +9,7 @@ source "$OKROOT/entities/entities.bash" || exit 2
 	strict.set on
 	
 	declare -xg Profile='' Database='' DataTable='' DataCommand=''
+	declare -i ExitAfterCmd=0
 	
 	declare -xrg Profile_Default=/root/.my.cnf
 	 
@@ -18,12 +19,15 @@ main() {
 	while (( $# )); do
 		case "$1" in
 			-p|--profile)	shift; Profile="${1:-}";;
+			-x|--exit)		ExitAfterCmd=1;;
+			-v|--verbose)	verbose.set on;;
+			-q|--quiet)		verbose.set off;;
 			-V|--version)	echo "entities.bash $(version.set)"; return 0;;
 			-h|--help)		usage; return 0;;
 			-?|--*)				msg.err "Invalid option [$1]"; return 1;;
 			*)						if   [[ -z $Database ]]; 	  then Database="$1"
 										elif [[ -z $DataTable ]];   then DataTable="$1";
-										elif [[ -z $DataCommand ]]; then DataCommand="$1"
+										elif [[ -z $DataCommand ]]; then DataCommand="$1";
 										else
 											msg.err "Too many parameters [$1]"
 											return 1
@@ -36,11 +40,10 @@ main() {
 	[[ -z $Profile ]] && Profile=$Profile_Default
 	[[ -f $Profile ]] || { msg.err "Profile [$Profile] not found."; return 2; }
 
-
 	tab.width 8
 	tabs 8			# for the select builtin
-	msg "Using profile [$Profile]"
-	msg "Select 0 to backup up, q to quit."		
+	msg.info "Using profile [$Profile]"
+	msg.info "Select 0 to backup up, q to quit."		
 	while ((1)); do
 		msg.prefix.set "$PRG"
 		[[ -n $Database ]] || select_database
@@ -55,12 +58,14 @@ main() {
 					msg.err "Command $DataCommand not found."
 				else
 					"do_${DataCommand}" || true
+					((ExitAfterCmd)) && exit
 				fi
 				DataCommand=''
 			done
 			DataTable=''
 		done
 		Database=''
+		ExitAfterCmd=0
 	done
 }
 
@@ -98,11 +103,9 @@ select_table() {
 
 select_command() {
 	local v REPLY PS3 sx
-	
 	sx=$(mysql --defaults-file=$Profile --no-auto-rehash \
 						-Nse "SELECT count(*) FROM $Database.$DataTable")  || perror $?
-	msg "[$sx] rows in [$Database.$DataTable]"
-	
+	msg -n "[$sx] rows in [$Database.$DataTable]"
 	msg.prefix.set ++ "$Database:$DataTable"
 	PS3="$(msg.prefix.set)Select Command: "
 	local -a cmds
@@ -114,7 +117,7 @@ select_command() {
 					''
 			 )
 	tabs 8
-	echo
+#	echo
 	select v in "${cmds[@]}"; do 
 		[[ $REPLY == 'q' ]] && exit 0
 		[[ $REPLY == '0' ]] && { v=''; break; }
@@ -216,20 +219,24 @@ usage() {
 	cat <<-usage
 	Script  : $PRG
 	Version : $(version.set)
-	Desc    : MySQL helper script to quickly view data/structure/info, 
-	        : without a lot of typing long sql commands. Fast in, fast out.
+	Desc    : MySQL helper script to quickly view data/structure/info.
+	        : Fast in, fast out.
 	Synopsis: $PRG [database [table [command]]] [-p profile] [-V] [-h]
 	        :   database      Database name.
 	        :   table         Table name.
 	        :   command       Valid commands are:
-	        :                   columns select_fields sql_command 
-	        :                   sql_prompt structure
+	        :                   columns
+	        :                   select_fields 
+	        :                   sql_command 
+	        :                   sql_prompt 
+	        :                   structure
 	        :   -p|--profile  Specify MySQL profile [eg, /root/.my3.cnf].
+	        :   -x|--exit     Exit after executing command (if specified).
 	        :   -V|--version  Print version.
 	        :   -h|--help     This help.
 	        : To back out of a menu, select 0. To exit, select q.
-	Examples: 
-	        : # 0. go direct to database selection menu.
+	        :
+	Examples: # 0. go direct to database selection menu.
 	        : $PRG
 	        :
 	        : # 1. open db Users, then to table selection.

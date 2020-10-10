@@ -1,19 +1,23 @@
 #---Script--dbh
     Script: dbh
-   Version: 0.97.420.476.4
-      Desc: MySQL helper script to quickly view data/structure/info,
-          :  without a lot of typing long sql commands. Fast in, fast out.
+   Version: 0.97.420.477.1
+      Desc: MySQL helper script to quickly view data/structure/info.
+          :  Fast in, fast out.
   Synopsis: dbh [database [table [command]]] [-p profile] [-V] [-h]
           :    database      Database name.
           :    table         Table name.
           :    command       Valid commands are:
-          :                    columns select_fields sql_command
-          :                    sql_prompt structure
+          :                    columns
+          :                    select_fields
+          :                    sql_command
+          :                    sql_prompt
+          :                    structure
           :    -p|--profile  Specify MySQL profile [eg, /root/.my3.cnf].
+          :    -x|--exit     Exit after executing command (if specified).
           :    -V|--version  Print version.
           :    -h|--help     This help.
           :  To back out of a menu, select 0. To exit, select q.
-          :  # 0. go direct to database selection menu.
+   Example: # 0. go direct to database selection menu.
           :  dbh
           :  # 1. open db Users, then to table selection.
           :  dbh Users
