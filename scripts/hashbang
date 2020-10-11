@@ -110,7 +110,7 @@ hashbang_main() {
 		[[ $ft == 'sh' ]] && ft='bash'
 		if [[ $ft == "$hashbang" ]]; then
 			if (( ${#search} )); then
-				if (( $(stat -c %s "$file") < hb_MAX_FILESIZE )); then
+				if (( $(stat -c %s "$file" 2>/dev/null || echo "$hb_MAX_FILESIZE") < hb_MAX_FILESIZE )); then
 					# shellcheck disable=SC2086
 					grep -I -m1 ${gcmd[*]:-} "$search" "$file" >/dev/null || file=''
 				else
