@@ -85,10 +85,12 @@ usage() {
 	# ==========================================================================
 	# let's start
 	strict.set off
-	verbose.set on
+	msg.verbose.set on
 	debug.set off
 	trap.set on
 	msg.prefix.set 'entities.bash'
+	msg.usetag.set off
+	
 	cd "$PRGDIR" || msg.die "Could not change into directory [$PRGDIR]"
 
 	# set ENTITIES as the destination (production) directory
@@ -135,8 +137,8 @@ main() {
 			-c|--apt-clean)		AptClean=1;;
 			-l|--mlocate)			MLocate=1;;
 			--ucl)						AptUpgrade=1; AptClean=1; MLocate=1;;
-			-v|--verbose|+q)	verbose.set on;;
-			-q|--quiet|+v)		verbose.set off;;
+			-v|--verbose|+q)	msg.verbose.set on;;
+			-q|--quiet|+v)		msg.verbose.set off;;
 			-V|--version)			echo "$PRG ${_ent_VERSION}"; return 0;;
 			-h|--help)				usage 0;;
 			*)								msg.die "Bad command argument [$1]";;
@@ -205,7 +207,7 @@ main() {
 	install_files
 
 	declare output
-	is.verbose && output='/dev/stdout' || output='/dev/null'
+	msg.verbose && output='/dev/stdout' || output='/dev/null'
 	install_externals >$output 2>_errlog_ || true
 	cat _errlog_
 	rm -f _errlog_

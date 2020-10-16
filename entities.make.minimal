@@ -16,9 +16,9 @@ main() {
 		case "$1" in
 			--minfile|-m)	shift; entities_min="${1:-}";;
 			--no-prompt|--noprompt|-y)		
-										noprompt=1; color.set off;;
-			--verbose|-v)	verbose.set on;;
-			--quiet|-q)		verbose.set off;;
+										noprompt=1; msg.color.set off;;
+			--verbose|-v)	msg.verbose.set on;;
+			--quiet|-q)		msg.verbose.set off;;
 			--help|-h)		usage; return 0;;
 			--version|-V)	echo "$PRG $_ent_VERSION"; return 0;;
 			*)						msg.err "Bad parameter [$1]"
@@ -35,15 +35,15 @@ main() {
 
 	# sanity check
 	[[ "$entities_file" == "$entities_min" ]] \
-			&& msg.die log "Cannot clobber [${entities_file}]!"
+			&& msg.die --log "Cannot clobber [${entities_file}]!"
 	cd "$ENTITIES" \
-			|| msg.die log "Could not cd into [$ENTITIES]"
+			|| msg.die --log "Could not cd into [$ENTITIES]"
 
 	local -i tab
-	tab=$(tab.set)
-	tab.set ++
+	tab=$(msg.tab.set)
+	msg.tab.set ++
 	if (( ! noprompt )); then
-		msg.yn "Do you wish to proceed?" || { tab.set "$tab"; return 1; }
+		msg.yn "Do you wish to proceed?" || { msg.tab.set "$tab"; return 1; }
 		msg 'Proceeding'
 	fi
 
@@ -57,7 +57,7 @@ main() {
 	# assemble all .bash files; define entities.bash as start point
 	local -a templates=( "$ENTITIES/entities.bash" )
 	# get all .bash files in entities.d/
-	[[ ! -d "$ENTITIES/entities.d" ]] && msg.die log "[$ENTITIES/entities.d] not found!"
+	[[ ! -d "$ENTITIES/entities.d" ]] && msg.die --log "[$ENTITIES/entities.d] not found!"
 	local _e
 	local -a _userbash=()
 	shopt -s globstar
@@ -114,7 +114,7 @@ main() {
 	chmod 755 "$entities_min"	\
 			|| msg.err "Could not chmod 755 [$entities_min]!"
 
-	tab.set "$tab"
+	msg.tab.set "$tab"
 	msg.info "$entities_min created."
 }
 

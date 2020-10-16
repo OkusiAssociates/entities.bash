@@ -1,7 +1,7 @@
 #!/bin/bash
 # *global* !shellcheck 'disables' used by 'p' editor
 #! shellcheck disable=SC1090
-
+#color.set tab.set is.verbose
 # entities.bash - Bash programming environment and library
 # Copyright (C) 2019-2020  Gary Dean <garydean@okusi.id>
 # 
@@ -255,7 +255,7 @@ msg.notice() 	{ msgx --notice "$@"; }
 msg.info() 		{ msgx --info "$@"; }
 msg.debug() 	{ msgx --debug "$@"; }
 msg.sys() 		{ msgx --sys "$@"; }
-declare -fx 'msg.die' 'msg.emerg' 'msg.alert' 'msg.crit' 'msg.err' 'msg.warning' 'msg.warn' 'msg.notice' 'msg.info' 'msg.debug' 'msg.sys'
+declare -fx 'msg' 'msg.die' 'msg.emerg' 'msg.alert' 'msg.crit' 'msg.err' 'msg.warning' 'msg.warn' 'msg.notice' 'msg.info' 'msg.debug' 'msg.sys'
 
 #X GlobalX : _PATH_LOG LOG_EMERG LOG_ALERT LOG_CRIT LOG_ERR LOG_WARNING LOG_NOTICE LOG_INFO LOG_DEBUG LOG_PRIORITYNAMES 
 #X Desc    : Global Exported Read-Only constants from [syslog.h].
@@ -317,8 +317,6 @@ onoff() {
 }
 declare -fx 'onoff'
 
-declare -ix _ent_VERBOSE
-[ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
 #X Function: msg.verbose.set msg.verbose
 #X Desc    : Set global verbose status for msg* functions. For shell 
 #X         : terminal verbose is ON by default, otherwise, when called 
@@ -336,10 +334,13 @@ declare -ix _ent_VERBOSE
 #X         : msg.verbose.set $oldverbose
 #X         : msg.verbose && echo "Verbose is on."
 #X         : _ent_VERBOSE controls output from msg*() functions.
+declare -ix _ent_VERBOSE
+[ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
 msg.verbose() { return $(( ! _ent_VERBOSE )); }
 declare -fx 'msg.verbose'
-	alias verbose='msg.verbose' #X legacy X#
-	
+#	verbose() { msg.verbose "$@"; }; 		declare -fx verbose 
+	is.verbose() { msg.verbose "$@"; };	declare -fx is.verbose
+
 msg.verbose.set() {
 	if (( ${#@} )); then
 		_ent_VERBOSE=$(onoff "${1}")
@@ -350,7 +351,7 @@ msg.verbose.set() {
 	return 0
 }
 declare -fx 'msg.verbose.set'
-	alias verbose.set='msg.verbose.set'
+	verbose.set() { msg.verbose.set "$@"; }; declare -fx verbose.set
 	
 declare -ix _ent_MSG_USE_TAG=1
 msg.usetag.set() {
@@ -395,8 +396,8 @@ declare -ix _ent_COLOR=1
 [ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
 msg.color() { return $(( ! _ent_COLOR )); }
 declare -fx 'msg.color'
-	alias color='msg.color'		#X legacy X#
-	alias is.color='msg.color'		#X legacy X#
+	color() { 'msg.color' "$@"; }; declare -fx color
+	is.color() { 'msg.color' "$@"; };	declare -fx 'is.color'
 	
 msg.color.set() {
 	if (( ${#@} )); then 
@@ -412,8 +413,8 @@ msg.color.set() {
 	return 0
 }
 declare -fx 'msg.color.set'
-	alias color.set='msg.color.set'
-	
+	color.set() { 'msg.color.set' "$@"; };	declare -fx 'color.set'
+
 #X Function : msg.tab.set tab.width
 #X Synopsis : msg.tab.set [offset]; msg.tab.width [tabvalue]
 #X Desc     :   msg.tab.set    set tab position for output from msg.* functions.
@@ -437,7 +438,7 @@ msg.tab.width() {
 	return 0
 }
 declare -fx 'msg.tab.width'
-	alias tab.width='msg.tab.width' #X legacy X#
+	tab.width() { 'msg.tab.width' "$@"; }; declare -fx 'tab.width'
 
 declare -ix _ent_TABSET=0
 msg.tab.set() {
@@ -462,7 +463,7 @@ msg.tab.set() {
 	return 0
 }
 declare -fx	'msg.tab.set'
-	alias tab.set='msg.tab.set'
+	tab.set() { 'msg.tab.set' "$@"; }; declare -fx 'tab.set'
 	
 #X Function: msg.prefix.separator.set
 #X Desc    : Set/Retrieve value of _ent_MSG_PRE_SEP for appending as a separator for msg.prefix.
@@ -674,7 +675,7 @@ declare -fx 'dryrun.set'
 declare -ix _ent_DEBUG=0
 is.debug() {	return $(( ! _ent_DEBUG )); }
 declare -fx 'is.debug'
-	alias debug='is.debug' #X legacy X#
+	debug() { is.debug "$@"; }; declare -fx debug
 	
 debug.set() {
 	if (( $# )); then _ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
@@ -697,7 +698,6 @@ declare -fx 'debug.set'
 declare -ix _ent_STRICT=0
 is.strict() { return $(( ! _ent_STRICT )); }
 declare -fx 'is.strict'
-	alias strict='is.strict'
 	
 strict.set() {
 	if (( $# )); then
@@ -762,7 +762,7 @@ check.dependencies() {
 	done
 	((missing && _ent_VERBOSE)) && \
 			echo >&2 "These dependencies are missing: ${missing_deps}"
-	return $missing
+	return "$missing"
 }
 declare -fx 'check.dependencies'
 
@@ -791,7 +791,7 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 	if [[ -d "${ENTITIES:-/lib/include/entities}/entities.d" ]]; then
 		declare _e
 		declare -a _userbash=()
-		for _e in ${ENTITIES:-/lib/include/entities}/entities.d/**/*.bash; do
+		for _e in "${ENTITIES:-/lib/include/entities}"/entities.d/**/*.bash; do
 			if [[ -r "$_e" ]]; then
 				if [[ ! -L "$_e" ]] ; then
 					_userbash+=( "${_e}" )

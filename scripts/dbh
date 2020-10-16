@@ -2,10 +2,10 @@
 #! shellcheck disable=SC2154,SC1090
 # Script  : dbh 
 # Desc    : See dbh --help
-source "entities" || exit 2
+source entities || exit 2
 #source "$OKROOT/entities/entities.bash" || exit 2
 	version.set "entities.bash ${_ent_VERSION}"
-	verbose.set on
+	msg.verbose.set on
 	trap.set on
 	strict.set on
 	

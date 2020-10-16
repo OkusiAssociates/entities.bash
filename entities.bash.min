@@ -136,7 +136,7 @@ msg.notice() 	{ msgx --notice "$@"; }
 msg.info() 		{ msgx --info "$@"; }
 msg.debug() 	{ msgx --debug "$@"; }
 msg.sys() 		{ msgx --sys "$@"; }
-declare -fx 'msg.die' 'msg.emerg' 'msg.alert' 'msg.crit' 'msg.err' 'msg.warning' 'msg.warn' 'msg.notice' 'msg.info' 'msg.debug' 'msg.sys'
+declare -fx 'msg' 'msg.die' 'msg.emerg' 'msg.alert' 'msg.crit' 'msg.err' 'msg.warning' 'msg.warn' 'msg.notice' 'msg.info' 'msg.debug' 'msg.sys'
 if (( ! ${LOG_ALERT:-0} )); then
 	declare -xr		_PATH_LOG='/dev/log'
 	declare -ixr	LOG_EMERG=0		# system is unusable 
@@ -167,7 +167,7 @@ declare -ix _ent_VERBOSE
 [ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
 msg.verbose() { return $(( ! _ent_VERBOSE )); }
 declare -fx 'msg.verbose'
-	alias verbose='msg.verbose' #X legacy X#
+	is.verbose() { msg.verbose "$@"; };	declare -fx is.verbose
 msg.verbose.set() {
 	if (( ${#@} )); then
 		_ent_VERBOSE=$(onoff "${1}")
@@ -177,7 +177,7 @@ msg.verbose.set() {
 	return 0
 }
 declare -fx 'msg.verbose.set'
-	alias verbose.set='msg.verbose.set'
+	verbose.set() { msg.verbose.set "$@"; }; declare -fx verbose.set
 declare -ix _ent_MSG_USE_TAG=1
 msg.usetag.set() {
 	if (( ${#@} )); then
@@ -203,8 +203,8 @@ declare -ix _ent_COLOR=1
 [ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
 msg.color() { return $(( ! _ent_COLOR )); }
 declare -fx 'msg.color'
-	alias color='msg.color'		#X legacy X#
-	alias is.color='msg.color'		#X legacy X#
+	color() { 'msg.color' "$@"; }; declare -fx color
+	is.color() { 'msg.color' "$@"; };	declare -fx 'is.color'
 msg.color.set() {
 	if (( ${#@} )); then 
 		if [[ $1 == 'auto' ]]; then
@@ -219,7 +219,7 @@ msg.color.set() {
 	return 0
 }
 declare -fx 'msg.color.set'
-	alias color.set='msg.color.set'
+	color.set() { 'msg.color.set' "$@"; };	declare -fx 'color.set'
 declare -ix _ent_TABWIDTH=4
 msg.tab.width() {
 	if (( $# )); then
@@ -231,7 +231,7 @@ msg.tab.width() {
 	return 0
 }
 declare -fx 'msg.tab.width'
-	alias tab.width='msg.tab.width' #X legacy X#
+	tab.width() { 'msg.tab.width' "$@"; }; declare -fx 'tab.width'
 declare -ix _ent_TABSET=0
 msg.tab.set() {
 	if (( $# )); then
@@ -255,7 +255,7 @@ msg.tab.set() {
 	return 0
 }
 declare -fx	'msg.tab.set'
-	alias tab.set='msg.tab.set'
+	tab.set() { 'msg.tab.set' "$@"; }; declare -fx 'tab.set'
 declare -x _ent_MSG_PRE_SEP
 _ent_MSG_PRE_SEP=': '
 msg.prefix.separator.set() {
@@ -377,7 +377,7 @@ declare -fx 'dryrun.set'
 declare -ix _ent_DEBUG=0
 is.debug() {	return $(( ! _ent_DEBUG )); }
 declare -fx 'is.debug'
-	alias debug='is.debug' #X legacy X#
+	debug() { is.debug "$@"; }; declare -fx debug
 debug.set() {
 	if (( $# )); then _ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
 	else							echo "${_ent_DEBUG}"
@@ -388,7 +388,6 @@ declare -fx 'debug.set'
 declare -ix _ent_STRICT=0
 is.strict() { return $(( ! _ent_STRICT )); }
 declare -fx 'is.strict'
-	alias strict='is.strict'
 strict.set() {
 	if (( $# )); then
 	 	local opt='+'
@@ -434,7 +433,7 @@ check.dependencies() {
 	done
 	((missing && _ent_VERBOSE)) && \
 			echo >&2 "These dependencies are missing: ${missing_deps}"
-	return $missing
+	return "$missing"
 }
 declare -fx 'check.dependencies'
 trap.breakp() { 
@@ -451,7 +450,7 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 	if [[ -d "${ENTITIES:-/lib/include/entities}/entities.d" ]]; then
 		declare _e
 		declare -a _userbash=()
-		for _e in ${ENTITIES:-/lib/include/entities}/entities.d/**/*.bash; do
+		for _e in "${ENTITIES:-/lib/include/entities}"/entities.d/**/*.bash; do
 			if [[ -r "$_e" ]]; then
 				if [[ ! -L "$_e" ]] ; then
 					_userbash+=( "${_e}" )
@@ -506,7 +505,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.483.4'
+_ent_VERSION='0.97.420.483.15'
 chgConfigVar()	{
 	local Profile=${1:-} key
 	shift
