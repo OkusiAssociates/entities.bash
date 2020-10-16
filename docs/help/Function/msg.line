@@ -6,11 +6,11 @@
           :   repchar     Default repchar is '_'.
           :   iterations  Default iterations is number of screen
           :               columns minus 1.
-          : If verbose.set is disabled, return without processing
+          : If msg.verbose.set is disabled, return without processing
           : further arguments.
-          : If color.set is enabled, use color.
+          : If msg.color.set is enabled, use color.
           : If msg.prefix is set, print prefix before string.
-          : If tab.set is enabled, print tabs.
+          : If msg.tab.set is enabled, print tabs.
    Example: msg.line
           : msg.line '+'
           : msg.line '=' 42

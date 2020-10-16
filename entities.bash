@@ -56,7 +56,7 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 		_ent_scriptstatus+="[is.script][\$_ent_0=${_ent_0}]"
 		# Has entities.bash been executed?
 		if [[ "$(/bin/readlink -fn -- "${BASH_SOURCE[0]:-}")" == "${_ent_0}" ]]; then
-			_ent_scriptstatus+='[is.execute]'
+			_ent_scriptstatus+='[execute]'
 			_ent_LOADED=0
 			# do options for execute mode
 			while (( $# )); do
@@ -73,7 +73,7 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 			done		
 			exit $?
 		fi
-		_ent_scriptstatus+='[is.sourced-from-script][SHLVL='"$SHLVL"']'
+		_ent_scriptstatus+='[sourced-from-script][SHLVL='"$SHLVL"']'
 		PRG=$(/usr/bin/basename "${_ent_0}")
 		PRGDIR=$(/usr/bin/dirname "${_ent_0}")
 		_ent_scriptstatus+="[PRGDIR=$PRGDIR]"
@@ -133,6 +133,159 @@ set +o errexit +o nounset +o pipefail
 shopt -s extglob
 shopt -s globstar
 
+# msgx ########################################################################
+#X Function: msgx msg msg.die msg.emerg msg.alert msg.crit msg.err msg.warning msg.notice msg.info msg.debug msg.sys 
+#X Desc    : Console message functions.  msg() functions support verbose, 
+#X         : message prefixes, tabs and color. 
+#X         : If msg.verbose.set is enabled, send strings to output.
+#X         : embedded chars (\n \t etc) enabled by default.
+#X         : Tabs and prefixes (if set) are printed with the string.
+#X         :
+#X Synopsis: msg.* [--log] [--notag] [--raw] [--errno num] "str" ["str" ...]
+#X         :   msg           Print message to stdout with no color or stdio tag.
+#X         :   msg.die       Print die message to stderr and exit.
+#X         :   msg.emerg     Print emergency message to stderr and exit.
+#X         :   msg.alert     Print alert message to stderr and and exit.
+#X         :   msg.crit      Print critical alert message to stderr and exit.  
+#X         :   msg.err       Print error message to stderr.
+#X         :   msg.warning   Print warning message to stderr.
+#X         :   msg.notice    Print notice message to stdout.
+#X         :   msg.info      Print notice message to stdout.
+#X         :   msg.debug     Print debug message to stderr.
+#X         :   msg.sys       Print system message to stderr and log message 
+#X         :                 using stdio code.
+#X         :   -e|--errno n  Set error return/exit code to n.
+#X         :   -l|--log      Log message to syslog.
+#X         :   -n|--raw      Print without tabs, prefixes or linefeeds.
+#X         :   -t|--notag    Do not print stdio tag (eg, info, err, sys).
+#X         :
+#X Examples: msg.sys "Sir, I have something to report."
+#X         : msg.info "Sir. There's something I think you should know."
+#X         : msg.err --log "Sir!" "I think you better come here."
+#X         : msg.warn --log "Pardon me, Sir." "Is this supposed to happen?"
+#X         : msg.die --log --errno 22 "Sir!" "This isn't supposed to happen."
+#X Example : msg "hello world!" "it's so nice to be back!"
+#X See also: msg.verbose.set msg.color.set msg.prefix.set msg.tab.set
+msgx() { 
+	(( ! _ent_VERBOSE )) && return 0
+	local -i std=1 dieflag=0 log=0 raw=0 errno=0 tag=1
+	local stdio='' sx
+	while (($#)); do
+		# these are all front-facing options; the first non-option signals 
+		# that rest of args are all printed with these settings.
+		case $1 in
+			--die)			stdio=${1:2}; std=2; dieflag=1; errno=1;;
+			--emerg)		stdio=${1:2}; std=2; dieflag=1; errno=1;;
+			--alert)		stdio=${1:2}; std=2; dieflag=1; errno=1;;
+			--crit)			stdio=${1:2}; std=2; dieflag=1; errno=1;;
+			--err)			stdio=${1:2}; std=2;;
+			--warning)	stdio=${1:2}; std=2;;
+			--notice)		stdio=${1:2}; std=1;;
+			--info)			stdio=${1:2}; std=1;;
+			--debug)		stdio=${1:2}; std=2;;
+			--sys)			stdio=${1:2};	std=2; log=1;;		# sys just means a logged message to stderr
+			-e|--errno)	std=2; shift; errno=$((${1:-0}));;
+			-l|--log|log)	log=1;;
+			-n|--raw)		raw=1;;
+			-t|--notag)	tag=0;;
+			*)					break;;
+		esac
+		shift
+	done	
+#	((tag)) && ((_ent_MSG_USE_TAG)) && [[ -n $stdio ]] && msg.prefix.set ++ "$stdio"
+	((tag)) && ((_ent_MSG_USE_TAG)) && [[ -n $stdio ]] && _ent_MSG_PRE+=( "$stdio" )
+	
+	while (($#)); do
+		if ((raw)); then
+			((_ent_COLOR)) && { nc=color$stdio; echo -ne "${!nc}"; }
+			echo >&${std} -en "$1"
+			((_ent_COLOR)) && echo -ne "$colorreset"
+		else
+			((_ent_COLOR)) && { nc=color$stdio; echo -ne "${!nc}"; }
+			if (( ${#_ent_MSG_PRE[*]} )); then
+				p=${_ent_MSG_PRE[*]}
+				echo -n "${p//[[:blank:]]/${_ent_MSG_PRE_SEP}}${_ent_MSG_PRE_SEP}"
+			fi
+			((_ent_TABSET)) && printf '\t%.0s' $(seq 1 "$_ent_TABSET")
+			echo >&${std} -e "$1"
+			((_ent_COLOR)) && echo -ne "${colorreset}"
+		fi
+		if ((log)); then
+			sx=${stdio:-err}
+			[[ $sx == 'sys' || $sx == 'die'  ]] && sx='err'
+			systemd-cat -t "${_ent_MSG_PRE[*]}" -p "$sx" echo "$( ((errno)) && echo "$errno: ")$1"
+		fi
+		shift
+	done
+	
+	# shellcheck disable=SC2162
+	if read -t 0; then 
+		while read -sr line; do 
+			((_ent_COLOR)) && { nc=color$stdio; echo -ne "${!nc}"; }
+			if (( ${#_ent_MSG_PRE[*]} )); then
+				p=${_ent_MSG_PRE[*]}
+				echo -n "${p//[[:blank:]]/${_ent_MSG_PRE_SEP}}${_ent_MSG_PRE_SEP}"
+			fi
+			((_ent_TABSET)) && printf '\t%.0s' $(seq 1 "$_ent_TABSET")
+			echo >&${std} "$line"
+			((_ent_COLOR)) && echo -ne "${colorreset}"
+			if ((log)); then
+				sx=${stdio:-err}
+				[[ $sx == 'sys' || $sx == 'die'  ]] && sx='err'
+				systemd-cat -t "${_ent_MSG_PRE[*]}" -p "$sx" echo "$( ((errno)) && echo "$errno: ")$line"
+			fi
+		done
+	fi
+
+	((tag)) && ((_ent_MSG_USE_TAG)) && [[ -n $stdio ]] && msg.prefix.set '--'
+
+	((dieflag)) && exit "$errno"
+	return 0
+}
+declare -fx 'msgx'
+msg()					{ msgx "$@"; }
+msg.die() 		{ msgx --die "$@"; }
+msg.emerg() 	{ msgx --emerg "$@"; }
+msg.alert() 	{ msgx --alert "$@"; }
+msg.crit()	 	{ msgx --crit "$@"; }
+msg.err() 		{ msgx --err "$@"; }
+msg.warning() { msgx --warning "$@"; }
+msg.warn() 		{ msgx --warning "$@"; }
+msg.notice() 	{ msgx --notice "$@"; }
+msg.info() 		{ msgx --info "$@"; }
+msg.debug() 	{ msgx --debug "$@"; }
+msg.sys() 		{ msgx --sys "$@"; }
+declare -fx 'msg.die' 'msg.emerg' 'msg.alert' 'msg.crit' 'msg.err' 'msg.warning' 'msg.warn' 'msg.notice' 'msg.info' 'msg.debug' 'msg.sys'
+
+#X GlobalX : _PATH_LOG LOG_EMERG LOG_ALERT LOG_CRIT LOG_ERR LOG_WARNING LOG_NOTICE LOG_INFO LOG_DEBUG LOG_PRIORITYNAMES 
+#X Desc    : Global Exported Read-Only constants from [syslog.h].
+#X         :  _PATH_LOG='/dev/log'
+#X         : 	# priorities (these are ordered)
+#X         :	LOG_EMERG=0		# system is unusable 
+#X         : 	LOG_ALERT=1		# action must be taken immediately 
+#X         : 	LOG_CRIT=2		# critical conditions 
+#X         : 	LOG_ERR=3			# error conditions 
+#X         : 	LOG_WARNING=4	# warning conditions 
+#X         : 	LOG_NOTICE=5	# normal but significant condition 
+#X         : 	LOG_INFO=6		# informational 
+#X         : 	LOG_DEBUG=7		# debug-level messages 
+#X         : 	LOG_PRIORITYNAMES='emerg alert crit err warning notice info debug'
+#X See Also: msg*
+# read-only vars can only be declared once.
+if (( ! ${LOG_ALERT:-0} )); then
+	declare -xr		_PATH_LOG='/dev/log'
+	# priorities (these are ordered)
+	declare -ixr	LOG_EMERG=0		# system is unusable 
+	declare -ixr	LOG_ALERT=1		# action must be taken immediately 
+	declare -ixr	LOG_CRIT=2		# critical conditions 
+	declare -ixr	LOG_ERR=3			# error conditions 
+	declare -ixr	LOG_WARNING=4	# warning conditions 
+	declare -ixr	LOG_NOTICE=5	# normal but significant condition 
+	declare -ixr	LOG_INFO=6		# informational 
+	declare -ixr	LOG_DEBUG=7		# debug-level messages 
+	declare -xr		LOG_PRIORITYNAMES='emerg alert crit err warning notice info debug'
+fi
+
 #X GlobalX : CR CH9 LF OLDIFS IFS
 #X Desc    : Constant global char values.
 #X         : NOTE: IFS is 'normalised' on every 'new' execution of 
@@ -153,11 +306,11 @@ declare -nx	OIFS='OLDIFS'
 #X         : for ambiguous value, returns defaultval if defined, otherwise 0.
 #X Example : result=$(onoff off 1)
 onoff() {
-	local o="${1:-0}"
+	local o=${1:-0}
 	case "${o,,}" in
 		on|1)			o=1;;
 		off|0)		o=0;;
-		*)				o=0; (( $# > 1 )) && o=$(( ${2} ));; 
+		*)				o=$(( ${2:-0} ));; 
 	esac
 	echo -n $((o))
 	return 0
@@ -166,28 +319,28 @@ declare -fx 'onoff'
 
 declare -ix _ent_VERBOSE
 [ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
-#X Function: verbose.set is.verbose
+#X Function: msg.verbose.set msg.verbose
 #X Desc    : Set global verbose status for msg* functions. For shell 
 #X         : terminal verbose is ON by default, otherwise, when called 
 #X         : from another script, verbose is OFF by default.
-#X         : verbose.set() status is used in the msg.yn() and some msg.*() 
+#X         : msg.verbose.set() status is used in the msg.yn() and some msg.*() 
 #X         : commands, except msg.sys(), msg.die() and msg.crit(), which will 
 #X         : always ignore verbose status and output to STDERR.
-#X Synopsis: verbose.set [on|1] | [off|0]
-#X         : curstatus=$(verbose.set)      
-#X         : is.verbose returns true if verbose is set, false if not.
+#X Synopsis: msg.verbose.set [on|1] | [off|0]
+#X         : curstatus=$(msg.verbose.set)      
+#X         : msg.verbose returns true if verbose is set, false if not.
 #X Example : 
-#X         : oldverbose=$(verbose.set)
-#X         : verbose.set on
+#X         : oldverbose=$(msg.verbose.set)
+#X         : msg.verbose.set on
 #X         : # do stuff... #
-#X         : verbose.set $oldverbose
-#X         : is.verbose && echo "Verbose is on."
+#X         : msg.verbose.set $oldverbose
+#X         : msg.verbose && echo "Verbose is on."
 #X         : _ent_VERBOSE controls output from msg*() functions.
-is.verbose() { return $(( ! _ent_VERBOSE )); }
-declare -fx 'is.verbose'
-	alias verbose='is.verbose' #X legacy X#
+msg.verbose() { return $(( ! _ent_VERBOSE )); }
+declare -fx 'msg.verbose'
+	alias verbose='msg.verbose' #X legacy X#
 	
-verbose.set() {
+msg.verbose.set() {
 	if (( ${#@} )); then
 		_ent_VERBOSE=$(onoff "${1}")
 	else
@@ -196,26 +349,56 @@ verbose.set() {
 	fi
 	return 0
 }
-declare -fx 'verbose.set'
+declare -fx 'msg.verbose.set'
+	alias verbose.set='msg.verbose.set'
+	
+declare -ix _ent_MSG_USE_TAG=1
+msg.usetag.set() {
+	if (( ${#@} )); then
+		_ent_MSG_USE_TAG=$(onoff "${1}")
+	else
+		# shellcheck disable=SC2086
+		echo -n ${_ent_MSG_USE_TAG}
+	fi
+	return 0
+}
+declare -fx 'msg.usetag.set'
+	
+#X GlobalX  : colorreset colordebug colorinfo colornotice colorwarning colorerr colorcrit coloralert coloremerg
+#X Desc     : Colors used by entities msg.* functions.
+#X          : emerg alert crit err warning notice info debug
+#X          : panic (dep=emerg) err (dep=error) warning (dep=warn)
+#X See Also :
+declare -x colorreset="\x1b[0;39;49m"
+declare -x color="\x1b[0;39;49m"
+declare -x color0="\x1b[0;39;49m"
+declare -x colordebug="\x1b[35m"
+declare -x colorinfo="\x1b[32m"
+declare -x colornotice="\x1b[34m"
+declare -x colorwarning="\x1b[33m";					declare -nx colorwarn='colorwarning'
+declare -x colorerr="\x1b[31m";							declare -nx colorerror='colorerr'
+declare -x colorcrit="\x1b[1;31m";					declare -nx colorcritical='colorcrit'
+declare -x coloralert="\x1b[1;33;41m"
+declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 
-#X Function: color.set is.color
+#X Function: msg.color.set msg.color
 #X Desc    : turn on/off colorized output from msg.* functions.
 #X         : Color is turned off if verbose() is also set to off.
-#X Synopsis: color.set [ON|1][OFF|0][auto]
-#X         : curstatus=$(color.set)
+#X Synopsis: msg.color.set [ON|1][OFF|0][auto]
+#X         : curstatus=$(msg.color.set)
 #X Example : 
-#X         : oldstatus=$(color.set)
-#X         : color.set off
+#X         : oldstatus=$(msg.color.set)
+#X         : msg.color.set off
 #X         : # do stuff... #
-#X         : color.set $oldstatus
+#X         : msg.color.set $oldstatus
 declare -ix _ent_COLOR=1
 [ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
-is.color() { return $(( ! _ent_COLOR )); }
-declare -fx 'is.color'
-	alias is.colour='is.color'		# for the civilised world
-	alias color='is.color'
+msg.color() { return $(( ! _ent_COLOR )); }
+declare -fx 'msg.color'
+	alias color='msg.color'		#X legacy X#
+	alias is.color='msg.color'		#X legacy X#
 	
-color.set() {
+msg.color.set() {
 	if (( ${#@} )); then 
 		if [[ $1 == 'auto' ]]; then
 			[ -t 1 ] && status=1 || status=0
@@ -228,24 +411,208 @@ color.set() {
 	fi
 	return 0
 }
-declare -fx 'color.set'
-	alias colour.set='color.set'		# for the civilised world
+declare -fx 'msg.color.set'
+	alias color.set='msg.color.set'
+	
+#X Function : msg.tab.set tab.width
+#X Synopsis : msg.tab.set [offset]; msg.tab.width [tabvalue]
+#X Desc     :   msg.tab.set    set tab position for output from msg.* functions.
+#X          :   msg.tab.width  set tab width (default 4).
+#X          : used for formatting output for msg.* and ask.* functions.
+#X Synopsis : msg.tab.set [reset | [forward|++] | [backward|--] [indent|+indent|-indent] ]
+#X          : no argument causes current tab level to be returned.
+#X Example  : msg.tab.width 2; msg.info "msg.tab.width is $(msg.tab.width)"
+#X          : msg.tab.set ++; msg.sys "indent 2 columns"
+#X          : msg.tab.set reset; msg.warn "indent reset to 0"
+#X          : msg.tab.set +3; msg.info "indent to column 6"
+#X          : msg "current tab setting is $(msg.tab.set)" 
+declare -ix _ent_TABWIDTH=4
+msg.tab.width() {
+	if (( $# )); then
+		_ent_TABWIDTH=$(( ${1} ))
+		((_ent_COLOR)) && tabs "$_ent_TABWIDTH"
+	else
+		echo -n "${_ent_TABWIDTH}"
+	fi
+	return 0
+}
+declare -fx 'msg.tab.width'
+	alias tab.width='msg.tab.width' #X legacy X#
 
-#X GlobalX  : colorreset colordebug colorinfo colornotice colorwarning colorerr colorcrit coloralert coloremerg
-#X Desc     : Colors used by entities msg.* functions.
-#X          : emerg alert crit err warning notice info debug
-#X          : panic (dep=emerg) err (dep=error) warning (dep=warn)
-#X See Also :
-declare -x colorreset="\x1b[0;39;49m"
-declare -x color0="\x1b[0;39;49m"
-declare -x colordebug="\x1b[35m"
-declare -x colorinfo="\x1b[32m"
-declare -x colornotice="\x1b[34m"
-declare -x colorwarning="\x1b[33m";					declare -nx colorwarn='colorwarning'
-declare -x colorerr="\x1b[31m";							declare -nx colorerror='colorerr'
-declare -x colorcrit="\x1b[1;31m";					declare -nx colorcritical='colorcrit'
-declare -x coloralert="\x1b[1;33;41m"
-declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
+declare -ix _ent_TABSET=0
+msg.tab.set() {
+	if (( $# )); then
+		case "${1}" in
+			'0'|reset)		_ent_TABSET=0;;
+			'++'|forward)	_ent_TABSET=$((_ent_TABSET+1))			;;
+			'--'|back)		_ent_TABSET=$((_ent_TABSET-1))			;;
+			 *)						if [[ "${1:0:1}" == '+' ]]; then
+											_ent_TABSET=$(( _ent_TABSET + ${1:1} ))
+										elif [[ "${1:0:1}" == '-' ]]; then
+											_ent_TABSET=$(( _ent_TABSET - ${1:1} ))
+										else
+											_ent_TABSET=$(( ${1} ))						
+										fi
+									;;
+		esac
+		(( _ent_TABSET < 0 )) &&	_ent_TABSET=0 # please, curb your enthusiasm.
+	else
+		echo -n "${_ent_TABSET}"
+	fi
+	return 0
+}
+declare -fx	'msg.tab.set'
+	alias tab.set='msg.tab.set'
+	
+#X Function: msg.prefix.separator.set
+#X Desc    : Set/Retrieve value of _ent_MSG_PRE_SEP for appending as a separator for msg.prefix.
+#X         : Default separator is ': '
+#X Synopsis: msg.prefix.separator.set ["separator"]
+#X Example : # 0. set a msg prefix with '>' separator
+#X         : msg.prefix.separator.set '>'
+#X         : msg.prefix.set "$PRG"
+#X         : msg 'Hello world.'
+#X See Also: msg.prefix.set
+declare -x _ent_MSG_PRE_SEP
+_ent_MSG_PRE_SEP=': '
+msg.prefix.separator.set() {
+	if (( $# ));	then 
+		_ent_MSG_PRE_SEP="$1" 
+	else 
+		echo -n "$_ent_MSG_PRE_SEP"
+	fi
+	return 0
+}
+declare -fx 'msg.prefix.separator.set'
+
+#X Function: msg.prefix.set
+#X Desc    : Set/Retrieve value of _ent_MSG_PRE for prefixing a string 
+#X         : before every string output by the msg.* system.
+#X Synopsis: msg.prefix.set [-a] "msgprefix"
+#X         : -a  makes msgprefix additive to the existing msg prefix.
+#X Example : # 0. set a msg prefix
+#X         : msg.prefix.set "$PRG"
+#X         : # 1. retrieve current msgprefix
+#X         : oldprefix=$(msg.prefix.set)
+#X         : # 2. set additive msg prefix
+#X         : msg.prefix.set -a 'processing'
+#X See Also: msg.prefix.separator.set
+declare -ax _ent_MSG_PRE
+_ent_MSG_PRE=()
+msg.prefix.set() {
+	if (( $# ));	then 
+		local -i add=0 sub=0
+		if   [[ $1 == '++' || $1 == '-a' ]]; then	shift; add=1;
+		elif [[ $1 == '--' || $1 == '-d' ]]; then shift; sub=1; 
+		else
+			_ent_MSG_PRE=( "$1" )
+			return 0
+		fi
+		if ((add)); then
+			_ent_MSG_PRE+=( "${1:-}" )
+		elif ((sub)); then
+			if (( ${#_ent_MSG_PRE[@]} > 1 )); then
+				_ent_MSG_PRE=( ${_ent_MSG_PRE[@]:0:${#_ent_MSG_PRE[@]}-1} )
+			else
+				_ent_MSG_PRE=()
+			fi
+		fi
+		return 0
+	fi
+	if [[ -n ${_ent_MSG_PRE[*]:-} ]]; then
+		local p
+		p=${_ent_MSG_PRE[*]}
+    echo -n "${p//[[:blank:]]/${_ent_MSG_PRE_SEP}}${_ent_MSG_PRE_SEP}"
+	else
+		echo -n ''
+	fi
+	return 0
+}
+declare -fx 'msg.prefix.set'
+
+#X Function: msg.line 
+#X Desc    : Print a line of replicated characters (default underline) 
+#X         : from current cursor position to end of screen.
+#X Synopsis: msg.line [repchar [iterations]]
+#X         :   repchar     Default repchar is '_'.
+#X         :   iterations  Default iterations is number of screen 
+#X         :               columns minus 1.
+#X         : If msg.verbose.set is disabled, return without processing 
+#X         : further arguments.
+#X         : If msg.color.set is enabled, use color.
+#X         : If msg.prefix is set, print prefix before string.
+#X         : If msg.tab.set is enabled, print tabs.
+#X Example : msg.line
+#X         : msg.line '+'
+#X         : msg.line '=' 42
+#X See Also: msg* msg.verbose.set msg.color.set msg.tab.set prefix.set
+msg.line() {
+	((_ent_VERBOSE)) || return 0
+	local -i  width=78 screencols=0 plen
+	local --  repchar='_'	sx
+
+	if (( $# )); then
+		repchar="${1:0:1}"
+		shift
+		[[ -n "${1:-}" ]] && screencols=$1
+	fi
+
+	if (( ! screencols )); then
+		local -- IFS=' ' sx
+		local -ai sz
+		sz=( $(stty size) )
+		if (( ${#sz[@]} )); then
+			screencols=$(( sz[1] ))
+		else
+			screencols=$(( COLUMNS ))
+		fi
+		IFS=$' \t\n'
+	fi
+	
+	sx="${_ent_MSG_PRE[*]}${_ent_MSG_PRE_SEP[*]}" || sx=''
+	plen=$(( ${#sx} + ${#_ent_MSG_PRE[@]} ))
+	((plen)) || plen=1
+	width=$(( (screencols - plen - (_ent_TABSET * _ent_TABWIDTH)) ))
+
+  msg "$(head -c $width < /dev/zero | tr '\0' "${repchar:-_}")"
+
+	#msg "$(printf "${repchar}%.0s" $(seq 1 "${width}") )"
+	return 0
+}
+declare -fx 'msg.line'
+	alias msgline='msg.line'
+
+#X Function : msg.yn
+#X Desc     : Ask y/n question,d return 0/1 
+#X Synopsis : msg.yn [--warning|--err|--info|--notice|--debug] "str"
+#X          : NOTE: If msg.verbose.set is off (disabled), or there is no tty, 
+#X          : msg.yn will *always* return 0, without printing the string or 
+#X          : waiting for a response.
+#X Example  : msg.yn 'Continue?' || msg.die 'Not Continuing.'
+msg.yn() {
+	((_ent_VERBOSE)) || return 0
+	[ -t 0 ] || return 0
+	local stdio=''
+	if (($#)); then
+		if [[ ${1:0:2} == '--' ]]; then
+			stdio="$1"
+			shift
+		fi
+	fi
+	local question="${1:-}" yn=''
+	# shellcheck disable=SC2086
+	question=$(msgx $stdio --notag "${question} (y/n)" 2>&1 )
+	question="${question//$'\n'/ }"
+	while true; do
+		read -e -r -p "${question}" yn
+		case "${yn,,}" in
+			[y]* ) return 0;;
+			[n]* ) return 1;;
+			* ) msg.err 'Answer [y]es or [n]o.';;
+		esac
+	done
+}
+declare -fx 'msg.yn'
 
 #X Function : version.set
 #X Desc     : Set or return version number of the current script.
@@ -345,397 +712,6 @@ strict.set() {
 }
 declare -fx 'strict.set'
 
-#X Function : msg
-#X Desc     : if verbose.set is enabled, send strings to output.
-#X          : embedded chars (\n \t etc) enabled by default.
-#X          : Tabs and prefixes (if set) are printed with the string.
-#X Synopsis : msg [-n] "str" [[-n] "str" ...]
-#X          :   -n   suppress line feed, applied separately to each 
-#X          :        string argument
-#X Example  : msg "hello world!" "it's so nice to be back!"
-msg() { ((_ent_VERBOSE)) && _printmsg "$@"; }
-declare -fx 'msg'
-
-msg.debug() {
-	((_ent_DEBUG)) || return 0
-	declare log="${1:-}"
-	[[ "${log,,}" == 'log' ]] && shift
-	[[ -z "$log" ]] && log=X
-	__msgx "$log" 'debug' "${_ent_VERBOSE}" "$@"
-	return 0
-}
-declare -fx 'msg.debug'
-
-# Function : __msgx
-# Desc     : output string to terminal with color.
-#          : embedded chars (\n \t etc) enabled by default.
-# Synopsis : __msgx log msglevel verbose [string ...]
-#          : msglevel is one of:
-#          :    reset debug info notice warning error
-#          :    critical alert emergency
-# Example  : __msgx log info 1 "hello world!" "it's so nice to be black!"
-__msgx() {
-	local log="$1" msglevel="$2" 
-	local -i Verbose=$3
-	shift 3
-	[[ ${log} == 'log' ]] && systemd-cat -t "$PRG" -p "${msglevel}" echo "$@"
-	if ((_ent_VERBOSE)) || ((Verbose)); then
-		((_ent_COLOR)) && { nc=color$msglevel; echo -ne "${!nc}"; }
-			_printmsg "$@"
-		((_ent_COLOR)) && echo -ne "${colorreset}"
-	fi
-	return 0
-}
-declare -fx '__msgx'
-
-#X Function: msg.info
-#X Desc    : Output an informational message, with option to write to log.
-#X Synopsis: msg.info [log] "str" ["str" ...]
-#X         :   log   If specified, write log entry. 'log' is positional, 
-#X				 :         and must appear first.
-#X         : If verbose.set is enabled, write to stdout, else return 
-#X         : without processing further arguments.
-#X         : If color.set is enabled, use color.
-#X         : If msg.prefix is set, print prefix before string.
-#X         : If tab.set is enabled, print tabs.
-#X Example : msg.info "Sir. There's something I think you should know."
-#X See Also: msg* verbose.set color.set tab.set prefix.set
-msg.info() {
-	declare log="${1:-}"
-	[[ "${log}" == 'log' ]] && shift
-	[[ -z "$log" ]] && log=X
-	__msgx "$log" 'info' "${_ent_VERBOSE}" "$@"
-	return 0
-}
-declare -fx 'msg.info'
-	alias msginfo='msg.info' #X legacy X#
-	alias infomsg='msg.info' #X legacy X#
-
-#X Function: msg.sys
-#X Desc    : Output system message, with option to write to log.
-#X Synopsis: msg.sys [log] "str" ["str" ...]
-#X         :   log   If specified, write syslog entry. 'log' is positional, 
-#X				 :         and must appear first.
-#X         : If verbose.set is enabled, write to stdout, else return 
-#X         : without processing further arguments.
-#X         : If color.set is enabled, use color.
-#X         : If msg.prefix is set, print prefix before string.
-#X         : If tab.set is enabled, print tabs.
-#X Example : msg.sys "Sir, I have something to report."
-#X See Also: msg* verbose.set color.set tab.set prefix.set
-msg.sys() {
-	declare log="${1:-}"
-	[[ "${log}" == 'log' ]] && shift
-	__msgx "$log" "notice" "${_ent_VERBOSE}" "$@"
-	return 0
-}
-declare -fx 'msg.sys'
-	alias msgsys='msg.sys' #X legacy X#
-	alias sysmsg='msg.sys' #X legacy X#
-
-#X Function: msg.warn
-#X Desc    : Output warning message, with option to write to log.
-#X Synopsis: msg.warn [log] "str" ["str" ...]
-#X         :   log   If specified, write syslog entry. 'log' is positional, 
-#X				 :         and must appear first.
-#X         : If verbose.set is enabled, write to stdout, else return 
-#X         : without processing further arguments.
-#X         : If color.set is enabled, use color.
-#X         : If msg.prefix is set, print prefix before string.
-#X         : If tab.set is enabled, print tabs.
-#X Example : msg.warn log "Pardon me, Sir." "Is this supposed to happen?"
-#X See Also: msg* verbose.set color.set tab.set prefix.set
-msg.warn() {
-	declare log="${1:-}"
-	[[ ${log} == 'log' ]] && shift || log='X'
-	__msgx "$log" 'warning' "${_ent_VERBOSE:-0}" "$@"
-	return 0
-}
-declare -fx 'msg.warn'
-	alias msgwarn='msg.warn'	#X legacy X#
-	alias warnmsg='msg.warn'	#X legacy X#
-
-#X Function: msg.err
-#X Desc    : Output error message to stderr, with option to write to log.
-#X Synopsis: msg.err [log] "str" ["str" ...]
-#X         :   log   If specified, write syslog entry. 'log' is positional, 
-#X				 :         and must appear first.
-#X         : If verbose.set is enabled, write to stdout, else return 
-#X         : without processing further arguments.
-#X         : If color.set is enabled, use color.
-#X         : If msg.prefix is set, print prefix before string.
-#X         : If tab.set is enabled, print tabs.
-#X Example : msg.err log "Sir!" "I think you better come here."
-#X See Also: msg* verbose.set color.set tab.set prefix.set
-msg.err() {
-	declare log="${1:-}"
-	[[ ${log} == 'log' ]] && shift
-	__msgx >&2 "$log" 'err' '1' "$@"
-	return 0
-}
-declare -fx 'msg.err'
-
-#X Function: msg.die
-#X Desc    : Output error message to stderr, with option to write to log,
-#X         : and exit with error code.
-#X Synopsis: msg.die [log] "str" ["str" ...]
-#X         :   log   If specified, write syslog entry. 'log' is positional, 
-#X				 :         and must appear first.
-#X         : If verbose.set is enabled, write to stdout, else return 
-#X         : without processing further arguments.
-#X         : If color.set is enabled, use color.
-#X         : If msg.prefix is set, print prefix before string.
-#X         : If tab.set is enabled, print tabs.
-#X Example : msg.die "I'm sorry, Sir." "There's nothing more I can do."
-#X See Also: msg* verbose.set color.set tab.set prefix.set
-msg.die() {
-	declare -i errcode=$?
-	declare log="${1:-}"
-	[[ ${log} == 'log' ]] && shift
-	__msgx >&2 "$log" "crit" "1" "$@"
-	exit "$errcode"
-}
-declare -fx 'msg.die'
-	alias msgdie='msg.die'	#X legacy X#
-	alias diemsg='msg.die'	#X legacy X#
-	alias msgdir='msg.die'	#X for butter fingers #X
-	alias msg.dir='msg.die'	#X for butter fingers #X
-
-#X Function : msg.crit
-#X Desc    : Output critical error message to stderr, with option to write
-#X         : to log, and exit with error code.
-#X Synopsis: msg.crit [log] "str" ["str" ...]
-#X         :   log   If specified, write syslog entry. 'log' is positional, 
-#X				 :         and must appear first.
-#X         : If verbose.set is enabled, write to stdout, else return 
-#X         : without processing further arguments.
-#X         : If color.set is enabled, use color.
-#X         : If msg.prefix is set, print prefix before string.
-#X         : If tab.set is enabled, print tabs.
-#X Example : msg.crit log "Good god!" "Oh, the Humanity..."
-#X See Also: msg* verbose.set color.set tab.set prefix.set
-msg.crit() {
-	declare -i errcode=$?
-	declare log="${1:-}"
-	[[ "${log}" == 'log' ]] && shift
-	__msgx >&2 "$log" "emerg" "1" "$@" 'Call Sysadmin immediately.'
-	#mail --to sysadmin@megacorp.dev -s "hello Sir, how are you? are you sitting down?" <<< "Sir, a funny thing just happened."
-	exit "$errcode"
-}
-declare -fx 'msg.crit'
-	alias msgcrit='msg.crit' #X legacy X#
-	alias critmsg='msg.crit' #X legacy X#
-
-#X Function: msg.line 
-#X Desc    : Print a line of replicated characters (default underline) 
-#X         : from current cursor position to end of screen.
-#X Synopsis: msg.line [repchar [iterations]]
-#X         :   repchar     Default repchar is '_'.
-#X         :   iterations  Default iterations is number of screen 
-#X         :               columns minus 1.
-#X         : If verbose.set is disabled, return without processing 
-#X         : further arguments.
-#X         : If color.set is enabled, use color.
-#X         : If msg.prefix is set, print prefix before string.
-#X         : If tab.set is enabled, print tabs.
-#X Example : msg.line
-#X         : msg.line '+'
-#X         : msg.line '=' 42
-#X See Also: msg* verbose.set color.set tab.set prefix.set
-msg.line() {
-	((_ent_VERBOSE)) || return 0
-	local -i  width=78 screencols=0
-	local --  repchar='_'	
-
-	if (( $# )); then
-		repchar="${1:0:1}"
-		shift
-		[[ -n "${1:-}" ]] && screencols=$1
-	fi
-
-	if (( ! screencols )); then
-		local -- IFS=' ' sx
-		local -ai sz
-		local -i plen 
-		sz=( $(stty size) )
-		if (( ${#sz[@]} )); then
-			screencols=$(( sz[1] ))
-		else
-			screencols=$(( COLUMNS ))
-		fi
-		IFS=$' \t\n'
-	fi
-	
-	sx="${_ent_MSG_PRE[*]}${_ent_MSG_PRE_SEP[*]}" || sx=''
-	plen=${#sx}
-	width=$(( (screencols - plen - (TABSET * TABWIDTH)) - 2))
-
-  msg "$(head -c $width < /dev/zero | tr '\0' "${repchar:-_}")"
-
-	#msg "$(printf "${repchar}%.0s" $(seq 1 "${width}") )"
-	return 0
-}
-declare -fx 'msg.line'
-	alias msgline='msg.line'
-
-#X Function : msg.yn
-#X Desc     : Ask y/n question,d return 0/1 
-#X Synopsis : msg.yn "str"
-#X          : NOTE: if verbose.set is disabled, or there is no tty, msg.yn
-#X          : will *always* return 0, without printing the string or waiting 
-#X          : for a response.
-#X Example  : msg.yn 'Continue?' || msg.die 'Not Continuing.'
-msg.yn() {
-	((_ent_VERBOSE)) || return 0
-	[ -t 0 ] || return 0
-	local question="${1:-}" yn=''
-	question=$(msg.warn "${question} (y/n)")
-	question="${question//$'\n'/ }"
-	while true; do
-		read -e -n1 -r -p "${question}" yn
-		case "${yn,,}" in
-			[y]* ) return 0;;
-			[n]* ) return 1;;
-			* ) echo 'Please answer yes or no.';;
-		esac
-	done
-}
-declare -fx 'msg.yn'
-	alias askyn='msg.yn' #X legacy X#
-	alias ask.yn='msg.yn' #X legacy X#
-
-#X Function : tab.set tab.width
-#X Synopsis : tab.set [offset]; tab.width [tabvalue]
-#X Desc     :   tab.set    set tab position for output from msg.* functions.
-#X          :   tab.width  set tab width (default 4).
-#X          : used for formatting output for msg.* and ask.* functions.
-#X Synopsis : tab.set [reset | [forward|++] | [backward|--] [indent|+indent|-indent] ]
-#X          : no argument causes current tab level to be returned.
-#X Example  : tab.width 2; msg.info "tab.width is $(tab.width)"
-#X          : tab.set ++; msg.sys "indent 2 columns"
-#X          : tab.set reset; msg.warn "indent reset to 0"
-#X          : tab.set +3; msg.info "indent to column 6"
-#X          : msg "current tab setting is $(tab.set)" 
-declare -ix TABWIDTH=4
-tab.width() {
-	if (( $# )); then
-		TABWIDTH=$(( ${1} ))
-		((_ent_COLOR)) && tabs "$TABWIDTH"
-	else
-		echo -n "${TABWIDTH}"
-	fi
-	return 0
-}
-declare -fx 'tab.width'
-
-declare -ix TABSET=0
-tab.set() {
-	if (( $# )); then
-		case "${1}" in
-			'0'|reset)		TABSET=0;;
-			'++'|forward)	TABSET=$((TABSET+1))			;;
-			'--'|back)		TABSET=$((TABSET-1))			;;
-			 *)						if [[ "${1:0:1}" == '+' ]]; then
-											TABSET=$(( TABSET + ${1:1} ))
-										elif [[ "${1:0:1}" == '-' ]]; then
-											TABSET=$(( TABSET - ${1:1} ))
-										else
-											TABSET=$(( ${1} ))						
-										fi
-									;;
-		esac
-		(( TABSET < 0 )) &&	TABSET=0 # please, curb your enthusiasm.
-	else
-		echo -n "${TABSET}"
-	fi
-	return 0
-}
-declare -fx	'tab.set'
-
-#X Function: msg.prefix.separator.set
-#X Desc    : Set/Retrieve value of _ent_MSG_PRE_SEP for appending as a separator for msg.prefix.
-#X         : Default separator is ': '
-#X Synopsis: msg.prefix.separator.set ["separator"]
-#X Example : # 0. set a msg prefix with '>' separator
-#X         : msg.prefix.separator.set '>'
-#X         : msg.prefix.set "$PRG"
-#X         : msg 'Hello world.'
-#X See Also: msg.prefix.set
-declare -x _ent_MSG_PRE_SEP
-_ent_MSG_PRE_SEP=': '
-msg.prefix.separator.set() {
-	if (( $# ));	then 
-		_ent_MSG_PRE_SEP="$1" 
-	else 
-		echo -n "$_ent_MSG_PRE_SEP"
-	fi
-	return 0
-}
-declare -fx 'msg.prefix.separator.set'
-
-#X Function: msg.prefix.set
-#X Desc    : Set/Retrieve value of _ent_MSG_PRE for prefixing a string 
-#X         : before every string output by the msg.* system.
-#X Synopsis: msg.prefix.set [-a] "msgprefix"
-#X         : -a  makes msgprefix additive to the existing msg prefix.
-#X Example : # 0. set a msg prefix
-#X         : msg.prefix.set "$PRG"
-#X         : # 1. retrieve current msgprefix
-#X         : oldprefix=$(msg.prefix.set)
-#X         : # 2. set additive msg prefix
-#X         : msg.prefix.set -a 'processing'
-#X See Also: msg.prefix.separator.set
-declare -ax _ent_MSG_PRE
-_ent_MSG_PRE=()
-msg.prefix.set() {
-	if (( $# ));	then 
-		local -i add=0 sub=0
-		if   [[ $1 == '++' || $1 == '-a' ]]; then	shift; add=1;
-		elif [[ $1 == '--' || $1 == '-d' ]]; then shift; sub=1; 
-		else
-			_ent_MSG_PRE=( "$1" )
-			return 0
-		fi
-		if ((add)); then
-			_ent_MSG_PRE+=( "${1:-}" )
-		elif ((sub)); then
-			if (( ${#_ent_MSG_PRE[@]} )); then
-				_ent_MSG_PRE=( ${_ent_MSG_PRE[@]:0:${#_ent_MSG_PRE[@]}-1} )
-			else
-				_ent_MSG_PRE=('')
-			fi
-		fi
-		return 0
-	fi
-
-	if [[ -n ${_ent_MSG_PRE[*]:-} ]]; then
-		local p
-		p=${_ent_MSG_PRE[*]}
-    echo -n "${p//[[:blank:]]/${_ent_MSG_PRE_SEP}}${_ent_MSG_PRE_SEP}"
-	else
-		echo -n ''
-	fi
-	return 0
-}
-declare -fx 'msg.prefix.set'
-
-_printmsg() {
-	local line IFS=$'\t\n' lf=''
-	for line in "$@"; do
-		[[ ${line} == '-n' ]] && { lf='-n'; continue; }
-		if (( ${#_ent_MSG_PRE[*]} )); then
-			p=${_ent_MSG_PRE[*]}
-			echo -n "${p//[[:blank:]]/${_ent_MSG_PRE_SEP}}${_ent_MSG_PRE_SEP}"
-		fi
-#		"${_ent_MSG_PRE[*]}${_ent_MSG_PRE_SEP}"
-		# shellcheck disable=SC2046
-		((TABSET)) && printf '\t%.0s' $(seq 1 ${TABSET})
-		echo -e $lf "${line}"
-		lf=''
-	done
-	return 0
-}
-declare -fx	'_printmsg'
 
 #X Function : exit_if_not_root
 #X Desc     : If not root user, print failure message and exit script.

@@ -1,0 +1,12 @@
+#-Function--msg.color.set
+  Function: msg.color.set msg.color
+      Desc: turn on/off colorized output from msg.* functions.
+          : Color is turned off if verbose() is also set to off.
+  Synopsis: msg.color.set [ON|1][OFF|0][auto]
+          : curstatus=$(msg.color.set)
+          : oldstatus=$(msg.color.set)
+          : msg.color.set off
+          : # do stuff... #
+          : msg.color.set $oldstatus
+    Source: /usr/share/okusi/entities/entities.bash
+#-Function--msg.color.set-----------------------------------------------------

@@ -1,0 +1,34 @@
+#-Function--msgx
+  Function: msgx msg msg.die msg.emerg msg.alert msg.crit msg.err msg.warning msg.notice msg.info msg.debug msg.sys
+      Desc: Console message functions.  msg() functions support verbose,
+          : message prefixes, tabs and color.
+          : If msg.verbose.set is enabled, send strings to output.
+          : embedded chars (\n \t etc) enabled by default.
+          : Tabs and prefixes (if set) are printed with the string.
+          : #X         :
+  Synopsis: msg.* [--log] [--notag] [--raw] [--errno num] "str" ["str" ...]
+          :   msg           Print message to stdout with no color or stdio tag.
+          :   msg.die       Print die message to stderr and exit.
+          :   msg.emerg     Print emergency message to stderr and exit.
+          :   msg.alert     Print alert message to stderr and and exit.
+          :   msg.crit      Print critical alert message to stderr and exit.
+          :   msg.err       Print error message to stderr.
+          :   msg.warning   Print warning message to stderr.
+          :   msg.notice    Print notice message to stdout.
+          :   msg.info      Print notice message to stdout.
+          :   msg.debug     Print debug message to stderr.
+          :   msg.sys       Print system message to stderr and log message
+          :                 using stdio code.
+          :   -e|--errno n  Set error return/exit code to n.
+          :   -l|--log      Log message to syslog.
+          :   -n|--raw      Print without tabs, prefixes or linefeeds.
+          :   -t|--notag    Do not print stdio tag (eg, info, err, sys).
+          : #X         :
+   Example: msg.sys "Sir, I have something to report."
+          : msg.info "Sir. There's something I think you should know."
+          : msg.err --log "Sir!" "I think you better come here."
+          : msg.warn --log "Pardon me, Sir." "Is this supposed to happen?"
+          : msg.die --log --errno 22 "Sir!" "This isn't supposed to happen."
+          : msg "hello world!" "it's so nice to be back!"
+    Source: /usr/share/okusi/entities/entities.bash
+#-Function--msgx--------------------------------------------------------------

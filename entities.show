@@ -11,12 +11,12 @@ source entities || exit 2
 	version.set "$_ent_VERSION"
 	verbose.set on
 	trap.set on
-	strict.set off
+	strict.set on
 	msg.prefix.set "$PRG"
 
 	declare -i ShowFuncs=0 ShowVars=0	
 	
-	declare -- nonentities="CH9 CLNTEMPFILES CR EDITOR IFS LF OLDIFS PRG PRGDIR TABSET TABWIDTH _slog_count _slog_file _slog_prefix color0 coloralert colorcrit colorcritical colordebug coloremerg colorerr colorerror colorinfo colornotice colorpanic colorreset colorwarn colorwarning perrnoListFile "
+	declare -- nonentities="CH9 CLNTEMPFILES CR EDITOR IFS LF OLDIFS PRG PRGDIR _ent_TABSET _ent_TABWIDTH _slog_count _slog_file _slog_prefix color0 coloralert colorcrit colorcritical colordebug coloremerg colorerr colorerror colorinfo colornotice colorpanic colorreset colorwarn colorwarning perrnoListFile "
 
 main() {
 	local -a funcs=() vars=()

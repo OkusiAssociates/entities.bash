@@ -1,0 +1,7 @@
+#-Function--website_online
+  Function: website_online
+      Desc: Return true if website is available and online.
+  Synopsis: website_online "website"...
+   Example: [[ website_online 'okusi.id' 'okusiassociates.com' ]] && echo 'Online'
+    Source: /usr/share/okusi/entities/entities.d/sys/is.tty.bash
+#-Function--website_online----------------------------------------------------

@@ -2,8 +2,9 @@
 #! shellcheck disable=SC2154,SC1090
 # Script  : dbh 
 # Desc    : See dbh --help
-source "$OKROOT/entities/entities.bash" || exit 2
-	version.set "${_ent_VERSION}"
+source "entities" || exit 2
+#source "$OKROOT/entities/entities.bash" || exit 2
+	version.set "entities.bash ${_ent_VERSION}"
 	verbose.set on
 	trap.set on
 	strict.set on
@@ -22,7 +23,7 @@ main() {
 			-x|--exit)		ExitAfterCmd=1;;
 			-v|--verbose)	verbose.set on;;
 			-q|--quiet)		verbose.set off;;
-			-V|--version)	echo "entities.bash $(version.set)"; return 0;;
+			-V|--version)	version.set; echo; return 0;;
 			-h|--help)		usage; return 0;;
 			-?|--*)				msg.err "Invalid option [$1]"; return 1;;
 			*)						if   [[ -z $Database ]]; 	  then Database="$1"

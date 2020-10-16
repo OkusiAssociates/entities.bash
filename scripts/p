@@ -1,5 +1,5 @@
 #!/bin/bash
-#	shellcheck source=../entities.bash.min
+#	shellcheck source=../entities.bash.min disable=1091
 source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!"; exit 2; }
 	strict.set off
 	verbose.set on
@@ -143,7 +143,7 @@ main() {
 		fi
 	else
 		if [[ $ftype == 'sh' || $ftype == 'bash' ]]; then
-			msg.info "$(bash -n "${File}" 2>&1 | tee "$tmpfile")Syntax checked"
+			msg.info "$(bash -n "${File}" 2>&1 | tee "$tmpfile")bash syntax OK"
 			hd="$(head -n1 "$tmpfile")"
 			if [[ -n $hd ]]; then
 				syntaxerr=1
@@ -174,7 +174,14 @@ main() {
 				scdisable="--exclude ${scdisable// /,}"
 			fi
 			# shellcheck disable=SC2086
-			$(which shellcheck) --shell=bash ${scdisable} -x "$File"
+			if ! $(which shellcheck) --shell=bash ${scdisable} -x "$File"; then
+				if msg.yn "Re-edit [$File]?"; then
+					# shellcheck disable=SC2046
+					"$PRGDIR/$PRG" "$File" --line "${line:-1}" -s $( ((execute)) && echo '-x' )
+					exit
+				fi
+			fi
+			msg.info "shellcheck OK"
 		fi
 	fi
 
