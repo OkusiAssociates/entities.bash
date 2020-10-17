@@ -542,8 +542,10 @@ _ent_MSG_PRE=()
 msg.prefix.set() {
 	if (( $# ));	then 
 		local -i add=0 sub=0
-		if   [[ $1 == '++' || $1 == '-a' ]]; then	shift; add=1;
-		elif [[ $1 == '--' || $1 == '-d' ]]; then shift; sub=1; 
+		if [[ $1 == '++' ]]; then
+			shift; add=1
+		elif [[ $1 == '--' ]]; then
+			shift; sub=1 
 		else
 			_ent_MSG_PRE=( "$1" )
 			return 0
