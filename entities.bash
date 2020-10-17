@@ -521,7 +521,6 @@ msg.prefix.separator.set() {
 	else 
 		echo -n "$_ent_MSG_PRE_SEP"
 	fi
-	return 0
 }
 declare -fx 'msg.prefix.separator.set'
 
@@ -858,16 +857,16 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 	fi 
 fi
 #^^_ent_MINIMAL
+#-Function Declarations End --------------------------------------------------
+
+# expand all the aliases defined above.
+shopt -s expand_aliases # Enables alias expansion.
+
+_ent_scriptstatus+='[entities loaded]'
 
 #X Global  : _ent_LOADED
 #X Desc    : Integer flag to announce that entities.bash has been loaded. 
 #X Defaults: 0
 declare -xig _ent_LOADED=1
 	declare -xng __entities__='_ent_LOADED' 	 #X legacy X#
-# expand all the aliases defined above.
-shopt -s expand_aliases # Enables alias expansion.
-
-#-Function Declarations End --------------------------------------------------
-
-_ent_scriptstatus+='[entities loaded]'
 #fin

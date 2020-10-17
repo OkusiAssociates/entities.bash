@@ -276,7 +276,6 @@ msg.prefix.separator.set() {
 	else 
 		echo -n "$_ent_MSG_PRE_SEP"
 	fi
-	return 0
 }
 declare -fx 'msg.prefix.separator.set'
 declare -ax _ent_MSG_PRE
@@ -484,10 +483,10 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 		echo >&2 'Warning: Dependencies not found. entities.bash may not run correctly.'	
 	fi 
 fi
-declare -xig _ent_LOADED=1
-	declare -xng __entities__='_ent_LOADED' 	 #X legacy X#
 shopt -s expand_aliases # Enables alias expansion.
 _ent_scriptstatus+='[entities loaded]'
+declare -xig _ent_LOADED=1
+	declare -xng __entities__='_ent_LOADED' 	 #X legacy X#
 declare -gx _ent_EDITOR
 	_ent_EDITOR="$(which nano 2>/dev/null)"
 	declare -gx EDITOR
@@ -519,7 +518,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.484.25'
+_ent_VERSION='0.98.420.485.1'
 chgConfigVar()	{
 	local Profile=${1:-} key
 	shift
