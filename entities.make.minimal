@@ -1,8 +1,9 @@
 #!/bin/bash
+#! shellcheck disable=SC2154,1090
 # set entities location to *this* script directory
 ENTITIES="$(dirname "$(readlink -f "$0")")" || exit 2
 source "$ENTITIES/entities.bash" || exit 2
-strict.set off
+strict.set on
 msg.prefix.set ++ 'make.minimal'
 
 declare    entities_file="$ENTITIES/entities.bash"
@@ -61,6 +62,7 @@ main() {
 	local _e
 	local -a _userbash=()
 	shopt -s globstar
+	# shellcheck disable=SC2231
 	for _e in $ENTITIES/entities.d/**/*.bash; do
 		if [[ -r "$_e" ]]; then
 			if [[ ${_e} == *"/dev/"* || ${_e} == *"/tmp/"* || ${_e} == *"/temp/"*	]]; then 

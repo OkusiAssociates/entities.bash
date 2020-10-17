@@ -2,7 +2,7 @@
 #! shellcheck disable=SC2154
 source entities || exit 2
 	version.set '0.1'
-	verbose.set on
+	msg.verbose.set on
 	trap.set on
 	strict.set off
 	msg.prefix.set "$PRG"

@@ -2,7 +2,8 @@
 #	shellcheck source=../entities.bash.min disable=1091
 source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!"; exit 2; }
 	strict.set off
-	verbose.set on
+	msg.verbose.set on
+	msg.color.set on
 	trap.set on
 	# shellcheck disable=SC2154
 	version.set "$_ent_VERSION"
@@ -40,8 +41,8 @@ main() {
 			-x|--execute)			execute=1 ;;
 			+x|-+execute)			execute=0 ;;
 			-V|--version)			echo "$PRG ${_ent_VERSION}"; return 0;;
-			-v|--verbose|+q)	verbose on ;;
-			-q|--quiet|+v)		verbose off ;;
+			-v|--verbose|+q)	msg.verbose.set on ;;
+			-q|--quiet|+v)		msg.verbose.set off ;;
 			-h|--help)				usage; return 0 ;;
 			-*)								msg.err "Bad option [$1]"; return 22 ;;
 			*)								cmd+=( "$1" ) ;;
@@ -121,46 +122,46 @@ main() {
 		if [[ -n $File ]]; then
 			h=$(head -n 1 "$File")
 			if [[ $h =~ ^\#\!.*/bash.* ]];  then  
-				ftype=sh
+				ftype='sh'
 			elif [[ $h =~ ^\#\!.*/php.*  || ${h:0:2} == '<?' || ${h:0:5} == '<?php' ]]; then  
-				ftype=php
+				ftype='php'
 			fi
 		fi
 	fi
 
 	# syntax check
 	if ((syntaxcheck)); then
-	syntaxerr=0	
-	if [[ "${ftype}" == 'php' ]]; then
-		msg.info  "$(php -l "${File}" 2>&1 | tee "$tmpfile")"
-		hd="$(head -n1 "$tmpfile")"
-		if [[ "${hd:0:9}" != 'No syntax' ]]; then
-			syntaxerr=1
-			l=$(trim "${hd##*on line }")
-			if [[ -z "$l" ]]; then line=0
-												else line=$(( l ))
-			fi
-		fi
-	else
-		if [[ $ftype == 'sh' || $ftype == 'bash' ]]; then
-			msg.info "$(bash -n "${File}" 2>&1 | tee "$tmpfile")bash syntax OK"
+		syntaxerr=0	
+		if [[ "${ftype}" == 'php' ]]; then
+			msg.info  "$(php -l "${File}" 2>&1 | tee "$tmpfile")"
 			hd="$(head -n1 "$tmpfile")"
-			if [[ -n $hd ]]; then
+			if [[ "${hd:0:9}" != 'No syntax' ]]; then
 				syntaxerr=1
-				l="${hd##*: line }"
-				l=${l//${CH9}/ }
-				l=$(trim "${l%%:*}")
-				[[ -z "$l" ]] && line=0 || line=$l
+				l=$(trim "${hd##*on line }")
+				if [[ -z "$l" ]]; then line=0
+													else line=$(( l ))
+				fi
+			fi
+		else
+			if [[ $ftype == 'sh' || $ftype == 'bash' ]]; then
+				msg.info "$(bash -n "${File}" 2>&1 | tee "$tmpfile")bash syntax OK"
+				hd="$(head -n1 "$tmpfile")"
+				if [[ -n $hd ]]; then
+					syntaxerr=1
+					l="${hd##*: line }"
+					l=${l//${CH9}/ }
+					l=$(trim "${l%%:*}")
+					[[ -z "$l" ]] && line=0 || line=$l
+				fi
 			fi
 		fi
-	fi
-	if ((syntaxerr)); then
-		if msg.yn "Re-edit $File [$line]?"; then
-			# shellcheck disable=SC2046
-			"$PRGDIR/$PRG" "$File" --line "$line" $( ((execute)) && echo '-x' )
-			exit
+		if ((syntaxerr)); then
+			if msg.yn "Re-edit $File [$line]?"; then
+				# shellcheck disable=SC2046
+				"$PRGDIR/$PRG" "$File" --line "$line" $( ((execute)) && echo '-x' )
+				exit
+			fi
 		fi
-	fi
 	fi
 	
 	## shellcheck

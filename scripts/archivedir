@@ -8,8 +8,7 @@ source entities || exit 2
 	msg.prefix.set "$PRG"
 	
 	# global vars
-	declare -- ArchiveDir='' \
-						 OldArchiveDir=''
+	declare -- ArchiveDir='' OldArchiveDir=''
 	declare -i PruneLimit=0
 	
 # main
@@ -21,8 +20,8 @@ main() {
 			-P|--prune)			shift; PruneLimit=${1:-0};;
 			-H|--hidden)		hidden=1;;
 			-l|--list)			listonly=1;;
-			-v|--verbose)		verbose.set on;;
-			-q|--quiet)			verbose.set off;;
+			-v|--verbose)		msg.verbose.set on;;
+			-q|--quiet)			msg.verbose.set off;;
 			-V|--version)		version.set; echo; return 0;;
 			-h|--help)			usage; return 0;;
 			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
@@ -35,7 +34,7 @@ main() {
 	[[ -z $ArchiveDir ]] && { usage; return 1; }
 
 	# test existance
-	[[ -d $ArchiveDir ]] || msg.die "Directory [$ArchiveDir] does not exist."	
+	[[ -d $ArchiveDir ]] || msg.die --errno "$?" "Directory [$ArchiveDir] does not exist."	
 
 	# remove trailing /
 	[[ ${ArchiveDir: -1} == '/' ]] && ArchiveDir=${ArchiveDir:0: -1}

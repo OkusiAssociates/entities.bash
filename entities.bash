@@ -1,7 +1,7 @@
 #!/bin/bash
 # *global* !shellcheck 'disables' used by 'p' editor
 #! shellcheck disable=SC1090
-#color.set tab.set is.verbose
+
 # entities.bash - Bash programming environment and library
 # Copyright (C) 2019-2020  Gary Dean <garydean@okusi.id>
 # 
@@ -36,17 +36,24 @@
 #X        : 'inherit' status when loading entities.bash.
 #X Depends: basename dirname readlink mkdir ln cat stty
 
-#X Global  : PRG PRGDIR 
-#X Desc    : PRG and PRGDIR are global variables reinitialised every time 
-#X         : entities.bash is sourced/executed.
-#X Examples: source entities.bash inherit 
-#X         :       # ^ if entities.bash has already been loaded, 
-#X         :       # init PRGDIR/PRG globals only then return.
-#X         :       # if entities.bash has not been loaded, load it.
-#X         :       # [inherit] is the default. 
-#X         : source entities.bash new 
-#X         :       # ^ load new instance of entities.bash; 
-#X         :       # do not use any existing instance already loaded.
+#X Global  : _ent_0 PRGDIR PRG
+#X Desc    : _ent_0, PRGDIR and PRG are global variables that are initialised
+#X         : every time entities.bash is sourced.  They are not exported.
+#X         :   _ent_0   is the fully-qualified path of the calling program. 
+#X         :   PRGDIR   is the directory location of the calling program.
+#X         :   PRG      is the basename of the calling program.
+#X         : PRG is most often used to identify a running script. 
+#X         : PRGDIR is used to identify the directory location of the running
+#X         : script, which often comes in handy.
+#X Examples: 0. source entities.bash 
+#X         :    # If entities.bash has already been loaded, 
+#X         :    # then only _ent_0, PRGDIR and PRG globals are initialised.
+#X         :    # If entities.bash has not been loaded, then a full load/reload
+#X         :    # of all functions and global variables is done also.
+#X         : 
+#X         : 1. source entities.bash new 
+#X         :    # ^ load new instance of entities.bash; 
+#X         :    # do not use any existing instance already loaded.
 declare -- _ent_0 PRG PRGDIR
 declare -x _ent_scriptstatus="[\$0=$0]"
 
@@ -159,36 +166,61 @@ shopt -s globstar
 #X         :   -n|--raw      Print without tabs, prefixes or linefeeds.
 #X         :   -t|--notag    Do not print stdio tag (eg, info, err, sys).
 #X         :
-#X Examples: msg.sys "Sir, I have something to report."
-#X         : msg.info "Sir. There's something I think you should know."
-#X         : msg.err --log "Sir!" "I think you better come here."
-#X         : msg.warn --log "Pardon me, Sir." "Is this supposed to happen?"
-#X         : msg.die --log --errno 22 "Sir!" "This isn't supposed to happen."
 #X Example : msg "hello world!" "it's so nice to be back!"
-#X See also: msg.verbose.set msg.color.set msg.prefix.set msg.tab.set
+#X         : msg.sys "Sir, I have something to log."
+#X         : msg.info "Sir. There's something you might want to know."
+#X         : msg.warn --log "Pardon me, Sir." "Is this supposed to happen?"
+#X         : msg.err --log "Sir!" "I think you better come here."
+#X         : msg.die --log --errno 22 "Sir!" "This isn't supposed to happen."
+#X         : # Results:
+#X         :   [0;39;49mhello world!
+#X         :   [0;39;49m[0;39;49mit's so nice to be back!
+#X         :   [0;39;49msys: Sir, I have something to log.
+#X         :   [0;39;49m[32minfo: Sir. There's something you might want to know.
+#X         :   [0;39;49m[33mwarning: Pardon me, Sir.
+#X         :   [0;39;49m[33mwarning: Is this supposed to happen?
+#X         :   [0;39;49m[31merr: Sir!
+#X         :   [0;39;49m[31merr: I think you better come here.
+#X         :   [0;39;49mdie: Sir!
+#X         :   [0;39;49mdie: This isn't supposed to happen.
+#X         :   [0;39;49m
+#X See Also: msg.verbose.set msg.color.set msg.prefix.set msg.tab.set
+# shellcheck disable=SC2034,2016
+declare -x \
+	io_='stdio="";' 								\
+	io_die='std=2;die=1;errno=1;' 	\
+	io_emerg='std=2;die=1;errno=1;' \
+	io_alert='std=2;die=1;errno=1;' \
+	io_crit='std=2;die=1;errno=1;' 	\
+	io_err='std=2;' 								\
+	io_warning='std=2;' 						\
+	io_notice='std=1;' 							\
+	io_info='std=1;' 								\
+	io_debug='std=2;' 							\
+	io_sys='std=2;log=1;' 
+
 msgx() { 
 	(( ! _ent_VERBOSE )) && return 0
-	local -i std=1 dieflag=0 log=0 raw=0 errno=0 tag=1
+	local -i std=1 die=0 log=0 raw=0 errno=0 tag=1
 	local stdio='' sx
+
+	if (($#)) && [[ ${1:0:2} == '--' ]]; then
+		#((_ent_DEBUG)) && echo "$@"
+		stdio="${1//-/}"; stdio="${stdio// /}"
+		sx="io_${stdio:0:8}"
+		#((_ent_DEBUG)) && echo "sx=[$sx] stdio=[$stdio] $std $die $errno $log"
+		[[ -v "${sx}" ]] && {	shift; eval "${!sx}"; } #|| { ((_ent_DEBUG)) && echo "sx=[$sx]"; }
+	fi
+	
 	while (($#)); do
 		# these are all front-facing options; the first non-option signals 
 		# that rest of args are all printed with these settings.
 		case $1 in
-			--die)			stdio=${1:2}; std=2; dieflag=1; errno=1;;
-			--emerg)		stdio=${1:2}; std=2; dieflag=1; errno=1;;
-			--alert)		stdio=${1:2}; std=2; dieflag=1; errno=1;;
-			--crit)			stdio=${1:2}; std=2; dieflag=1; errno=1;;
-			--err)			stdio=${1:2}; std=2;;
-			--warning)	stdio=${1:2}; std=2;;
-			--notice)		stdio=${1:2}; std=1;;
-			--info)			stdio=${1:2}; std=1;;
-			--debug)		stdio=${1:2}; std=2;;
-			--sys)			stdio=${1:2};	std=2; log=1;;		# sys just means a logged message to stderr
-			-e|--errno)	std=2; shift; errno=$((${1:-0}));;
+			-e|--errno)		std=2; shift; errno=$((${1:-0}));;
 			-l|--log|log)	log=1;;
-			-n|--raw)		raw=1;;
-			-t|--notag)	tag=0;;
-			*)					break;;
+			-n|--raw)			raw=1;;
+			-t|--notag)		tag=0;;
+			*)						break;;
 		esac
 		shift
 	done	
@@ -239,7 +271,7 @@ msgx() {
 
 	((tag)) && ((_ent_MSG_USE_TAG)) && [[ -n $stdio ]] && msg.prefix.set '--'
 
-	((dieflag)) && exit "$errno"
+	((die)) && exit "$errno"
 	return 0
 }
 declare -fx 'msgx'
@@ -339,7 +371,7 @@ declare -ix _ent_VERBOSE
 msg.verbose() { return $(( ! _ent_VERBOSE )); }
 declare -fx 'msg.verbose'
 #	verbose() { msg.verbose "$@"; }; 		declare -fx verbose 
-	is.verbose() { msg.verbose "$@"; };	declare -fx is.verbose
+	is.verbose() { msg.verbose "$@"; };	declare -fx 'is.verbose'
 
 msg.verbose.set() {
 	if (( ${#@} )); then
@@ -351,7 +383,7 @@ msg.verbose.set() {
 	return 0
 }
 declare -fx 'msg.verbose.set'
-	verbose.set() { msg.verbose.set "$@"; }; declare -fx verbose.set
+	verbose.set() { msg.verbose.set "$@"; }; declare -fx 'verbose.set'
 	
 declare -ix _ent_MSG_USE_TAG=1
 msg.usetag.set() {
@@ -396,7 +428,7 @@ declare -ix _ent_COLOR=1
 [ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
 msg.color() { return $(( ! _ent_COLOR )); }
 declare -fx 'msg.color'
-	color() { 'msg.color' "$@"; }; declare -fx color
+	color() { 'msg.color' "$@"; }; declare -fx 'color'
 	is.color() { 'msg.color' "$@"; };	declare -fx 'is.color'
 	
 msg.color.set() {
@@ -415,7 +447,7 @@ msg.color.set() {
 declare -fx 'msg.color.set'
 	color.set() { 'msg.color.set' "$@"; };	declare -fx 'color.set'
 
-#X Function : msg.tab.set tab.width
+#X Function : msg.tab.set msg.tab.width
 #X Synopsis : msg.tab.set [offset]; msg.tab.width [tabvalue]
 #X Desc     :   msg.tab.set    set tab position for output from msg.* functions.
 #X          :   msg.tab.width  set tab width (default 4).
@@ -513,6 +545,7 @@ msg.prefix.set() {
 			_ent_MSG_PRE+=( "${1:-}" )
 		elif ((sub)); then
 			if (( ${#_ent_MSG_PRE[@]} > 1 )); then
+				# shellcheck disable=SC2206
 				_ent_MSG_PRE=( ${_ent_MSG_PRE[@]:0:${#_ent_MSG_PRE[@]}-1} )
 			else
 				_ent_MSG_PRE=()
@@ -546,7 +579,7 @@ declare -fx 'msg.prefix.set'
 #X Example : msg.line
 #X         : msg.line '+'
 #X         : msg.line '=' 42
-#X See Also: msg* msg.verbose.set msg.color.set msg.tab.set prefix.set
+#X See Also: msg* msg.verbose.set msg.color.set msg.tab.set msg.prefix.set
 msg.line() {
 	((_ent_VERBOSE)) || return 0
 	local -i  width=78 screencols=0 plen
@@ -561,6 +594,7 @@ msg.line() {
 	if (( ! screencols )); then
 		local -- IFS=' ' sx
 		local -ai sz
+		# shellcheck disable=SC2207
 		sz=( $(stty size) )
 		if (( ${#sz[@]} )); then
 			screencols=$(( sz[1] ))
@@ -581,7 +615,7 @@ msg.line() {
 	return 0
 }
 declare -fx 'msg.line'
-	alias msgline='msg.line'
+	msgline() { 'msg.line' "$@"; }; declare -fx 'msgline'
 
 #X Function : msg.yn
 #X Desc     : Ask y/n question,d return 0/1 
@@ -644,7 +678,7 @@ declare -fx 'version.set'
 declare -ix _ent_DRYRUN=0
 is.dryrun() { return $(( ! _ent_DRYRUN )); }
 declare -fx 'is.dryrun'
-	alias dryrun='is.dryrun'
+	dryrun() { 'is.dryrun' "$@"; }; declare -fx 'dryrun'
 
 dryrun.set() {
 	if (( $# )); then 
@@ -675,7 +709,7 @@ declare -fx 'dryrun.set'
 declare -ix _ent_DEBUG=0
 is.debug() {	return $(( ! _ent_DEBUG )); }
 declare -fx 'is.debug'
-	debug() { is.debug "$@"; }; declare -fx debug
+	debug() { is.debug "$@"; }; declare -fx 'debug'
 	
 debug.set() {
 	if (( $# )); then _ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
@@ -778,7 +812,7 @@ trap.breakp() {
 	return 0
 }
 declare -fx 'trap.breakp'
-	alias breakp='trap.breakp'
+	breakp() { 'trap.breakp' "$@"; }; declare -fx 'breakp'
 
 #--_ent_MINIMAL if defined, don't do this section.
 if (( ! ${_ent_MINIMAL:-0} )); then

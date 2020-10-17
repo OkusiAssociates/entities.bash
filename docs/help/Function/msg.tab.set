@@ -1,5 +1,5 @@
 #-Function--msg.tab.set
-  Function: msg.tab.set tab.width
+  Function: msg.tab.set msg.tab.width
       Desc: msg.tab.set    set tab position for output from msg.* functions.
           :   msg.tab.width  set tab width (default 4).
           : used for formatting output for msg.* and ask.* functions.

@@ -55,27 +55,34 @@ _ent_scriptstatus+='[reloading]'
 set +o errexit +o nounset +o pipefail
 shopt -s extglob
 shopt -s globstar
+declare -x \
+	io_='stdio="";' 								\
+	io_die='std=2;die=1;errno=1;' 	\
+	io_emerg='std=2;die=1;errno=1;' \
+	io_alert='std=2;die=1;errno=1;' \
+	io_crit='std=2;die=1;errno=1;' 	\
+	io_err='std=2;' 								\
+	io_warning='std=2;' 						\
+	io_notice='std=1;' 							\
+	io_info='std=1;' 								\
+	io_debug='std=2;' 							\
+	io_sys='std=2;log=1;' 
 msgx() { 
 	(( ! _ent_VERBOSE )) && return 0
-	local -i std=1 dieflag=0 log=0 raw=0 errno=0 tag=1
+	local -i std=1 die=0 log=0 raw=0 errno=0 tag=1
 	local stdio='' sx
+	if (($#)) && [[ ${1:0:2} == '--' ]]; then
+		stdio="${1//-/}"; stdio="${stdio// /}"
+		sx="io_${stdio:0:8}"
+		[[ -v "${sx}" ]] && {	shift; eval "${!sx}"; } #|| { ((_ent_DEBUG)) && echo "sx=[$sx]"; }
+	fi
 	while (($#)); do
 		case $1 in
-			--die)			stdio=${1:2}; std=2; dieflag=1; errno=1;;
-			--emerg)		stdio=${1:2}; std=2; dieflag=1; errno=1;;
-			--alert)		stdio=${1:2}; std=2; dieflag=1; errno=1;;
-			--crit)			stdio=${1:2}; std=2; dieflag=1; errno=1;;
-			--err)			stdio=${1:2}; std=2;;
-			--warning)	stdio=${1:2}; std=2;;
-			--notice)		stdio=${1:2}; std=1;;
-			--info)			stdio=${1:2}; std=1;;
-			--debug)		stdio=${1:2}; std=2;;
-			--sys)			stdio=${1:2};	std=2; log=1;;		# sys just means a logged message to stderr
-			-e|--errno)	std=2; shift; errno=$((${1:-0}));;
+			-e|--errno)		std=2; shift; errno=$((${1:-0}));;
 			-l|--log|log)	log=1;;
-			-n|--raw)		raw=1;;
-			-t|--notag)	tag=0;;
-			*)					break;;
+			-n|--raw)			raw=1;;
+			-t|--notag)		tag=0;;
+			*)						break;;
 		esac
 		shift
 	done	
@@ -120,7 +127,7 @@ msgx() {
 		done
 	fi
 	((tag)) && ((_ent_MSG_USE_TAG)) && [[ -n $stdio ]] && msg.prefix.set '--'
-	((dieflag)) && exit "$errno"
+	((die)) && exit "$errno"
 	return 0
 }
 declare -fx 'msgx'
@@ -167,7 +174,7 @@ declare -ix _ent_VERBOSE
 [ -t 1 ] && _ent_VERBOSE=1 || _ent_VERBOSE=0
 msg.verbose() { return $(( ! _ent_VERBOSE )); }
 declare -fx 'msg.verbose'
-	is.verbose() { msg.verbose "$@"; };	declare -fx is.verbose
+	is.verbose() { msg.verbose "$@"; };	declare -fx 'is.verbose'
 msg.verbose.set() {
 	if (( ${#@} )); then
 		_ent_VERBOSE=$(onoff "${1}")
@@ -177,7 +184,7 @@ msg.verbose.set() {
 	return 0
 }
 declare -fx 'msg.verbose.set'
-	verbose.set() { msg.verbose.set "$@"; }; declare -fx verbose.set
+	verbose.set() { msg.verbose.set "$@"; }; declare -fx 'verbose.set'
 declare -ix _ent_MSG_USE_TAG=1
 msg.usetag.set() {
 	if (( ${#@} )); then
@@ -203,7 +210,7 @@ declare -ix _ent_COLOR=1
 [ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
 msg.color() { return $(( ! _ent_COLOR )); }
 declare -fx 'msg.color'
-	color() { 'msg.color' "$@"; }; declare -fx color
+	color() { 'msg.color' "$@"; }; declare -fx 'color'
 	is.color() { 'msg.color' "$@"; };	declare -fx 'is.color'
 msg.color.set() {
 	if (( ${#@} )); then 
@@ -327,7 +334,7 @@ msg.line() {
 	return 0
 }
 declare -fx 'msg.line'
-	alias msgline='msg.line'
+	msgline() { 'msg.line' "$@"; }; declare -fx 'msgline'
 msg.yn() {
 	((_ent_VERBOSE)) || return 0
 	[ -t 0 ] || return 0
@@ -364,7 +371,7 @@ declare -fx 'version.set'
 declare -ix _ent_DRYRUN=0
 is.dryrun() { return $(( ! _ent_DRYRUN )); }
 declare -fx 'is.dryrun'
-	alias dryrun='is.dryrun'
+	dryrun() { 'is.dryrun' "$@"; }; declare -fx 'dryrun'
 dryrun.set() {
 	if (( $# )); then 
 		_ent_DRYRUN=$(onoff "${1}" "${_ent_DRYRUN}")
@@ -377,7 +384,7 @@ declare -fx 'dryrun.set'
 declare -ix _ent_DEBUG=0
 is.debug() {	return $(( ! _ent_DEBUG )); }
 declare -fx 'is.debug'
-	debug() { is.debug "$@"; }; declare -fx debug
+	debug() { is.debug "$@"; }; declare -fx 'debug'
 debug.set() {
 	if (( $# )); then _ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
 	else							echo "${_ent_DEBUG}"
@@ -444,7 +451,7 @@ trap.breakp() {
 	return 0
 }
 declare -fx 'trap.breakp'
-	alias breakp='trap.breakp'
+	breakp() { 'trap.breakp' "$@"; }; declare -fx 'breakp'
 if (( ! ${_ent_MINIMAL:-0} )); then
 	shopt -s globstar
 	if [[ -d "${ENTITIES:-/lib/include/entities}/entities.d" ]]; then
@@ -505,7 +512,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.97.420.483.15'
+_ent_VERSION='0.98.420.484.16'
 chgConfigVar()	{
 	local Profile=${1:-} key
 	shift
@@ -911,7 +918,7 @@ is.interactive() {
 	return $(( ! isit ))
 }
 declare -fx 'is.interactive'
-	alias is_interactive='is.interactive'
+	is_interactive() { 'is.interactive' "$@"; }; declare -fx 'is_interactive'
 is.root() {
 	[[ "$(whoami)" == 'root' || $EUID == 0 ]] && return 0
 	return 1
@@ -922,7 +929,7 @@ is.tty() {
 	return 0
 }
 declare -fx 'is.tty'
-	alias is_tty='is.tty'
+	is_tty() { 'is.tty'; }; declare -fx 'is_tty'
 pause() { 
 	local timeout=86400
 	if [[ "${1:-}" == '-t' ]]; then

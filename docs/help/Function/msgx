@@ -24,11 +24,23 @@
           :   -n|--raw      Print without tabs, prefixes or linefeeds.
           :   -t|--notag    Do not print stdio tag (eg, info, err, sys).
           : #X         :
-   Example: msg.sys "Sir, I have something to report."
-          : msg.info "Sir. There's something I think you should know."
-          : msg.err --log "Sir!" "I think you better come here."
+   Example: msg "hello world!" "it's so nice to be back!"
+          : msg.sys "Sir, I have something to log."
+          : msg.info "Sir. There's something you might want to know."
           : msg.warn --log "Pardon me, Sir." "Is this supposed to happen?"
+          : msg.err --log "Sir!" "I think you better come here."
           : msg.die --log --errno 22 "Sir!" "This isn't supposed to happen."
-          : msg "hello world!" "it's so nice to be back!"
+          : # Results:
+          :   [0;39;49mhello world!
+          :   [0;39;49m[0;39;49mit's so nice to be back!
+          :   [0;39;49msys: Sir, I have something to log.
+          :   [0;39;49m[32minfo: Sir. There's something you might want to know.
+          :   [0;39;49m[33mwarning: Pardon me, Sir.
+          :   [0;39;49m[33mwarning: Is this supposed to happen?
+          :   [0;39;49m[31merr: Sir!
+          :   [0;39;49m[31merr: I think you better come here.
+          :   [0;39;49mdie: Sir!
+          :   [0;39;49mdie: This isn't supposed to happen.
+          :   [0;39;49m
     Source: /usr/share/okusi/entities/entities.bash
 #-Function--msgx--------------------------------------------------------------

@@ -88,27 +88,27 @@ main() {
 			-y|--auto)			auto=1; wipe=1;;
 			-h|--help)			usage;;
 			-V|--version)		version.set; return 1;;
-			-v|--verbose)		verbose.set on;;
-			-q|--quiet)			verbose.set off=;;
+			-v|--verbose)		msg.verbose.set on;;
+			-q|--quiet)			msg.verbose.set off=;;
 			*)							cmd+=( "$1" );;
 		esac
 		shift
 	done
 
 	if ((auto)); then
-		verbose.set off
-		color.set off
+		msg.verbose.set off
+		msg.color.set off
 	fi
 
 	msg "$PRG for entities.bash"
-	tab.set ++
+	msg.tab.set ++
 	msg "Create help pages from canonical entities.bash file to " "directory $HelpFilesDir." 
 	if ((!auto)); then
-		askyn "Do you wish to proceed?" || exit 1
+		msg.yn --warning "Do you wish to proceed?" || exit 1
 		echo
 	fi
 	if ((!auto)); then
-		askyn "Wipe the [${HelpFilesDir//${EntitiesDir}/}] directory?" && wipe=1
+		msg.yn --warning "Wipe the [${HelpFilesDir//${EntitiesDir}/}] directory?" && wipe=1
 		echo
 	fi
 	if ((wipe)); then
@@ -208,7 +208,7 @@ main() {
 		ln -fs "$target" "$(basename "$target")" >/dev/null
 	done 
 
-	tab.set 0
+	msg.tab.set 0
 	msg "$PRG finished"
 	return 0
 }

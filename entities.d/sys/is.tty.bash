@@ -10,6 +10,6 @@ is.tty() {
 	return 0
 }
 declare -fx 'is.tty'
-	alias is_tty='is.tty'
+	is_tty() { 'is.tty'; }; declare -fx 'is_tty'
 	
 #fin

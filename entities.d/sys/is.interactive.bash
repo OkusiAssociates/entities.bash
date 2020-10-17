@@ -50,5 +50,5 @@ is.interactive() {
 	return $(( ! isit ))
 }
 declare -fx 'is.interactive'
-	alias is_interactive='is.interactive'
+	is_interactive() { 'is.interactive' "$@"; }; declare -fx 'is_interactive'
 #fin

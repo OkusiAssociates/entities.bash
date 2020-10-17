@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC1090
 	declare _u
-	_u=$(cat /etc/issue)
+	_u=$(< /etc/issue)
 	[[ "${_u:0:12}" < 'Ubuntu 16.04' ]] \
 			&& { echo  >&2 '[entities.bash] requires [Ubuntu 16.04] or higher.'; exit 1; }
 	unset _u
@@ -169,6 +169,7 @@ main() {
 		msg.info 'Create new entities.bash version/build file'
 		[[ -z ${_ent_VERSION:-} ]] && msg.die "Version has not been set. See [$_verfile]"
 		declare -ia _arr
+		# shellcheck disable=SC2206
 		_arr=( ${_ent_VERSION//./ } )
 		declare -i _dayssince
 		_dayssince=$(( ($(date +%s) - $(date +%s -d '2019-06-21')) / (60*60*24) ))
@@ -252,7 +253,7 @@ mod_environment() {
 
 
 infotext() {
-	tab.set ++
+	msg.tab.set ++
 	msg "entities.bash installation shall:"
 	((Production)) && \
 	msg "  * Create Help Files" \
@@ -271,7 +272,7 @@ infotext() {
 #	msg	"ENTITIES=[$ENTITIES]" \
 #			"PRG=[$PRG]" 					\
 #			"PRGDIR=[$PRGDIR]"
-	tab.set --
+	msg.tab.set --
 }
 
 # Dep: mkdir cd rsync find ln touch cp
@@ -365,7 +366,7 @@ install_files() {
 		fd=${fd%% *}
 		/usr/bin/touch -h -d "$(date +'%F 04:20:00' -d "$fd")" "$f"
 	done
-	
+		
 	# back to base
 	cd "$PRGDIR" || exit 2
 }

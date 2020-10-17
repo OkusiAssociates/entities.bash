@@ -1,6 +1,6 @@
 #---Script--cln
     Script: cln
-   Version: entities 0.97.420.483.14
+   Version: entities 0.98.420.484.15
       Desc: Search for and delete defined junk/trash/rubbish files.
   Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
           :    dirspec           Path to clean. Default '.'
@@ -18,6 +18,6 @@
           :  If not defined, _ent_CLNTEMP defaults to:
           :    ( '*~' '~*' '.~*' '.*~' )
           :  _ent_CLNTEMP is currently set to:
-          :    ( *~ ~* .~* .*~ DEADJOE dead.letter )
+          :    ( *~ ~* .~* .*~ DEADJOE dead.letter wget-log* )
     Source: /usr/share/okusi/entities/entities.bash
 #---Script--cln---------------------------------------------------------------

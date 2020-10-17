@@ -1,10 +1,10 @@
 #-Function--rtfm
   Function: rtfm
-      Desc: read the fucking manual.
-          : Searches for command first in help, then man,
-          : then entities.help, then google search using $BROWSER.
+      Desc: Read The Fucking Manual.
+          : Searches for command first in [help], then [man],
+          : then [entities.help], then [google search] using $BROWSER.
           : If BROWSER not defined, defaults to w3m or lynx.
-          : For convenience In a terminal, set alias man='rtfm'
+          : For convenience in a terminal, set alias man='rtfm'
   Synopsis: rtfm "command"
    Depends: man entities.help w3m lynx
     Source: /usr/share/okusi/entities/entities.d/sys/website_online.bash

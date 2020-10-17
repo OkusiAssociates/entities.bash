@@ -1,14 +1,1 @@
-#---Global--PRG
-    Global: PRG PRGDIR
-      Desc: PRG and PRGDIR are global variables reinitialised every time
-          : entities.bash is sourced/executed.
-   Example: source entities.bash inherit
-          :       # ^ if entities.bash has already been loaded,
-          :       # init PRGDIR/PRG globals only then return.
-          :       # if entities.bash has not been loaded, load it.
-          :       # [inherit] is the default.
-          : source entities.bash new
-          :       # ^ load new instance of entities.bash;
-          :       # do not use any existing instance already loaded.
-    Source: /usr/share/okusi/entities/entities.bash
-#---Global--PRG---------------------------------------------------------------
+_ent_0
