@@ -206,10 +206,17 @@ msgx() {
 
 	if (($#)) && [[ ${1:0:2} == '--' ]]; then
 		#((_ent_DEBUG)) && echo "$@"
-		stdio="${1//-/}"; stdio="${stdio// /}"
-		sx="io_${stdio:0:8}"
+		stdio="${1:2:8}"
+		#stdio="${stdio//-/}"; stdio="${stdio// /}"
 		#((_ent_DEBUG)) && echo "sx=[$sx] stdio=[$stdio] $std $die $errno $log"
-		[[ -v "${sx}" ]] && {	shift; eval "${!sx}"; } #|| { ((_ent_DEBUG)) && echo "sx=[$sx]"; }
+		sx="io_$stdio"
+		if [[ -v "${sx}" ]]; then
+			shift
+			eval "${!sx}"
+		else
+			stdio=''
+			#((_ent_DEBUG)) && echo "sx=[$sx]"
+		fi
 	fi
 	
 	while (($#)); do

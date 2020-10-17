@@ -72,9 +72,14 @@ msgx() {
 	local -i std=1 die=0 log=0 raw=0 errno=0 tag=1
 	local stdio='' sx
 	if (($#)) && [[ ${1:0:2} == '--' ]]; then
-		stdio="${1//-/}"; stdio="${stdio// /}"
-		sx="io_${stdio:0:8}"
-		[[ -v "${sx}" ]] && {	shift; eval "${!sx}"; } #|| { ((_ent_DEBUG)) && echo "sx=[$sx]"; }
+		stdio="${1:2:8}"
+		sx="io_$stdio"
+		if [[ -v "${sx}" ]]; then
+			shift
+			eval "${!sx}"
+		else
+			stdio=''
+		fi
 	fi
 	while (($#)); do
 		case $1 in
@@ -512,7 +517,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.484.20'
+_ent_VERSION='0.98.420.484.22'
 chgConfigVar()	{
 	local Profile=${1:-} key
 	shift
