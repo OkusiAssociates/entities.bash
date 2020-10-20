@@ -1,4 +1,3 @@
-##### Version [0.98.420.487.9]
 # Entities.bash Environment/Function Library
 ###### Version [$_ent_VERSION]
 
@@ -159,7 +158,7 @@ Examples:
 #### Script `cln`
 ````
 Script  : cln
-Version : entities 0.98.420.487.8
+Version : entities 0.98.420.487.10
 Desc    : Search for and delete defined junk/trash/rubbish files.
 Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
         :   dirspec           Path to clean. Default '.'
@@ -183,7 +182,7 @@ Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
 #### Script `dbh`
 ````
 Script  : dbh
-Version : entities.bash 0.98.420.487.8
+Version : entities.bash 0.98.420.487.10
 Desc    : MySQL helper script to quickly view data/structure/info.
         : Fast in, fast out.
 Synopsis: dbh [database [table [command]]] [-p profile] [-V] [-h]
