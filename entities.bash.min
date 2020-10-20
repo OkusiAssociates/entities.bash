@@ -515,7 +515,7 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.487.11'
+_ent_VERSION='0.98.420.487.12'
 chgConfigVar()	{
 	local Profile=${1:-} key
 	shift

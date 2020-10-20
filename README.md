@@ -158,7 +158,7 @@ Examples:
 #### Script `cln`
 ````
 Script  : cln
-Version : entities 0.98.420.487.11
+Version : entities 0.98.420.487.12
 Desc    : Search for and delete defined junk/trash/rubbish files.
 Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
         :   dirspec           Path to clean. Default '.'
@@ -182,7 +182,7 @@ Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
 #### Script `dbh`
 ````
 Script  : dbh
-Version : entities.bash 0.98.420.487.11
+Version : entities.bash 0.98.420.487.12
 Desc    : MySQL helper script to quickly view data/structure/info.
         : Fast in, fast out.
 Synopsis: dbh [database [table [command]]] [-p profile] [-V] [-h]
@@ -212,50 +212,6 @@ Examples: # 0. go direct to database selection menu.
         : # 3. open mysql with profile, open Essays:essays 
         : dbh -p /root/my3.cnf Essays essays
 ````
-
-#### Script `test-script`
-````
-grep: /usr/share/okusi/entities/scripts/entities.bash: No such file or directory
-````
-
-#### Script `launch`
-````
-/usr/share/okusi/entities/scripts/dev/tsr/launch: line 11: tabset: command not found
-````
-
-#### Script `shell1`
-````
-source: source filename [arguments]
-    Execute commands from a file in the current shell.
-    
-    Read and execute commands from FILENAME in the current shell.  The
-    entries in $PATH are used to find the directory containing FILENAME.
-    If any ARGUMENTS are supplied, they become the positional parameters
-    when FILENAME is executed.
-    
-    Exit Status:
-    Returns the status of the last command executed in FILENAME; fails if
-    FILENAME cannot be read.
-````
-
-#### Script `shell2`
-````
-source: source filename [arguments]
-    Execute commands from a file in the current shell.
-    
-    Read and execute commands from FILENAME in the current shell.  The
-    entries in $PATH are used to find the directory containing FILENAME.
-    If any ARGUMENTS are supplied, they become the positional parameters
-    when FILENAME is executed.
-    
-    Exit Status:
-    Returns the status of the last command executed in FILENAME; fails if
-    FILENAME cannot be read.
-````
-
-#### Script `shell3`
-````
-[3gH    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H  ````
 
 #### Script `findrecent`
 ````

@@ -73,7 +73,7 @@ PRGDIR=$(dirname "$(readlink -f "$0")")
 	etx
 
 	for f in "$ENTITIES"/scripts/**; do
-		[[ -d $f ]] ||	[[ ! -x $f ]] || [[ $f == *entities.*  ]] && continue
+		[[ -d $f ]] ||	[[ ! -x $f ]] || [[ $f == *entities.*  || $f == */dev/* ]] && continue
 		echo '#### Script `'"$(basename "$f")"'`'
 		echo '````'
 		"$f" --help 2>&1 | expand -t 2
