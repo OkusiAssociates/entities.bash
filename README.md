@@ -1,4 +1,4 @@
-##### Version [0.98.420.487.5]
+##### Version [0.98.420.487.6]
 ###### Version [0.97.420.462.10]
 # `entities.bash` Environment/Function Library
 
@@ -52,7 +52,7 @@ X() {
   
   
   
-  return 0	
+  return 0  
 }
 #fin
 ````
@@ -74,17 +74,17 @@ source entities || exit 2
 main() {
   local -a args=()
   while (( $# )); do
-  	case "$1" in
-  		#-|--);;
-  		-v|--verbose)		msg.verbose.set on;;
-  		-q|--quiet)			msg.verbose.set off;;
-  		-V|--version)		version.set; return 0;;
-  		-h|--help)			usage; return 0;;
-  		-?|--*)					msg.err "Invalid option [$1]"; return 22;;
-  		*)							args+=( "$1" );;
-  										#msg.err "Invalid argument [$1]"; return 22;;
-  	esac
-  	shift
+    case "$1" in
+      #-|--);;
+      -v|--verbose)   msg.verbose.set on;;
+      -q|--quiet)     msg.verbose.set off;;
+      -V|--version)   version.set; return 0;;
+      -h|--help)      usage; return 0;;
+      -?|--*)         msg.err "Invalid option [$1]"; return 22;;
+      *)              args+=( "$1" );;
+                      #msg.err "Invalid argument [$1]"; return 22;;
+    esac
+    shift
   done
 
   # code
