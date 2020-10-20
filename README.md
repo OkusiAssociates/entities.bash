@@ -1,4 +1,4 @@
-##### Version [0.98.420.485.1]
+##### Version [0.98.420.487.2]
 ###### Version [0.97.420.462.10]
 # `entities.bash` Environment/Function Library
 
@@ -8,7 +8,10 @@ The philosophy is to be simple, unobtrusive, flexible, with minimal dependencies
 
 ### `entities.bash` requires:
 
-	* Ubuntu 18.04, or higher
+* Ubuntu 18.04, or higher
+* Bash 4.4, or higher
+
+Use on non-Ubuntu systems should be possible with minimal changes.  
 
 ### Quick Install:
 
@@ -26,122 +29,480 @@ Once loaded into the environment `entities` can be invoked without reloading the
 
 If `entities` is already loaded at the time a script is run, it is not loaded again, greatly speeding up load and execution time for downstream scripts that also use `entities` library functions.
 
+
 ### Functions
 
-Here are some of the functions:
+Current functions:
 
-`addslashes` `ask.yn` `calcfp` `check.dependencies` `cleanup` `clntempfiles` `color` `color.set` `debug` `debug.set` `dequote` `dryrun` `dryrun.set` `editorsyntaxstring` `elipstr` `entities.location` `exit_if_already_running` `exit_if_not_root` `explode` `hr2int` `implode` `int2hr` `is.interactive` `is.number` `is.root` `is.tty` `ltrim` `mktempfile` `msg` `msg.crit` `msg.debug` `msg.die` `msg.err` `msg.info` `msg.line` `msg.prefix.separator.set` `msg.prefix.set` `msg.sys` `msg.warn` `onoff` `pause` `payload_decode` `payload_encode` `perrno` `post_slug` `remove_accents` `remsp2` `rtfm` `rtrim` `s` `slog` `slog.file` `slog.prefix` `slog.prefix.eval` `slog.truncate` `str_str` `strict` `strict.set` `tab.set` `tab.width` `textfiletype` `tmpdir.set` `trap.breakp` `trap.function` `trap.set` `trim` `urldecode` `urlencode` `urlpayload_encode` `verbose` `verbose.set` `version` `version.set`
+`addslashes  ` `breakp  ` `calcfp  ` `check.dependencies  ` `chgConfigVar  ` `cleanup  ` `color  ` `color.set  ` `convertCfg2php  ` `debug  ` `debug.set  ` `dqslash  ` `dryrun  ` `dryrun.set  ` `editorsyntaxstring  ` `elipstr  ` `entities.help  ` `entities.location  ` `etx` `exit_if_already_running  ` `exit_if_not_root  ` `explode  ` `hr2int  ` `implode  ` `in_array  ` `int2hr  ` `is.color  ` `is.debug  ` `is.dryrun  ` `is.int  ` `is_interactive  ` `is.interactive  ` `is.number  ` `is.root  ` `is.strict  ` `is_tty  ` `is.tty  ` `is.verbose  ` `ltrim  ` `mktempfile  ` `msg  ` `msg.alert  ` `msg.color  ` `msg.color.set  ` `msg.crit  ` `msg.debug  ` `msg.die  ` `msg.emerg  ` `msg.err  ` `msg.info  ` `msg.line  ` `msgline  ` `msg.notice  ` `msg.prefix.separator.set  ` `msg.prefix.set  ` `msg.sys  ` `msg.tab.set  ` `msg.tab.width  ` `msg.usetag.set  ` `msg.verbose  ` `msg.verbose.set  ` `msg.warn  ` `msg.warning  ` `msgx  ` `msg.yn  ` `onoff  ` `pause  ` `payload_decode  ` `payload_encode  ` `perrno  ` `phpini_short_tags  ` `post_slug  ` `remove_accents  ` `remsp2  ` `rmslash2  ` `rtfm  ` `rtrim  ` `s  ` `sqslash  ` `strict.set  ` `str_str  ` `tab.set  ` `tab.width  ` `textfiletype  ` `titlecase  ` `tmpdir.set  ` `trap.breakp  ` `trap.function  ` `trap.set  ` `trim  ` `urldecode  ` `urlencode  ` `urlpayload_encode  ` `verbose.set  ` `version  ` `version.set  ` `website_online  ` ### Templates
 
-`entities.bash` can be easily extended with new functions.
+Scripting templates are an important part of a programmer's armory.  `entitities.bash` comes with several simple but powerful templates for new scripts, or functions.  See `entities/docs/templates`.
 
-### Templates
+#### Bash Script/Function Templates
 
-Scripting templates are an important part of a programmer's armory.  `entitities.bash` comes with two simple but powerful templates, one for new scripts, one for new functions.
-
-#### Bash Script Template
+#### `new.function.template.bash`
 ````
 #!/bin/bash
-# #! shellcheck disable=SC0000
+#X Script:Function:GlobalX:Global:Local: 
+#X Desc    : 
+#X Synopsis: 
+#X Examples: 
+#X See Also:
+X() {
+	
+	
+	
+	return 0	
+}
+#fin
+````
+
+#### `new.script.template.bash`
+````
+#!/bin/bash
+# #! shellcheck disable=SC
 source entities || exit 2
-  trap.set on
-  strict.set off
-  version.set '0.1'
-  msg.prefix.set "$PRG"
-  
-  # global vars
-  
+	trap.set on
+	strict.set on
+	version.set '0.1'
+	msg.prefix.set "$PRG"
+	
+	# global vars
+	
+	
 # main
 main() {
-  local -a args=()
-  while (( $# )); do
-    case "$1" in
-      #-|--);;
-      -v|--verbose)  verbose.set on;;
-      -q|--quiet)    verbose.set off;;
-      -V|--version)  version.set; return 0;;
-      -h|--help)     usage; return 0;;
-      -?|--*)        msg.err "Invalid option [$1]"; return 22;;
-      *)             args+=( "$1" );;
-                     #msg.err "Invalid argument [$1]"; return 22;;
-    esac
-    shift
-  done
+	local -a args=()
+	while (( $# )); do
+		case "$1" in
+			#-|--);;
+			-v|--verbose)		msg.verbose.set on;;
+			-q|--quiet)			msg.verbose.set off;;
+			-V|--version)		version.set; return 0;;
+			-h|--help)			usage; return 0;;
+			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
+			*)							args+=( "$1" );;
+											#msg.err "Invalid argument [$1]"; return 22;;
+		esac
+		shift
+	done
 
-  # code
-  msg "${args[@]:-}"
-   
+	# code
+	msg "${args[@]:-}"
+	
+	
+	
 }
 
 # exit trap set to cleanup
+# shellcheck disable=SC2086
 cleanup() {
-  local -i err=$?
-  [[ -z ${1:-} ]] && err=$1
-  #...
-  ((err > 1)) && errno $err
-  exit $err
+	local -i err=$?
+	[[ -z ${1:-} ]] && err=$1
+	#...
+	((err > 1)) && errno $err
+	exit $err
 }
 
 usage() {
-  cat <<-etx
-  Script:Function: 
-  Desc    : 
-  Synopsis: $PRG    [-v][-q] [-V] [-h]
-          :  
-          :  -v|--verbose   turn on  msg verbose. (default)
-          :  -q|--quiet     turn off msg verbose.
-          :  -V|--version   print version.
-          :  -h|--help      this help.
-  Example : 
-  etx
-  return 0
+# 0#######:#|##|############|#################################################78
+	cat <<-etx
+	Script  : 
+	Desc    : 
+	Synopsis: $PRG    [-v][-q] [-V] [-h]
+	        :  -|--           
+	        :  -|--           
+	        :  -v|--verbose   Turn on msg verbose. (default)
+	        :  -q|--quiet     Turn off msg verbose.
+	        :  -V|--version   Print version.
+	        :  -h|--help      This help.
+	Example : 
+	etx
+# 0#######:#|##|############|#################################################78
+	return 0
 }
 
 main "$@"
 #fin
 ````
+
+#### `new.script.using.primitives.only.template.bash`
+````
+#!/bin/bash
+#! shellcheck disable=SC2034
+# entities 'primitives' for stand-alone scripts
+declare -- _ent_0 PRG PRGDIR; PRG=$(basename "${_ent_0}"); PRGDIR=$(dirname "${_ent_0}")
+VERSION='0.1';	version.set() { (($#)) && VERSION="$*" || echo "$VERSION"; }
+VERBOSE=1;  msg.verbose.set() { (($#)) && VERBOSE=$(onoff "$*") || echo "$VERBOSE"; }
+trap '{ cleanup $?; }' EXIT; trap.set() { :; }
+_ent_STRICT=0; strict.set() { (($#)) || { echo -n "${_ent_STRICT}"; return 0; }; local opt='+'; _ent_STRICT=$(onoff "${1}" ${_ent_STRICT}); ((_ent_STRICT)) && opt='-'; set ${opt}o errexit ${opt}o nounset ${opt}o pipefail; return 0; }
+PREFIX="$PRG"; msg.prefix.set() { (($#)) && PREFIX="$*" || echo "$PREFIX"; }
+msg() { ((VERBOSE)) || return 0; while read -r l; do echo "$PREFIX:" "$l"; done <<<"$@"; }
+msg.info() { ((VERBOSE)) || return 0; while read -r l; do echo "$PREFIX:" "$l"; done <<<"$@"; }
+msg.warn() { ((VERBOSE)) || return 0; while read -r l; do echo >&2 "$PREFIX: !!! " "$l"; done <<<"$@"; }
+msg.err() { while read -r l; do echo >&2 "$PREFIX: *** " "$l"; done <<<"$@"; }
+msg.sys() { systemd-cat -t "$PREFIX" -p err  echo "$@"; echo "$@"; }
+msg.die() { msg.sys "$@"; exit 1; }
+exit_if_already_running() { for p_ in $(pidof -x "$PREFIX"); do [ "${p_}" -ne "$$" ] && msg.die "$0 is currently running."; done; }
+onoff() {	local o="${1:-0}"; case "${o,,}" in 	on|1) o=1;; off|0) o=0;;	*) o=0; (( $# > 1 )) && o=$(( ${2} ));; esac;	echo -n $((o)); }
+trim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";v="${v%"${v##*[![:space:]]}"}";echo -n "$v"; }
+# end entities 'primitives'
+
+	trap.set on
+	strict.set off
+	version.set '0.1'
+	msg.prefix.set "$PRG"
+	
+	# global vars
+	
+# main
+main() {
+	local -a args=()
+	while (( $# )); do
+		case "$1" in
+			#-|--);;
+			-v|--verbose)		msg.verbose.set on;;
+			-q|--quiet)			msg.verbose.set off;;
+			-V|--version)		version.set; return 0;;
+			-h|--help)			usage; return 0;;
+			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
+			*)							args+=( "$1" );;
+											#msg.err "Invalid argument [$1]"; return 22;;
+		esac
+		shift
+	done
+
+	# code
+	msg "${args[@]:-}"
+	
+	
+	
+}
+
+# exit trap set to cleanup
+# shellcheck disable=SC2086
+cleanup() {
+	local -i err=$?
+	[[ -z ${1:-} ]] && err=$1
+	#...
+	((err > 1)) && errno $err
+	exit $err
+}
+
+usage() {
+# 0#######:#|##|############|#################################################78
+	cat <<-etx
+	Script:Function: 
+	Desc    : 
+	Synopsis: $PRG    [-v][-q] [-V] [-h]
+	        :  -|--)      
+	        :  -|--)      
+	        :  -v|--verbose   turn on  msg verbose. (default)
+	        :  -q|--quiet     turn off msg verbose.
+	        :  -V|--version   print version.
+	        :  -h|--help      this help.
+	Example : 
+	etx
+# 0#######:#|##|############|#################################################78
+	return 0
+}
+
+main "$@"
+#fin
+````
+
+#### `new.script.with.fallback.to.primitives.template.bash`
+````
+#!/bin/bash
+# shellcheck disable=SC2034,SC1091
+source entities 2>/dev/null || {
+# entities 'primitives' for stand-alone scripts
+declare -- _ent_0 PRG PRGDIR; PRG=$(basename "${_ent_0}"); PRGDIR=$(dirname "${_ent_0}")
+VERSION='0.1';	version.set() { (($#)) && VERSION="$*" || echo "$VERSION"; }
+VERBOSE=1;  msg.verbose.set() { (($#)) && VERBOSE=$(onoff "$*") || echo "$VERBOSE"; }
+trap '{ cleanup $?; }' EXIT; trap.set() { :; }
+_ent_STRICT=0; strict.set() { (($#)) || { echo -n "${_ent_STRICT}"; return 0; }; local opt='+'; _ent_STRICT=$(onoff "${1}" ${_ent_STRICT}); ((_ent_STRICT)) && opt='-'; set ${opt}o errexit ${opt}o nounset ${opt}o pipefail; return 0; }
+PREFIX="$PRG"; msg.prefix.set() { (($#)) && PREFIX="$*" || echo "$PREFIX"; }
+msg() { ((VERBOSE)) || return 0; while read -r l; do echo "$PREFIX:" "$l"; done <<<"$@"; }
+msg.info() { ((VERBOSE)) || return 0; while read -r l; do echo "$PREFIX:" "$l"; done <<<"$@"; }
+msg.warn() { ((VERBOSE)) || return 0; while read -r l; do echo >&2 "$PREFIX: !!! " "$l"; done <<<"$@"; }
+msg.err() { while read -r l; do echo >&2 "$PREFIX: *** " "$l"; done <<<"$@"; }
+msg.sys() { systemd-cat -t "$PREFIX" -p err  echo "$@"; echo "$@"; }
+msg.die() { msg.sys "$@"; exit 1; }
+exit_if_already_running() { for p_ in $(pidof -x "$PREFIX"); do [ "${p_}" -ne "$$" ] && msg.die "$0 is currently running."; done; }
+onoff() {	local o="${1:-0}"; case "${o,,}" in 	on|1) o=1;; off|0) o=0;;	*) o=0; (( $# > 1 )) && o=$(( ${2} ));; esac;	echo -n $((o)); }
+trim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";v="${v%"${v##*[![:space:]]}"}";echo -n "$v"; }
+# end entities 'primitives'
+}
+	trap.set on
+	strict.set off
+	version.set '0.1'
+	msg.prefix.set "$PRG"
+	
+	# global vars
+	
+	
+# main
+main() {
+	local -a args=()
+	while (( $# )); do
+		case "$1" in
+			#-|--);;
+			-v|--verbose)		msg.verbose.set on;;
+			-q|--quiet)			msg.verbose.set off;;
+			-V|--version)		version.set; return 0;;
+			-h|--help)			usage; return 0;;
+			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
+			*)							args+=( "$1" );;
+											#msg.err "Invalid argument [$1]"; return 22;;
+		esac
+		shift
+	done
+
+	# code
+	msg "${args[@]:-}"
+	
+	
+	
+}
+
+# exit trap set to cleanup
+# shellcheck disable=SC2086
+cleanup() {
+	local -i err=$?
+	[[ -z ${1:-} ]] && err=$1
+	#...
+	((err > 1)) && errno $err
+	exit $err
+}
+
+usage() {
+# 0#######:#|##|############|#################################################78
+	cat <<-etx
+	Script:Function: 
+	Desc    : 
+	Synopsis: $PRG    [-v][-q] [-V] [-h]
+	        :  -|--)      
+	        :  -|--)      
+	        :  -v|--verbose   turn on  msg verbose. (default)
+	        :  -q|--quiet     turn off msg verbose.
+	        :  -V|--version   print version.
+	        :  -h|--help      this help.
+	Example : 
+	etx
+# 0#######:#|##|############|#################################################78
+	return 0
+}
+
+main "$@"
+#fin
+````
+
 ### Scripts
 
-#### `p`
+#### `archivedir`
+````
+Script  : archivedir 
+Desc    : Create zip archive of a directory, and store in directory 
+        : called [.]{DirNameBase}.old.  Multiple snap-shots of directores
+        : can be maintained, with option to prune oldest files.    
+        : The zip archive name uses the format {archiveName}.{time}.old
+Synopsis: archivedir "dirname" [-H] [-l] [-P [limit]]  [-v][-q] [-V] [-h]
+        :  -H|--hidden   Create archive directory as hidden (prefix '.')
+        :                Once created as hidden, -H must always be used to
+        :                add new archives.
+        :  -l|--list     List all files in the 'dirname.old' archive directory.
+        :  -P|--prune limit  
+        :                Specify max number of archive files allowed, in
+        :                archive directory, and delete oldest if necessary.      
+        :  -v|--verbose  Turn on  msg verbose. (default)
+        :  -q|--quiet    Turn off msg verbose.
+        :  -V|--version  Print version.
+        :  -h|--help     This help.
+Examples:
+        : # 0. creates dir /usr/share/usr/.myscripts.old (if it doesn't exist)
+        : #    then makes a zip archive called myscripts.1561065600.zip.
+        : #    -H creates the .old directory as 'hidden', with a leading dot.
+        : archivedir /usr/share/myscripts -H -l 15 
+        :
+        : # 1. just make an archive of a directory
+        : #    Zip file would be located in directory myscripts.old.
+        : archivedir myscripts
+````
 
-Script programmers Edit/syntax-check/shellcheck wrapper for bash/php files. Bash/php scripts without .sh/.bash/php extentions are autodetected from the header. Uses envvar EDITOR and shellcheck.
-
-##### Synopsis `p filename[{.sh,.bash,.php}] [-l|--line rownum] [-x]`
+#### `cln`
+````
+Script  : cln
+Version : entities 0.98.420.487.1
+Desc    : Search for and delete defined junk/trash/rubbish files.
+Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
+        :   dirspec           Path to clean. Default '.'
+        :   -a|-add file      Add file to cleanup scan. Can be used 
+        :                     multiple times, and filesname can comma
+        :                     delimited.
+        :   -m|--depth depth  Maximum depth to recurse. Default 2.
+        :   -n|--dryrun       Dry run. Default on.
+        :   -N|--notdryrun    Not a dry run. Delete files straight away.
+        :   -v|--verbose      Enable output to stdout. Default on.
+        :   -q|--quiet        Disable output to stdout.
+        :   -h|--help         This help.
+        : Recursively remove all temporary files defined in 
+        : envvar _ent_CLNTEMP that defines temporary files to delete.
+        : If not defined, _ent_CLNTEMP defaults to:
+        :   ( '*~' '~*' '.~*' '.*~' )
+        : _ent_CLNTEMP is currently set to:
+        :   ( *~ ~* .~* .*~ DEADJOE dead.letter wget-log* )
+````
 
 #### `dbh`
+````
+Script  : dbh
+Version : entities.bash 0.98.420.487.1
+Desc    : MySQL helper script to quickly view data/structure/info.
+        : Fast in, fast out.
+Synopsis: dbh [database [table [command]]] [-p profile] [-V] [-h]
+        :   database      Database name.
+        :   table         Table name.
+        :   command       Valid commands are:
+        :                   columns
+        :                   select_fields 
+        :                   sql_command 
+        :                   sql_prompt 
+        :                   structure
+        :   -p|--profile  Specify MySQL profile [eg, /root/.my3.cnf].
+        :   -x|--exit     Exit after executing command (if specified).
+        :   -V|--version  Print version.
+        :   -h|--help     This help.
+        : To back out of a menu, select 0. To exit, select q.
+        :
+Examples: # 0. go direct to database selection menu.
+        : dbh
+        :
+        : # 1. open db Users, then to table selection.
+        : dbh Users
+        :
+        : # 2. open table Users:user and show column names.
+        : dbh Users users columns 
+        :
+        : # 3. open mysql with profile, open Essays:essays 
+        : dbh -p /root/my3.cnf Essays essays
+````
 
-MySQL helper script to quickly view data/structure.
+#### `entities.scripts.create-help`
+````
+Script  : entities.scripts.create-help
+Version : entities 0.98.420.487.1
+Desc    : For developers of entities.bash functions and scripts.
+        : Assists the entities help system gather documentation.
+        : All scripts in the entities/scripts directory must be 
+        : mode executable, with no .bash extension,
+        : Scripts must respond to a -h|--help option, output help
+        : in entities.bash standard format.
+Synopsis: entities.scripts.create-help [-y] [-o [output]] [-V] [-h]
+        :   -y|--no-prompt      Do not prompt to ask before execution.
+        :   -o|--output output  Change default output. 
+        :                       Default is 'scripts.help.bash'
+        :   -V|--version        Print version.
+        :   -h|--help           This help.
+````
 
-##### Synopsis `dbh [database [table [command]]] [-p profile] [-V] [-h]`
-
-##### Examples 
-    0. dbh         # direct to database selection
-    1. dbh Users   # open db Userss, then to table selection.
-    2. dbh Users users fields # open table Users:user and show fields. 
-    3. dbh -p /root/my3.cnf   # open mysql with profile. 
+#### `findrecent`
+````
+Script  : findrecent
+Desc    : Find 'n' most recently updated files in directory.
+Synopsis: findrecent [-n num] [-p "dir"][-N] ["dir"]
+        :   dir        Directory spec. Default '.'
+        :   -n|--headnum num  
+        :              Number of files to display. Default 10
+        :   -p|--prune "dir"
+        :              Add dir to hb_PRUNE. Enable Prune.
+        :   -N|--no-prune
+        :              Clear hb_PRUNE. Disable Prune.
+        : Prune is enabled by default.
+        : Current hb_PRUNE value is:
+        :   ( ~* *~ *gudang *.gudang *.old *.bak *dev *help *cctv *.git git )
+        :
+Example : findrecent /var/www -n 15
+        :
+        : findrecent /internet -N -p '*KLIEN'
+````
 
 #### `hashbang`
-
-Search directory recursively for files with #!/bin/bash header.
-
-##### Synopsis `hashbang ["dir"] [--search "str"]  [--exclude 'str'] [--prefix "prefix"] [--suffix "suffix"]` 
- 
-##### Example
- 
-    # 0. print bash script filenames
-    hashbang                   
-    # 1. print bash filenames matching pattern
-    hashbang . -s '^whereisit' 
-    # 2. print bash filenames containing string 'varname'
-    #    in format "p filename -s"
-    hashbang . -s 'some_var_name' -p 'p' -x '-s' >editfiles
+````
+Script  : hashbang
+Version : 0.97
+Desc    : Use 'find' and 'grep' to search directory recursively for files 
+        : identified as bash scripts, ignoring all other files. 
+        : Identification is by filename extension, a hashbang 
+        : containing '/bash', or by result from 'file' command.
+Synopsis: hashbang ["dir"] [-s str] [-b php|php] [-X][-Y][-e]
+        :          [-p str][-x str][-f str] [-l] [-v][-q] [--] 
+        :   dir                    Directory to start search (def. '.')
+        :   -s|--search "str"      String to find in found files.
+        :   -b|--hashbang bash|php File type to search (def. bash)
+        :   -X|--hb-exclude        Exclude using envvar hb_EXCLUDE (default).
+        :   -Y|--no-hb-exclude     Do not use hb-exclude.
+        :   -e|--exclude 'expr'    Add 'expr' to hb_EXCLUDE. Enables -X; 
+        :                          re-disable with -Y.
+        :   -f|--padfix "str"      Spacer for pre/suffix (def. ' '). 
+        :                          For no spacer: -f ''
+        :   -p|--prefix "prefix"   Prefix found files with "prefix".
+        :   -x|--suffix "suffix"   Suffix found files with "suffix".
+        :   -l|--nolf              No line feed at end of filename.
+        :   -v|--verbose           Verbose (default). Enable messages.
+        :   -D|--debug             Increase verbosity. Enables -v.
+        :   -q|--quiet             No messages. Disables -v -D.
+        :   --|--grep              Pass remaining parameters to grep.
+        : Note: All non-hashbang options are passed onto grep.
+        :
+ Example: # 0. recursively identitfy all bash scripts in /usr/bin.
+        : hashbang /usr/bin
+        : 
+        : # 1. print bash filenames for string matching pattern
+        : hashbang -s '^whereisit' 
+        : 
+        : # 2. print bash filenames containing string 'varname' in format 
+        : #    "p {filename} -s". Useful for generating temporary scripts.
+        : #    In this case, I wish to edit {filename} (using the entities 
+        : #    'p' editor) with shellcheck enabled.
+        : hashbang -s 'some_var_name' -p 'p' -x '-s' >editfiles
+````
 
 #### `lsd`
+````
+Script  : lsd
+Version : 0.97
+Desc    : Display directory tree. Wrapper script for 'tree'. 
+Synopsis: lsd [-ls] [-L num] [-n][-C] [pathspec ...] [-- ...]  
+        : pathspec       If not specified, {pathspec} defaults to 
+        :                current directory.
+        :  -L num        Traverse maximum num levels. Def. 1, 0=255.
+        :  --ls          Output file with 'ls' type listing.
+        :  -n|--nocolor  Don't use color.
+        :  -C|--color    Use color. (Default if terminal.)
+        :  --            Rest of arguments/options pass to 'tree'.
+        :                (See 'tree --help' for additional options.)
+        :  -V|--version  Print version information.
+        :  -h|--help     Help.
+Depends : tree
+````
 
-Wrapper script for 'tree'. Display directory tree starting at {pathspec}.
-
-##### Synopsis `lsd [-ls] [--levels num] [--treeopts...] [pathspec ...]`
-
-If not specified, {pathspec} defaults to current directory.
+#### `p`
+````
+Script  : p
+Desc    : Edit/SyntaxCheck/ShellCheck/Execute for 
+        : bash and php scripts.
+        : Bash/php scripts without .sh/.bash/.php extensions 
+        : are autodetected from the header.
+        : Uses envvar EDITOR ([/usr/bin/joe -tab 2 -autoindent --wordwrap])
+Synopsis: p filename [-l row] [-s] [-x]
+        :   -l row  position at row on entry to editor.
+        :   -s      execute shellcheck after editing.
+        :   +s      don't execute shellcheck after editing (default).
+        :   -x      execute script after editing (asks first).
+        :   +x      don't execute script after editing (default).
+Requires: shellcheck
+````
 
 ### Help
 

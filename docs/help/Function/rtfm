@@ -7,5 +7,5 @@
           : For convenience in a terminal, set alias man='rtfm'
   Synopsis: rtfm "command"
    Depends: man entities.help w3m lynx
-    Source: /usr/share/okusi/entities/entities.d/sys/website_online.bash
+    Source: /usr/share/okusi/entities/entities.d/sys/phpini_short_tags.bash
 #-Function--rtfm--------------------------------------------------------------

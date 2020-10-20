@@ -24,8 +24,8 @@ main() {
 			-s|--search)		shift; Search="${1:-}"	;;
 			-t|--tree)			display_tree; return $?	;;
 			-V|--version)		echo "entities ${_ent_VERSION:-}"; return 0;;
-			-v|--verbose)		verbose.set on					;;
-			-q|--quiet)			verbose.set off			 		;;
+			-v|--verbose)		msg.verbose.set on					;;
+			-q|--quiet)			msg.verbose.set off			 		;;
 			-h|--help)			usage; return 1					;;
 			--reentry)			reentry=1								;;
 			*)							HelpFile+=( "${1}" )		;;

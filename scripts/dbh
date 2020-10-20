@@ -21,8 +21,8 @@ main() {
 		case "$1" in
 			-p|--profile)	shift; Profile="${1:-}";;
 			-x|--exit)		ExitAfterCmd=1;;
-			-v|--verbose)	verbose.set on;;
-			-q|--quiet)		verbose.set off;;
+			-v|--verbose)	msg.verbose.set on;;
+			-q|--quiet)		msg.verbose.set off;;
 			-V|--version)	version.set; echo; return 0;;
 			-h|--help)		usage; return 0;;
 			-?|--*)				msg.err "Invalid option [$1]"; return 1;;
@@ -41,7 +41,7 @@ main() {
 	[[ -z $Profile ]] && Profile=$Profile_Default
 	[[ -f $Profile ]] || { msg.err "Profile [$Profile] not found."; return 2; }
 
-	tab.width 8
+	msg.tab.width 8
 	tabs 8			# for the select builtin
 	msg.info "Using profile [$Profile]"
 	msg.info "Select 0 to backup up, q to quit."		
@@ -144,14 +144,14 @@ do_sql_command() {
 		[[ -z $cmd || $cmd == '0' || $cmd == 'q' ]] && break
 		mysql --defaults-file=$Profile --no-auto-rehash "$Database" -e "$cmd" || perror $?
 	done
-	msg.prefix.set '--'
+	msg.prefix.set --
 	return 0
 }
 
 do_sql_prompt() {
 	msg.prefix.set '++' "$Database"
 	(mysql --defaults-file=$Profile --no-auto-rehash --prompt="$(msg.prefix.set)mysql> " "$Database"	|| perror $?) || true
-	msg.prefix.set '--'
+	msg.prefix.set --
 	return 0
 }
 
@@ -181,7 +181,7 @@ do_select_fields() {
 		) || true
 	done
 	PS3=''
-	msg.prefix.set '--'
+	msg.prefix.set --
 	tabs 8
 	return 0
 }

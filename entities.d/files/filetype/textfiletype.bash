@@ -43,8 +43,8 @@ editorsyntaxstring() {
 
 	# aggregate some filetypes	
 	case "$FileType" in
-		html)		FileType=php;;
-		bash)		FileType=sh;;		
+		html)		FileType='php';;
+		bash)		FileType='sh';;
 	esac
 
 	case "$editor" in
@@ -89,6 +89,25 @@ declare -Ax _ent_TextFileTypes=(
 #X Usage   : textfiletype [-t] filename
 #X         :   -t  Return type only without filename.
 textfiletype() {
+	if [[ -z ${_ent_TextFileTypes[*]:-} ]]; then
+		declare -Ax _ent_TextFileTypes=(	
+			['ASCII text']='text'
+			['Bourne-Again shell script']='bash'
+			['XML 1.0 document']='xml'
+			['HTML document']='html'
+			['POSIX shell script']='sh'
+			['PHP script']='php'
+			['C source']='c'
+			['SMTP mail']='smtp'
+			['exported SGML document']='sgml'
+			['Windows WIN.INI']='ini'
+			['TeX document']='tex'
+			['Python script']='python'
+			['Non-ISO extended-ASCII text']='text'
+			['Perl5 module source']='perl'
+			['BSD makefile script']='bsdmake'
+		)
+	fi
 	local -- testfile='' ext
 	local -i typeonly=0
 	local -- File=''
@@ -103,12 +122,12 @@ textfiletype() {
 		FileType=''
 		ext=${testfile##*\.}
 		case "$ext" in
-			php)				FileType=php;;
-			htm|html)		FileType=html;;
-			sh|conf)		FileType=sh;;
-			bash|cnf)		FileType=bash;;
-			c|h)				FileType=c;;
-			xml)				FileType=xml;;
+			php)				FileType='php';;
+			htm|html)		FileType='html';;
+			sh|conf)		FileType='sh';;
+			bash|cnf)		FileType='bash';;
+			c|h)				FileType='c';;
+			xml)				FileType='xml';;
 		esac
 		
 		# still equals text, so check header, then 'file' command output
@@ -116,7 +135,7 @@ textfiletype() {
 			# the file exists therefore examine it.
 			if [[ -f "$testfile" ]]; then
 				# head examination. first 32 chars
-				h="$(head -c 64 "$testfile" | strings -w)" || h=''
+				h="$(head -c 64 "$testfile" 2>/dev/null || echo '' | strings -w)" || h=''
 				if 	 [[ "$h" =~ ^\#\!.*/bash.* ]];	then	
 					FileType='bash'
 				elif [[ "$h" =~ ^\#\!.*/sh.*   ]];	then	
@@ -129,7 +148,7 @@ textfiletype() {
 					[[ -z $File ]] && { shift; continue; }
 					File=${File%%,*}
 					[[ -z $File ]] && File='text'
-					if [[ "${!_ent_TextFileTypes[@]}" == *"$File"* ]]; then
+					if [[ "${!_ent_TextFileTypes[*]}" == *"$File"* ]]; then
 						FileType="${_ent_TextFileTypes[$File]}"
 						[[ -z $FileType ]] && FileType='text'
 					fi

@@ -10,7 +10,7 @@
           :    dir                    Directory to start search (def. '.')
           :    -s|--search "str"      String to find in found files.
           :    -b|--hashbang bash|php File type to search (def. bash)
-          :    -X|--hb-exclude        Exclude using envvar hb_EXCLUDE.
+          :    -X|--hb-exclude        Exclude using envvar hb_EXCLUDE (default).
           :    -Y|--no-hb-exclude     Do not use hb-exclude.
           :    -e|--exclude 'expr'    Add 'expr' to hb_EXCLUDE. Enables -X;
           :                           re-disable with -Y.
@@ -24,8 +24,8 @@
           :    -q|--quiet             No messages. Disables -v -D.
           :    --|--grep              Pass remaining parameters to grep.
           :  Note: All non-hashbang options are passed onto grep.
-   Example: # 0. recursively find all qualified bash script filenames
-          :  hashbang
+   Example: # 0. recursively identitfy all bash scripts in /usr/bin.
+          :  hashbang /usr/bin
           :  # 1. print bash filenames for string matching pattern
           :  hashbang -s '^whereisit'
           :  # 2. print bash filenames containing string 'varname' in format

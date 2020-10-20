@@ -2,20 +2,18 @@
 # shellcheck disable=SC1091
 source entities || exit 2
 	strict.set off
-	verbose.set "$([[ -z $PS1 ]] && echo 'on' || echo 'off')"
+	msg.verbose.set "$([[ -z $PS1 ]] && echo 'on' || echo 'off')"
 
 	declare -ax hb_PRUNE
-	if [[ -z "${hb_PRUNE[*]:-}" ]]; then
-		hb_PRUNE=( '~*' '*gudang' '*.gudang' '*.old' '*.bak' '*dev' '*help' '*cctv' '*.git' '*git' )
-	fi
+	[[ -z "${hb_PRUNE[*]:-}" ]] \
+			&& hb_PRUNE=( '~*' '*gudang' '*.gudang' '*.old' '*.bak' '*dev' '*help' '*cctv' '*.git' '*git' )
 
 	declare -ax hb_EXCLUDE
-	if [[ -z "${hb_EXCLUDE[*]:-}" ]]; then
-		hb_EXCLUDE=( '~' 'gudang/' '.old' '.bak' 'dev/' '.png' '.jpg' '.mp3' '.mp4' '.iso' 'help/' '.zip' '.git' )
-	fi
+	[[ -z "${hb_EXCLUDE[*]:-}" ]] \
+			&& hb_EXCLUDE=( '~' 'gudang/' '.old' '.bak' 'dev/' '.png' '.jpg' '.mp3' '.mp4' '.iso' 'help/' '.zip' '.git' )
 
 	declare -i hb_MAX_FILESIZE
-	hb_MAX_FILESIZE=${hb_MAX_FILESIZE:- 30000}
+	hb_MAX_FILESIZE=$(( ${hb_MAX_FILESIZE:- 100000} ))
 
 hashbang_main() {
 	version.set '0.97'
@@ -27,7 +25,7 @@ hashbang_main() {
 			case "$1" in
 				-s|--search)		shift; search="${1:-}" ;;
 				-m|--maxdepth)  shift; maxdepth=${1:- 1} ;;
-				-z|--maxsize)		shift; hb_MAX_FILESIZE=${1:- 30000};;
+				-z|--maxsize)		shift; hb_MAX_FILESIZE=${1:- 100000};;
 				-f|--padfix)		shift; padfix="${1:-}" ;;
 				-p|--prefix)		shift; prefix="${1:-}${padfix}" ;;
 				-x|--suffix)		shift; suffix="${padfix}${1:-}" ;;
@@ -39,10 +37,10 @@ hashbang_main() {
 				-b|--hashbang)	shift; hashbang=${1:-bash};;
 				-l|--nolf)			LF='' ;;
 				-v|--verbose|+q)
-												verbose.set on ;;
+												msg.verbose.set on ;;
 				-vv|-v2|--D|--debug)
 												debug.set on ;;
-				-q|--quiet|+v)	verbose.set off; debug.set off;;
+				-q|--quiet|+v)	msg.verbose.set off; debug.set off;;
 				-V|--version)		printTitle; return 0 ;;
 				-h|--help)			usage; return 0	;;
 				--)							shift
@@ -87,8 +85,10 @@ hashbang_main() {
 	if ((hbExclude)); then
 		[[ ${dir:0:2} == './' ]] && xdot='./'
 		[[ ${dir:0:3} == '../' ]] && xdot='../'
+		# shellcheck disable=SC2089
 		for p in "${hb_PRUNE[@]}"; do xpath+="-type d -path '${xdot}${p}' -prune -o "; done
 	fi
+	# shellcheck disable=SC2207,2090,2086
 	files=( $(find -O2 "${dir}" -maxdepth "${maxdepth}" $xpath \( -type f -print \)) )
 	local file='' e
 	local -i incl=1
@@ -157,7 +157,7 @@ usage() {
 	        :   dir                    Directory to start search (def. '.')
 	        :   -s|--search "str"      String to find in found files.
 	        :   -b|--hashbang bash|php File type to search (def. $hashbang)
-	        :   -X|--hb-exclude        Exclude using envvar hb_EXCLUDE.
+	        :   -X|--hb-exclude        Exclude using envvar hb_EXCLUDE (default).
 	        :   -Y|--no-hb-exclude     Do not use hb-exclude.
 	        :   -e|--exclude 'expr'    Add 'expr' to hb_EXCLUDE. Enables -X; 
 	        :                          re-disable with -Y.
@@ -171,8 +171,9 @@ usage() {
 	        :   -q|--quiet             No messages. Disables -v -D.
 	        :   --|--grep              Pass remaining parameters to grep.
 	        : Note: All non-hashbang options are passed onto grep.
-	 Example: # 0. recursively find all qualified bash script filenames
-	        : $PRG                   
+	        :
+	 Example: # 0. recursively identitfy all bash scripts in /usr/bin.
+	        : $PRG /usr/bin
 	        : 
 	        : # 1. print bash filenames for string matching pattern
 	        : hashbang -s '^whereisit' 

@@ -4,7 +4,7 @@ source entities 2>/dev/null || {
 # entities 'primitives' for stand-alone scripts
 declare -- _ent_0 PRG PRGDIR; PRG=$(basename "${_ent_0}"); PRGDIR=$(dirname "${_ent_0}")
 VERSION='0.1';	version.set() { (($#)) && VERSION="$*" || echo "$VERSION"; }
-VERBOSE=1;  verbose.set() { (($#)) && VERBOSE=$(onoff "$*") || echo "$VERBOSE"; }
+VERBOSE=1;  msg.verbose.set() { (($#)) && VERBOSE=$(onoff "$*") || echo "$VERBOSE"; }
 trap '{ cleanup $?; }' EXIT; trap.set() { :; }
 _ent_STRICT=0; strict.set() { (($#)) || { echo -n "${_ent_STRICT}"; return 0; }; local opt='+'; _ent_STRICT=$(onoff "${1}" ${_ent_STRICT}); ((_ent_STRICT)) && opt='-'; set ${opt}o errexit ${opt}o nounset ${opt}o pipefail; return 0; }
 PREFIX="$PRG"; msg.prefix.set() { (($#)) && PREFIX="$*" || echo "$PREFIX"; }
@@ -33,8 +33,8 @@ main() {
 	while (( $# )); do
 		case "$1" in
 			#-|--);;
-			-v|--verbose)		verbose.set on;;
-			-q|--quiet)			verbose.set off;;
+			-v|--verbose)		msg.verbose.set on;;
+			-q|--quiet)			msg.verbose.set off;;
 			-V|--version)		version.set; return 0;;
 			-h|--help)			usage; return 0;;
 			-?|--*)					msg.err "Invalid option [$1]"; return 22;;

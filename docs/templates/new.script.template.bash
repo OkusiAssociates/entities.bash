@@ -2,7 +2,7 @@
 # #! shellcheck disable=SC
 source entities || exit 2
 	trap.set on
-	strict.set off
+	strict.set on
 	version.set '0.1'
 	msg.prefix.set "$PRG"
 	
@@ -15,8 +15,8 @@ main() {
 	while (( $# )); do
 		case "$1" in
 			#-|--);;
-			-v|--verbose)		verbose.set on;;
-			-q|--quiet)			verbose.set off;;
+			-v|--verbose)		msg.verbose.set on;;
+			-q|--quiet)			msg.verbose.set off;;
 			-V|--version)		version.set; return 0;;
 			-h|--help)			usage; return 0;;
 			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
@@ -46,15 +46,15 @@ cleanup() {
 usage() {
 # 0#######:#|##|############|#################################################78
 	cat <<-etx
-	Script:Function: 
+	Script  : 
 	Desc    : 
 	Synopsis: $PRG    [-v][-q] [-V] [-h]
-	        :  -|--)      
-	        :  -|--)      
-	        :  -v|--verbose   turn on  msg verbose. (default)
-	        :  -q|--quiet     turn off msg verbose.
-	        :  -V|--version   print version.
-	        :  -h|--help      this help.
+	        :  -|--           
+	        :  -|--           
+	        :  -v|--verbose   Turn on msg verbose. (default)
+	        :  -q|--quiet     Turn off msg verbose.
+	        :  -V|--version   Print version.
+	        :  -h|--help      This help.
 	Example : 
 	etx
 # 0#######:#|##|############|#################################################78

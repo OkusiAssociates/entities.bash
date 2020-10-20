@@ -3,7 +3,7 @@ source entities
 	trap.set on
 	strict.set off
 	version.set 0.97
-	verbose.set on
+	msg.verbose.set on
 
 main() {
 	local -i Level=1
@@ -13,8 +13,8 @@ main() {
 		case "$1" in
 			--ls|-ls)							ls='-pugsD --timefmt=%y-%M-%dT%R';;
 			-L|--levels|--level)	shift; Level=${1:-255};;
-			-n|--nocolor)					color.set off; cmd+=('-n');;
-			-C|--color)						color.set on;	 cmd+=('-C');;
+			-n|--nocolor)					msg.color.set off; cmd+=('-n');;
+			-C|--color)						msg.color.set on;	 cmd+=('-C');;
 			-V|--version)					printTitle; exit 0;;
 			-h|--help|--manpage)	usage;;
 			--)										shift; cmd+=( "$@" ); break;;

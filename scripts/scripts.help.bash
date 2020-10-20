@@ -2,7 +2,7 @@
 #! shellcheck disable=SC1072
 
 #X    Script:  entities.scripts.create-help
-#X   Version:  entities 0.98.420.484.26
+#X   Version:  entities 0.98.420.487.1
 #X      Desc:  For developers of entities.bash functions and scripts.
 #X          :  Assists the entities help system gather documentation.
 #X          :  All scripts in the entities/scripts directory must be 
@@ -17,7 +17,7 @@
 #X          :    -h|--help           This help.
 
 #X    Script:  dbh
-#X   Version:  entities.bash 0.98.420.484.26
+#X   Version:  entities.bash 0.98.420.487.1
 #X      Desc:  MySQL helper script to quickly view data/structure/info.
 #X          :  Fast in, fast out.
 #X  Synopsis:  dbh [database [table [command]]] [-p profile] [-V] [-h]
@@ -133,7 +133,7 @@
 #X          :    dir                    Directory to start search (def. '.')
 #X          :    -s|--search "str"      String to find in found files.
 #X          :    -b|--hashbang bash|php File type to search (def. bash)
-#X          :    -X|--hb-exclude        Exclude using envvar hb_EXCLUDE.
+#X          :    -X|--hb-exclude        Exclude using envvar hb_EXCLUDE (default).
 #X          :    -Y|--no-hb-exclude     Do not use hb-exclude.
 #X          :    -e|--exclude 'expr'    Add 'expr' to hb_EXCLUDE. Enables -X; 
 #X          :                           re-disable with -Y.
@@ -147,8 +147,9 @@
 #X          :    -q|--quiet             No messages. Disables -v -D.
 #X          :    --|--grep              Pass remaining parameters to grep.
 #X          :  Note: All non-hashbang options are passed onto grep.
-#X   Example:  # 0. recursively find all qualified bash script filenames
-#X          :  hashbang                   
+#X          : 
+#X   Example:  # 0. recursively identitfy all bash scripts in /usr/bin.
+#X          :  hashbang /usr/bin
 #X          :  
 #X          :  # 1. print bash filenames for string matching pattern
 #X          :  hashbang -s '^whereisit' 
@@ -160,7 +161,7 @@
 #X          :  hashbang -s 'some_var_name' -p 'p' -x '-s' >editfiles
 
 #X    Script:  cln
-#X   Version:  entities 0.98.420.484.26
+#X   Version:  entities 0.98.420.487.1
 #X      Desc:  Search for and delete defined junk/trash/rubbish files.
 #X  Synopsis:  cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
 #X          :    dirspec           Path to clean. Default '.'

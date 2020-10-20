@@ -62,7 +62,7 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 		_ent_0="$(/bin/readlink -fn -- "$0")" || _ent_0=''
 		_ent_scriptstatus+="[is.script][\$_ent_0=${_ent_0}]"
 		# Has entities.bash been executed?
-		if [[ "$(/bin/readlink -fn -- "${BASH_SOURCE[0]:-}")" == "${_ent_0}" ]]; then
+		if [[ "$(/bin/readlink -fn -- "${BASH_SOURCE[0]:-}")" == "$_ent_0" ]]; then
 			_ent_scriptstatus+='[execute]'
 			_ent_LOADED=0
 			# do options for execute mode
@@ -81,8 +81,8 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 			exit $?
 		fi
 		_ent_scriptstatus+='[sourced-from-script][SHLVL='"$SHLVL"']'
-		PRG=$(/usr/bin/basename "${_ent_0}")
-		PRGDIR=$(/usr/bin/dirname "${_ent_0}")
+		PRG=$(/usr/bin/basename "$_ent_0")
+		PRGDIR=$(/usr/bin/dirname "$_ent_0")
 		_ent_scriptstatus+="[PRGDIR=$PRGDIR]"
 
 		# `entities` is already loaded, and no other parameters have 
@@ -95,8 +95,8 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 		# [source entities] has been executed at the shell command prompt
 		_ent_scriptstatus+='[sourced-from-shell][SHLVL='"$SHLVL"']'
 		_ent_0=$(/bin/readlink -fn -- "${BASH_SOURCE[0]}") || _ent_0=''
-		PRG=$(/usr/bin/basename "${_ent_0}")
-		PRGDIR=$(/usr/bin/dirname "${_ent_0}")
+		PRG=$(/usr/bin/basename "$_ent_0")
+		PRGDIR=$(/usr/bin/dirname "$_ent_0")
 		_ent_scriptstatus+="[PRGDIR=$PRGDIR]"
 		if [[ -n "${ENTITIES:-}" ]]; then
 			PATH="${PATH//\:${ENTITIES}/}"
@@ -210,7 +210,7 @@ msgx() {
 		#stdio="${stdio//-/}"; stdio="${stdio// /}"
 		#((_ent_DEBUG)) && echo "sx=[$sx] stdio=[$stdio] $std $die $errno $log"
 		sx="io_$stdio"
-		if [[ -v "${sx}" ]]; then
+		if [[ -v "$sx" ]]; then
 			shift
 			eval "${!sx}"
 		else
@@ -223,10 +223,10 @@ msgx() {
 		# these are all front-facing options; the first non-option signals 
 		# that rest of args are all printed with these settings.
 		case $1 in
+			-t|--notag)		tag=0;;
+			-n|--raw)			raw=1;;
 			-e|--errno)		std=2; shift; errno=$((${1:-0}));;
 			-l|--log|log)	log=1;;
-			-n|--raw)			raw=1;;
-			-t|--notag)		tag=0;;
 			*)						break;;
 		esac
 		shift
@@ -247,7 +247,7 @@ msgx() {
 			fi
 			((_ent_TABSET)) && printf '\t%.0s' $(seq 1 "$_ent_TABSET")
 			echo >&${std} -e "$1"
-			((_ent_COLOR)) && echo -ne "${colorreset}"
+			((_ent_COLOR)) && echo -ne "$colorreset"
 		fi
 		if ((log)); then
 			sx=${stdio:-err}
@@ -267,7 +267,7 @@ msgx() {
 			fi
 			((_ent_TABSET)) && printf '\t%.0s' $(seq 1 "$_ent_TABSET")
 			echo >&${std} "$line"
-			((_ent_COLOR)) && echo -ne "${colorreset}"
+			((_ent_COLOR)) && echo -ne "$colorreset"
 			if ((log)); then
 				sx=${stdio:-err}
 				[[ $sx == 'sys' || $sx == 'die'  ]] && sx='err'
@@ -382,12 +382,12 @@ declare -fx 'msg.verbose'
 
 msg.verbose.set() {
 	if (( ${#@} )); then
-		_ent_VERBOSE=$(onoff "${1}")
+		_ent_VERBOSE=$(onoff "$1")
 	else
 		# shellcheck disable=SC2086
-		echo -n ${_ent_VERBOSE}
+		echo -n $_ent_VERBOSE
 	fi
-	return 0
+#	return 0
 }
 declare -fx 'msg.verbose.set'
 	verbose.set() { msg.verbose.set "$@"; }; declare -fx 'verbose.set'
@@ -395,12 +395,12 @@ declare -fx 'msg.verbose.set'
 declare -ix _ent_MSG_USE_TAG=1
 msg.usetag.set() {
 	if (( ${#@} )); then
-		_ent_MSG_USE_TAG=$(onoff "${1}")
+		_ent_MSG_USE_TAG=$(onoff "$1")
 	else
 		# shellcheck disable=SC2086
-		echo -n ${_ent_MSG_USE_TAG}
+		echo -n $_ent_MSG_USE_TAG
 	fi
-	return 0
+#	return 0
 }
 declare -fx 'msg.usetag.set'
 	
@@ -423,7 +423,7 @@ declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 
 #X Function: msg.color.set msg.color
 #X Desc    : turn on/off colorized output from msg.* functions.
-#X         : Color is turned off if verbose() is also set to off.
+#X         : Color is turned off if msg.verbose() is also set to off.
 #X Synopsis: msg.color.set [ON|1][OFF|0][auto]
 #X         : curstatus=$(msg.color.set)
 #X Example : 
@@ -445,11 +445,11 @@ msg.color.set() {
 		else
 			status=$1
 		fi
-		_ent_COLOR=$(onoff "${status}" "${_ent_COLOR}")
+		_ent_COLOR=$(onoff "$status" "$_ent_COLOR")
 	else 
-		echo -n "${_ent_COLOR}"
+		echo -n "$_ent_COLOR"
 	fi
-	return 0
+#	return 0
 }
 declare -fx 'msg.color.set'
 	color.set() { 'msg.color.set' "$@"; };	declare -fx 'color.set'
@@ -469,10 +469,10 @@ declare -fx 'msg.color.set'
 declare -ix _ent_TABWIDTH=4
 msg.tab.width() {
 	if (( $# )); then
-		_ent_TABWIDTH=$(( ${1} ))
-		((_ent_COLOR)) && tabs "$_ent_TABWIDTH"
+		_ent_TABWIDTH=$(( $1 ))
+		((_ent_COLOR)) && tabs $_ent_TABWIDTH
 	else
-		echo -n "${_ent_TABWIDTH}"
+		echo -n $_ent_TABWIDTH
 	fi
 	return 0
 }
@@ -482,22 +482,22 @@ declare -fx 'msg.tab.width'
 declare -ix _ent_TABSET=0
 msg.tab.set() {
 	if (( $# )); then
-		case "${1}" in
-			'0'|reset)		_ent_TABSET=0;;
-			'++'|forward)	_ent_TABSET=$((_ent_TABSET+1))			;;
-			'--'|back)		_ent_TABSET=$((_ent_TABSET-1))			;;
-			 *)						if [[ "${1:0:1}" == '+' ]]; then
-											_ent_TABSET=$(( _ent_TABSET + ${1:1} ))
-										elif [[ "${1:0:1}" == '-' ]]; then
-											_ent_TABSET=$(( _ent_TABSET - ${1:1} ))
-										else
-											_ent_TABSET=$(( ${1} ))						
-										fi
-									;;
+		case "$1" in
+			0|reset)	_ent_TABSET=0;;
+			++)				_ent_TABSET=$((_ent_TABSET+1))			;;
+			--)				_ent_TABSET=$((_ent_TABSET-1))			;;
+			 *)				if [[ "${1:0:1}" == '+' ]]; then
+									_ent_TABSET=$(( _ent_TABSET + ${1:1} ))
+								elif [[ "${1:0:1}" == '-' ]]; then
+									_ent_TABSET=$(( _ent_TABSET - ${1:1} ))
+								else
+									_ent_TABSET=$(( $1 ))						
+								fi
+								;;
 		esac
 		(( _ent_TABSET < 0 )) &&	_ent_TABSET=0 # please, curb your enthusiasm.
 	else
-		echo -n "${_ent_TABSET}"
+		echo -n $_ent_TABSET
 	fi
 	return 0
 }
@@ -644,10 +644,10 @@ msg.yn() {
 	fi
 	local question="${1:-}" yn=''
 	# shellcheck disable=SC2086
-	question=$(msgx $stdio --notag "${question} (y/n)" 2>&1 )
+	question=$(msgx $stdio --notag "$question (y/n)" 2>&1 )
 	question="${question//$'\n'/ }"
 	while true; do
-		read -e -r -p "${question}" yn
+		read -e -r -p "$question" yn
 		case "${yn,,}" in
 			[y]* ) return 0;;
 			[n]* ) return 1;;
@@ -670,7 +670,7 @@ version() { echo -n "$_ent_SCRIPT_VERSION"; return 0; }
 declare -fx 'version'
 version.set() {
 	if (( ${#@} )); then _ent_SCRIPT_VERSION="$1"
-								else echo -n "${_ent_SCRIPT_VERSION}"
+								else echo -n "$_ent_SCRIPT_VERSION"
 	fi
 	return 0
 }
@@ -690,11 +690,11 @@ declare -fx 'is.dryrun'
 
 dryrun.set() {
 	if (( $# )); then 
-		_ent_DRYRUN=$(onoff "${1}" "${_ent_DRYRUN}")
+		_ent_DRYRUN=$(onoff "$1" "$_ent_DRYRUN")
 	else 
 		#	-- SC2086: Double quote to prevent globbing and word splitting.
 		# shellcheck disable=SC2086
-		echo -n ${_ent_DRYRUN}
+		echo -n $_ent_DRYRUN
 	fi
 	return 0
 }
@@ -720,8 +720,8 @@ declare -fx 'is.debug'
 	debug() { is.debug "$@"; }; declare -fx 'debug'
 	
 debug.set() {
-	if (( $# )); then _ent_DEBUG=$(onoff "${1}" ${_ent_DEBUG})
-	else							echo "${_ent_DEBUG}"
+	if (( $# )); then _ent_DEBUG=$(onoff "$1" $_ent_DEBUG)
+	else							echo "$_ent_DEBUG"
 	fi
 	return 0
 }
@@ -744,11 +744,11 @@ declare -fx 'is.strict'
 strict.set() {
 	if (( $# )); then
 	 	local opt='+'
-		_ent_STRICT=$(onoff "${1}" ${_ent_STRICT})
+		_ent_STRICT=$(onoff "$1" $_ent_STRICT)
 		((_ent_STRICT)) && opt='-'
 		set ${opt}o errexit ${opt}o nounset ${opt}o pipefail #${opt}o noclobber
 	else
-		echo -n "${_ent_STRICT}"
+		echo -n "$_ent_STRICT"
 	fi
 	return 0
 }
@@ -790,7 +790,7 @@ check.dependencies() {
 		local -i _ent_VERBOSE=0 
 		shift
 	fi
-	for needed_dep in "${@}"; do
+	for needed_dep in "$@"; do
 		if [[ ! -x "$needed_dep" ]]; then
 			if [[ ! -x $(which "$needed_dep") ]]; then
 				if ! declare -Fp "$needed_dep" >/dev/null 2>&1; then
@@ -836,7 +836,7 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 		for _e in "${ENTITIES:-/lib/include/entities}"/entities.d/**/*.bash; do
 			if [[ -r "$_e" ]]; then
 				if [[ ! -L "$_e" ]] ; then
-					_userbash+=( "${_e}" )
+					_userbash+=( "$_e" )
 				else
 					source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
 				fi

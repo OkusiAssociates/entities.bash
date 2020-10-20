@@ -9,7 +9,7 @@
 source entities || exit 2
 	# shellcheck disable=2154
 	version.set "$_ent_VERSION"
-	verbose.set on
+	msg.verbose.set on
 	trap.set on
 	strict.set on
 	msg.prefix.set "$PRG"

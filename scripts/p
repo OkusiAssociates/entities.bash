@@ -2,11 +2,11 @@
 #	shellcheck source=../entities.bash.min disable=1091
 source entities || { echo >&2 "$(basename "$0"): Could not open entities.bash!"; exit 2; }
 	strict.set off
-	msg.verbose.set on
-	msg.color.set on
 	trap.set on
 	# shellcheck disable=SC2154
 	version.set "$_ent_VERSION"
+	msg.verbose.set on
+	msg.color.set on
 	msg.prefix.set "$PRG"
 
 	# global vars	
@@ -158,7 +158,7 @@ main() {
 		if ((syntaxerr)); then
 			if msg.yn "Re-edit $File [$line]?"; then
 				# shellcheck disable=SC2046
-				"$PRGDIR/$PRG" "$File" --line "$line" $( ((execute)) && echo '-x' )
+				exec "$PRGDIR/$PRG" "$File" --line "$line" $( ((execute)) && echo '-x' )
 				exit
 			fi
 		fi
@@ -168,6 +168,7 @@ main() {
 	if ((shellcheck)) && [[ $ftype == 'sh' || $ftype == 'bash'  ]] ; then
 		if [[ -f "$File" ]]; then
 			local -- scdisable
+			# look for #! shellcheck flag for global disables
 			scdisable="$( grep -m 1 '^#\![[:blank:]]*shellcheck[[:blank:]]*disable=' "$File" 2>/dev/null )"
 			if [[ -n $scdisable ]]; then
 				scdisable=${scdisable#*=}
@@ -175,10 +176,10 @@ main() {
 				scdisable="--exclude ${scdisable// /,}"
 			fi
 			# shellcheck disable=SC2086
-			if ! $(which shellcheck) --shell=bash ${scdisable} -x "$File"; then
+			if ! $(command -v shellcheck) --shell=bash ${scdisable} -x "$File"; then
 				if msg.yn "Re-edit [$File]?"; then
 					# shellcheck disable=SC2046
-					"$PRGDIR/$PRG" "$File" --line "${line:-1}" -s $( ((execute)) && echo '-x' )
+					exec "$PRGDIR/$PRG" "$File" --line "${line:-1}" -s $( ((execute)) && echo '-x' )
 					exit
 				fi
 			fi
