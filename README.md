@@ -1,4 +1,4 @@
-##### Version [0.98.420.487.2]
+##### Version [0.98.420.487.3]
 ###### Version [0.97.420.462.10]
 # `entities.bash` Environment/Function Library
 
@@ -49,10 +49,10 @@ Scripting templates are an important part of a programmer's armory.  `entitities
 #X Examples: 
 #X See Also:
 X() {
-	
-	
-	
-	return 0	
+  
+  
+  
+  return 0	
 }
 #fin
 ````
@@ -62,64 +62,64 @@ X() {
 #!/bin/bash
 # #! shellcheck disable=SC
 source entities || exit 2
-	trap.set on
-	strict.set on
-	version.set '0.1'
-	msg.prefix.set "$PRG"
-	
-	# global vars
-	
-	
+  trap.set on
+  strict.set on
+  version.set '0.1'
+  msg.prefix.set "$PRG"
+  
+  # global vars
+  
+  
 # main
 main() {
-	local -a args=()
-	while (( $# )); do
-		case "$1" in
-			#-|--);;
-			-v|--verbose)		msg.verbose.set on;;
-			-q|--quiet)			msg.verbose.set off;;
-			-V|--version)		version.set; return 0;;
-			-h|--help)			usage; return 0;;
-			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
-			*)							args+=( "$1" );;
-											#msg.err "Invalid argument [$1]"; return 22;;
-		esac
-		shift
-	done
+  local -a args=()
+  while (( $# )); do
+  	case "$1" in
+  		#-|--);;
+  		-v|--verbose)		msg.verbose.set on;;
+  		-q|--quiet)			msg.verbose.set off;;
+  		-V|--version)		version.set; return 0;;
+  		-h|--help)			usage; return 0;;
+  		-?|--*)					msg.err "Invalid option [$1]"; return 22;;
+  		*)							args+=( "$1" );;
+  										#msg.err "Invalid argument [$1]"; return 22;;
+  	esac
+  	shift
+  done
 
-	# code
-	msg "${args[@]:-}"
-	
-	
-	
+  # code
+  msg "${args[@]:-}"
+  
+  
+  
 }
 
 # exit trap set to cleanup
 # shellcheck disable=SC2086
 cleanup() {
-	local -i err=$?
-	[[ -z ${1:-} ]] && err=$1
-	#...
-	((err > 1)) && errno $err
-	exit $err
+  local -i err=$?
+  [[ -z ${1:-} ]] && err=$1
+  #...
+  ((err > 1)) && errno $err
+  exit $err
 }
 
 usage() {
 # 0#######:#|##|############|#################################################78
-	cat <<-etx
-	Script  : 
-	Desc    : 
-	Synopsis: $PRG    [-v][-q] [-V] [-h]
-	        :  -|--           
-	        :  -|--           
-	        :  -v|--verbose   Turn on msg verbose. (default)
-	        :  -q|--quiet     Turn off msg verbose.
-	        :  -V|--version   Print version.
-	        :  -h|--help      This help.
-	Example : 
-	etx
+  cat <<-etx
+  Script  : 
+  Desc    : 
+  Synopsis: $PRG    [-v][-q] [-V] [-h]
+          :  -|--           
+          :  -|--           
+          :  -v|--verbose   Turn on msg verbose. (default)
+          :  -q|--quiet     Turn off msg verbose.
+          :  -V|--version   Print version.
+          :  -h|--help      This help.
+  Example : 
+  etx
 # 0#######:#|##|############|#################################################78
-	return 0
+  return 0
 }
 
 main "$@"
@@ -132,7 +132,7 @@ main "$@"
 #! shellcheck disable=SC2034
 # entities 'primitives' for stand-alone scripts
 declare -- _ent_0 PRG PRGDIR; PRG=$(basename "${_ent_0}"); PRGDIR=$(dirname "${_ent_0}")
-VERSION='0.1';	version.set() { (($#)) && VERSION="$*" || echo "$VERSION"; }
+VERSION='0.1';  version.set() { (($#)) && VERSION="$*" || echo "$VERSION"; }
 VERBOSE=1;  msg.verbose.set() { (($#)) && VERBOSE=$(onoff "$*") || echo "$VERBOSE"; }
 trap '{ cleanup $?; }' EXIT; trap.set() { :; }
 _ent_STRICT=0; strict.set() { (($#)) || { echo -n "${_ent_STRICT}"; return 0; }; local opt='+'; _ent_STRICT=$(onoff "${1}" ${_ent_STRICT}); ((_ent_STRICT)) && opt='-'; set ${opt}o errexit ${opt}o nounset ${opt}o pipefail; return 0; }
@@ -144,67 +144,67 @@ msg.err() { while read -r l; do echo >&2 "$PREFIX: *** " "$l"; done <<<"$@"; }
 msg.sys() { systemd-cat -t "$PREFIX" -p err  echo "$@"; echo "$@"; }
 msg.die() { msg.sys "$@"; exit 1; }
 exit_if_already_running() { for p_ in $(pidof -x "$PREFIX"); do [ "${p_}" -ne "$$" ] && msg.die "$0 is currently running."; done; }
-onoff() {	local o="${1:-0}"; case "${o,,}" in 	on|1) o=1;; off|0) o=0;;	*) o=0; (( $# > 1 )) && o=$(( ${2} ));; esac;	echo -n $((o)); }
+onoff() {  local o="${1:-0}"; case "${o,,}" in 	on|1) o=1;; off|0) o=0;;	*) o=0; (( $# > 1 )) && o=$(( ${2} ));; esac;	echo -n $((o)); }
 trim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";v="${v%"${v##*[![:space:]]}"}";echo -n "$v"; }
 # end entities 'primitives'
 
-	trap.set on
-	strict.set off
-	version.set '0.1'
-	msg.prefix.set "$PRG"
-	
-	# global vars
-	
+  trap.set on
+  strict.set off
+  version.set '0.1'
+  msg.prefix.set "$PRG"
+  
+  # global vars
+  
 # main
 main() {
-	local -a args=()
-	while (( $# )); do
-		case "$1" in
-			#-|--);;
-			-v|--verbose)		msg.verbose.set on;;
-			-q|--quiet)			msg.verbose.set off;;
-			-V|--version)		version.set; return 0;;
-			-h|--help)			usage; return 0;;
-			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
-			*)							args+=( "$1" );;
-											#msg.err "Invalid argument [$1]"; return 22;;
-		esac
-		shift
-	done
+  local -a args=()
+  while (( $# )); do
+  	case "$1" in
+  		#-|--);;
+  		-v|--verbose)		msg.verbose.set on;;
+  		-q|--quiet)			msg.verbose.set off;;
+  		-V|--version)		version.set; return 0;;
+  		-h|--help)			usage; return 0;;
+  		-?|--*)					msg.err "Invalid option [$1]"; return 22;;
+  		*)							args+=( "$1" );;
+  										#msg.err "Invalid argument [$1]"; return 22;;
+  	esac
+  	shift
+  done
 
-	# code
-	msg "${args[@]:-}"
-	
-	
-	
+  # code
+  msg "${args[@]:-}"
+  
+  
+  
 }
 
 # exit trap set to cleanup
 # shellcheck disable=SC2086
 cleanup() {
-	local -i err=$?
-	[[ -z ${1:-} ]] && err=$1
-	#...
-	((err > 1)) && errno $err
-	exit $err
+  local -i err=$?
+  [[ -z ${1:-} ]] && err=$1
+  #...
+  ((err > 1)) && errno $err
+  exit $err
 }
 
 usage() {
 # 0#######:#|##|############|#################################################78
-	cat <<-etx
-	Script:Function: 
-	Desc    : 
-	Synopsis: $PRG    [-v][-q] [-V] [-h]
-	        :  -|--)      
-	        :  -|--)      
-	        :  -v|--verbose   turn on  msg verbose. (default)
-	        :  -q|--quiet     turn off msg verbose.
-	        :  -V|--version   print version.
-	        :  -h|--help      this help.
-	Example : 
-	etx
+  cat <<-etx
+  Script:Function: 
+  Desc    : 
+  Synopsis: $PRG    [-v][-q] [-V] [-h]
+          :  -|--)      
+          :  -|--)      
+          :  -v|--verbose   turn on  msg verbose. (default)
+          :  -q|--quiet     turn off msg verbose.
+          :  -V|--version   print version.
+          :  -h|--help      this help.
+  Example : 
+  etx
 # 0#######:#|##|############|#################################################78
-	return 0
+  return 0
 }
 
 main "$@"
@@ -218,7 +218,7 @@ main "$@"
 source entities 2>/dev/null || {
 # entities 'primitives' for stand-alone scripts
 declare -- _ent_0 PRG PRGDIR; PRG=$(basename "${_ent_0}"); PRGDIR=$(dirname "${_ent_0}")
-VERSION='0.1';	version.set() { (($#)) && VERSION="$*" || echo "$VERSION"; }
+VERSION='0.1';  version.set() { (($#)) && VERSION="$*" || echo "$VERSION"; }
 VERBOSE=1;  msg.verbose.set() { (($#)) && VERBOSE=$(onoff "$*") || echo "$VERBOSE"; }
 trap '{ cleanup $?; }' EXIT; trap.set() { :; }
 _ent_STRICT=0; strict.set() { (($#)) || { echo -n "${_ent_STRICT}"; return 0; }; local opt='+'; _ent_STRICT=$(onoff "${1}" ${_ent_STRICT}); ((_ent_STRICT)) && opt='-'; set ${opt}o errexit ${opt}o nounset ${opt}o pipefail; return 0; }
@@ -230,68 +230,68 @@ msg.err() { while read -r l; do echo >&2 "$PREFIX: *** " "$l"; done <<<"$@"; }
 msg.sys() { systemd-cat -t "$PREFIX" -p err  echo "$@"; echo "$@"; }
 msg.die() { msg.sys "$@"; exit 1; }
 exit_if_already_running() { for p_ in $(pidof -x "$PREFIX"); do [ "${p_}" -ne "$$" ] && msg.die "$0 is currently running."; done; }
-onoff() {	local o="${1:-0}"; case "${o,,}" in 	on|1) o=1;; off|0) o=0;;	*) o=0; (( $# > 1 )) && o=$(( ${2} ));; esac;	echo -n $((o)); }
+onoff() {  local o="${1:-0}"; case "${o,,}" in 	on|1) o=1;; off|0) o=0;;	*) o=0; (( $# > 1 )) && o=$(( ${2} ));; esac;	echo -n $((o)); }
 trim() { local v="$*";v="${v#"${v%%[![:space:]]*}"}";v="${v%"${v##*[![:space:]]}"}";echo -n "$v"; }
 # end entities 'primitives'
 }
-	trap.set on
-	strict.set off
-	version.set '0.1'
-	msg.prefix.set "$PRG"
-	
-	# global vars
-	
-	
+  trap.set on
+  strict.set off
+  version.set '0.1'
+  msg.prefix.set "$PRG"
+  
+  # global vars
+  
+  
 # main
 main() {
-	local -a args=()
-	while (( $# )); do
-		case "$1" in
-			#-|--);;
-			-v|--verbose)		msg.verbose.set on;;
-			-q|--quiet)			msg.verbose.set off;;
-			-V|--version)		version.set; return 0;;
-			-h|--help)			usage; return 0;;
-			-?|--*)					msg.err "Invalid option [$1]"; return 22;;
-			*)							args+=( "$1" );;
-											#msg.err "Invalid argument [$1]"; return 22;;
-		esac
-		shift
-	done
+  local -a args=()
+  while (( $# )); do
+  	case "$1" in
+  		#-|--);;
+  		-v|--verbose)		msg.verbose.set on;;
+  		-q|--quiet)			msg.verbose.set off;;
+  		-V|--version)		version.set; return 0;;
+  		-h|--help)			usage; return 0;;
+  		-?|--*)					msg.err "Invalid option [$1]"; return 22;;
+  		*)							args+=( "$1" );;
+  										#msg.err "Invalid argument [$1]"; return 22;;
+  	esac
+  	shift
+  done
 
-	# code
-	msg "${args[@]:-}"
-	
-	
-	
+  # code
+  msg "${args[@]:-}"
+  
+  
+  
 }
 
 # exit trap set to cleanup
 # shellcheck disable=SC2086
 cleanup() {
-	local -i err=$?
-	[[ -z ${1:-} ]] && err=$1
-	#...
-	((err > 1)) && errno $err
-	exit $err
+  local -i err=$?
+  [[ -z ${1:-} ]] && err=$1
+  #...
+  ((err > 1)) && errno $err
+  exit $err
 }
 
 usage() {
 # 0#######:#|##|############|#################################################78
-	cat <<-etx
-	Script:Function: 
-	Desc    : 
-	Synopsis: $PRG    [-v][-q] [-V] [-h]
-	        :  -|--)      
-	        :  -|--)      
-	        :  -v|--verbose   turn on  msg verbose. (default)
-	        :  -q|--quiet     turn off msg verbose.
-	        :  -V|--version   print version.
-	        :  -h|--help      this help.
-	Example : 
-	etx
+  cat <<-etx
+  Script:Function: 
+  Desc    : 
+  Synopsis: $PRG    [-v][-q] [-V] [-h]
+          :  -|--)      
+          :  -|--)      
+          :  -v|--verbose   turn on  msg verbose. (default)
+          :  -q|--quiet     turn off msg verbose.
+          :  -V|--version   print version.
+          :  -h|--help      this help.
+  Example : 
+  etx
 # 0#######:#|##|############|#################################################78
-	return 0
+  return 0
 }
 
 main "$@"
@@ -386,24 +386,6 @@ Examples: # 0. go direct to database selection menu.
         :
         : # 3. open mysql with profile, open Essays:essays 
         : dbh -p /root/my3.cnf Essays essays
-````
-
-#### `entities.scripts.create-help`
-````
-Script  : entities.scripts.create-help
-Version : entities 0.98.420.487.1
-Desc    : For developers of entities.bash functions and scripts.
-        : Assists the entities help system gather documentation.
-        : All scripts in the entities/scripts directory must be 
-        : mode executable, with no .bash extension,
-        : Scripts must respond to a -h|--help option, output help
-        : in entities.bash standard format.
-Synopsis: entities.scripts.create-help [-y] [-o [output]] [-V] [-h]
-        :   -y|--no-prompt      Do not prompt to ask before execution.
-        :   -o|--output output  Change default output. 
-        :                       Default is 'scripts.help.bash'
-        :   -V|--version        Print version.
-        :   -h|--help           This help.
 ````
 
 #### `findrecent`
