@@ -1,12 +1,12 @@
-##### Version [0.98.420.487.7]
-###### Version [0.97.420.462.10]
-# `entities.bash` Environment/Function Library
+##### Version [0.98.420.487.8]
+# Entities.bash Environment/Function Library
+###### Version [$_ent_VERSION]
 
-`entities.bash` is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 18.04` or higher.
+Entities.bash is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 18.04` or higher.
 
 The philosophy is to be simple, unobtrusive, flexible, with minimal dependencies, while providing a standard functionality across an entire network environment.
 
-### `entities.bash` requires:
+### Entities.bash requires:
 
 * Ubuntu 18.04, or higher
 * Bash 4.4, or higher
@@ -20,27 +20,27 @@ Use on non-Ubuntu systems should be possible with minimal changes.
 ### Invocation
 
 To invoke `entities`, just enter `source entitites` at the top of your script, or invoke it at the command line.
-    
+````
     source entities new
     msg "Hello World"
     entities help
-
+````
 Once loaded into the environment `entities` can be invoked without reloading the entire library.
 
 If `entities` is already loaded at the time a script is run, it is not loaded again, greatly speeding up load and execution time for downstream scripts that also use `entities` library functions.
-
 
 ### Functions
 
 Current functions:
 
-`addslashes  ` `breakp  ` `calcfp  ` `check.dependencies  ` `chgConfigVar  ` `cleanup  ` `color  ` `color.set  ` `convertCfg2php  ` `debug  ` `debug.set  ` `dqslash  ` `dryrun  ` `dryrun.set  ` `editorsyntaxstring  ` `elipstr  ` `entities.help  ` `entities.location  ` `etx` `exit_if_already_running  ` `exit_if_not_root  ` `explode  ` `hr2int  ` `implode  ` `in_array  ` `int2hr  ` `is.color  ` `is.debug  ` `is.dryrun  ` `is.int  ` `is_interactive  ` `is.interactive  ` `is.number  ` `is.root  ` `is.strict  ` `is_tty  ` `is.tty  ` `is.verbose  ` `ltrim  ` `mktempfile  ` `msg  ` `msg.alert  ` `msg.color  ` `msg.color.set  ` `msg.crit  ` `msg.debug  ` `msg.die  ` `msg.emerg  ` `msg.err  ` `msg.info  ` `msg.line  ` `msgline  ` `msg.notice  ` `msg.prefix.separator.set  ` `msg.prefix.set  ` `msg.sys  ` `msg.tab.set  ` `msg.tab.width  ` `msg.usetag.set  ` `msg.verbose  ` `msg.verbose.set  ` `msg.warn  ` `msg.warning  ` `msgx  ` `msg.yn  ` `onoff  ` `pause  ` `payload_decode  ` `payload_encode  ` `perrno  ` `phpini_short_tags  ` `post_slug  ` `remove_accents  ` `remsp2  ` `rmslash2  ` `rtfm  ` `rtrim  ` `s  ` `sqslash  ` `strict.set  ` `str_str  ` `tab.set  ` `tab.width  ` `textfiletype  ` `titlecase  ` `tmpdir.set  ` `trap.breakp  ` `trap.function  ` `trap.set  ` `trim  ` `urldecode  ` `urlencode  ` `urlpayload_encode  ` `verbose.set  ` `version  ` `version.set  ` `website_online  ` ### Templates
+`addslashes  ` `breakp  ` `calcfp  ` `check.dependencies  ` `chgConfigVar  ` `cleanup  ` `color  ` `color.set  ` `convertCfg2php  ` `debug  ` `debug.set  ` `dqslash  ` `dryrun  ` `dryrun.set  ` `editorsyntaxstring  ` `elipstr  ` `entities.help  ` `entities.location  ` `etx` `exit_if_already_running  ` `exit_if_not_root  ` `explode  ` `hr2int  ` `implode  ` `in_array  ` `int2hr  ` `is.color  ` `is.debug  ` `is.dryrun  ` `is.int  ` `is_interactive  ` `is.interactive  ` `is.number  ` `is.root  ` `is.strict  ` `is_tty  ` `is.tty  ` `is.verbose  ` `ltrim  ` `mktempfile  ` `msg  ` `msg.alert  ` `msg.color  ` `msg.color.set  ` `msg.crit  ` `msg.debug  ` `msg.die  ` `msg.emerg  ` `msg.err  ` `msg.info  ` `msg.line  ` `msgline  ` `msg.notice  ` `msg.prefix.separator.set  ` `msg.prefix.set  ` `msg.sys  ` `msg.tab.set  ` `msg.tab.width  ` `msg.usetag.set  ` `msg.verbose  ` `msg.verbose.set  ` `msg.warn  ` `msg.warning  ` `msgx  ` `msg.yn  ` `onoff  ` `pause  ` `payload_decode  ` `payload_encode  ` `perrno  ` `phpini_short_tags  ` `post_slug  ` `remove_accents  ` `remsp2  ` `rmslash2  ` `rtfm  ` `rtrim  ` `s  ` `sqslash  ` `strict.set  ` `str_str  ` `tab.set  ` `tab.width  ` `textfiletype  ` `titlecase  ` `tmpdir.set  ` `trap.breakp  ` `trap.function  ` `trap.set  ` `trim  ` `urldecode  ` `urlencode  ` `urlpayload_encode  ` `verbose.set  ` `version  ` `version.set  ` `website_online  ` 
+### Templates
 
 Scripting templates are an important part of a programmer's armory.  `entitities.bash` comes with several simple but powerful templates for new scripts, or functions.  See `entities/docs/templates`.
 
 #### Bash Script/Function Templates
 
-#### `new.function.template.bash`
+#### Template `new.function.template.bash`
 ````
 #!/bin/bash
 #X Script:Function:GlobalX:Global:Local: 
@@ -57,7 +57,7 @@ X() {
 #fin
 ````
 
-#### `new.script.template.bash`
+#### Template `new.script.template.bash`
 ````
 #!/bin/bash
 # #! shellcheck disable=SC
@@ -126,9 +126,10 @@ main "$@"
 #fin
 ````
 
+
 ### Scripts
 
-#### `archivedir`
+#### Script `archivedir`
 ````
 Script  : archivedir 
 Desc    : Create zip archive of a directory, and store in directory 
@@ -158,10 +159,10 @@ Examples:
         : archivedir myscripts
 ````
 
-#### `cln`
+#### Script `cln`
 ````
 Script  : cln
-Version : entities 0.98.420.487.1
+Version : entities 0.98.420.487.7
 Desc    : Search for and delete defined junk/trash/rubbish files.
 Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
         :   dirspec           Path to clean. Default '.'
@@ -182,10 +183,10 @@ Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
         :   ( *~ ~* .~* .*~ DEADJOE dead.letter wget-log* )
 ````
 
-#### `dbh`
+#### Script `dbh`
 ````
 Script  : dbh
-Version : entities.bash 0.98.420.487.1
+Version : entities.bash 0.98.420.487.7
 Desc    : MySQL helper script to quickly view data/structure/info.
         : Fast in, fast out.
 Synopsis: dbh [database [table [command]]] [-p profile] [-V] [-h]
@@ -216,7 +217,52 @@ Examples: # 0. go direct to database selection menu.
         : dbh -p /root/my3.cnf Essays essays
 ````
 
-#### `findrecent`
+#### Script `test-script`
+````
+/usr/share/okusi/entities/scripts/dev/test-script: line 2: entities.bash: No such file or directory
+/usr/share/okusi/entities/scripts/dev/test-script: line 6: PRGDIR: unbound variable
+````
+
+#### Script `launch`
+````
+/usr/share/okusi/entities/scripts/dev/tsr/launch: line 11: tabset: command not found
+````
+
+#### Script `shell1`
+````
+source: source filename [arguments]
+    Execute commands from a file in the current shell.
+    
+    Read and execute commands from FILENAME in the current shell.  The
+    entries in $PATH are used to find the directory containing FILENAME.
+    If any ARGUMENTS are supplied, they become the positional parameters
+    when FILENAME is executed.
+    
+    Exit Status:
+    Returns the status of the last command executed in FILENAME; fails if
+    FILENAME cannot be read.
+````
+
+#### Script `shell2`
+````
+source: source filename [arguments]
+    Execute commands from a file in the current shell.
+    
+    Read and execute commands from FILENAME in the current shell.  The
+    entries in $PATH are used to find the directory containing FILENAME.
+    If any ARGUMENTS are supplied, they become the positional parameters
+    when FILENAME is executed.
+    
+    Exit Status:
+    Returns the status of the last command executed in FILENAME; fails if
+    FILENAME cannot be read.
+````
+
+#### Script `shell3`
+````
+[3gH    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H  ````
+
+#### Script `findrecent`
 ````
 Script  : findrecent
 Desc    : Find 'n' most recently updated files in directory.
@@ -237,7 +283,7 @@ Example : findrecent /var/www -n 15
         : findrecent /internet -N -p '*KLIEN'
 ````
 
-#### `hashbang`
+#### Script `hashbang`
 ````
 Script  : hashbang
 Version : 0.97
@@ -278,7 +324,7 @@ Synopsis: hashbang ["dir"] [-s str] [-b php|php] [-X][-Y][-e]
         : hashbang -s 'some_var_name' -p 'p' -x '-s' >editfiles
 ````
 
-#### `lsd`
+#### Script `lsd`
 ````
 Script  : lsd
 Version : 0.97
@@ -297,7 +343,7 @@ Synopsis: lsd [-ls] [-L num] [-n][-C] [pathspec ...] [-- ...]
 Depends : tree
 ````
 
-#### `p`
+#### Script `p`
 ````
 Script  : p
 Desc    : Edit/SyntaxCheck/ShellCheck/Execute for 
@@ -314,6 +360,7 @@ Synopsis: p filename [-l row] [-s] [-x]
 Requires: shellcheck
 ````
 
+
 ### Help
 
 See `entities help` for full documentation.
@@ -324,5 +371,5 @@ Are you a bash programmer? If you would like to assist with this project, go to 
 
     http://github.com/OkusiAssociates/entities.bash
 
-For bugs/features/reports/requests, send to `garydean@linux.id`
+For bugs/features/reports/requests/criticism, send to `garydean@linux.id`
 
