@@ -1,5 +1,5 @@
 # Entities.bash Environment/Function Library
-###### Version [$_ent_VERSION]
+###### Version [0.98.420.487.13]
 
 Entities.bash is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 18.04` or higher.
 
@@ -32,7 +32,16 @@ If `entities` is already loaded at the time a script is run, it is not loaded ag
 
 Current functions:
 
-`addslashes  ` `breakp  ` `calcfp  ` `check.dependencies  ` `chgConfigVar  ` `cleanup  ` `color  ` `color.set  ` `convertCfg2php  ` `debug  ` `debug.set  ` `dqslash  ` `dryrun  ` `dryrun.set  ` `editorsyntaxstring  ` `elipstr  ` `entities.help  ` `entities.location  ` `etx` `exit_if_already_running  ` `exit_if_not_root  ` `explode  ` `hr2int  ` `implode  ` `in_array  ` `int2hr  ` `is.color  ` `is.debug  ` `is.dryrun  ` `is.int  ` `is_interactive  ` `is.interactive  ` `is.number  ` `is.root  ` `is.strict  ` `is_tty  ` `is.tty  ` `is.verbose  ` `ltrim  ` `mktempfile  ` `msg  ` `msg.alert  ` `msg.color  ` `msg.color.set  ` `msg.crit  ` `msg.debug  ` `msg.die  ` `msg.emerg  ` `msg.err  ` `msg.info  ` `msg.line  ` `msgline  ` `msg.notice  ` `msg.prefix.separator.set  ` `msg.prefix.set  ` `msg.sys  ` `msg.tab.set  ` `msg.tab.width  ` `msg.usetag.set  ` `msg.verbose  ` `msg.verbose.set  ` `msg.warn  ` `msg.warning  ` `msgx  ` `msg.yn  ` `onoff  ` `pause  ` `payload_decode  ` `payload_encode  ` `perrno  ` `phpini_short_tags  ` `post_slug  ` `remove_accents  ` `remsp2  ` `rmslash2  ` `rtfm  ` `rtrim  ` `s  ` `sqslash  ` `strict.set  ` `str_str  ` `tab.set  ` `tab.width  ` `textfiletype  ` `titlecase  ` `tmpdir.set  ` `trap.breakp  ` `trap.function  ` `trap.set  ` `trim  ` `urldecode  ` `urlencode  ` `urlpayload_encode  ` `verbose.set  ` `version  ` `version.set  ` `website_online  ` 
+eot
+
+declare -a arr
+mapfile -t arr < <("$ENTITIES"/entities.show -f)
+for f in "${arr[@]}"; do 
+echo -n '`'"$f"'`'' '
+done
+echo
+
+cat <<-'etx'
 ### Script/Function Templates
 
 Scripting templates are an important part of a programmer's armory.  `entitities.bash` comes with several simple but powerful templates for new scripts, or functions.  Here are the ones used most frequently:
@@ -158,7 +167,7 @@ Examples:
 #### Script `cln`
 ````
 Script  : cln
-Version : entities 0.98.420.487.12
+Version : entities 0.98.420.487.13
 Desc    : Search for and delete defined junk/trash/rubbish files.
 Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
         :   dirspec           Path to clean. Default '.'
@@ -182,7 +191,7 @@ Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
 #### Script `dbh`
 ````
 Script  : dbh
-Version : entities.bash 0.98.420.487.12
+Version : entities.bash 0.98.420.487.13
 Desc    : MySQL helper script to quickly view data/structure/info.
         : Fast in, fast out.
 Synopsis: dbh [database [table [command]]] [-p profile] [-V] [-h]

@@ -6,11 +6,13 @@ PRGDIR=$(dirname "$(readlink -f "$0")")
 	ENTITIES="$PRGDIR"
 
 	source "$ENTITIES/entities.bash.min" new || exit 2
-
-	cat <<-'eot'
+	# shellcheck disable=SC2154
+	cat <<-etx
 	# Entities.bash Environment/Function Library
 	###### Version [$_ent_VERSION]
-	
+
+	etx
+	cat <<-'etx'
 	Entities.bash is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 18.04` or higher.
 	
 	The philosophy is to be simple, unobtrusive, flexible, with minimal dependencies, while providing a standard functionality across an entire network environment.
