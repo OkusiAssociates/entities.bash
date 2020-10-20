@@ -2,9 +2,9 @@
 #! shellcheck disable=SC2154
 source entities || exit 2
 	version.set '0.1'
-	msg.verbose.set on
 	trap.set on
 	strict.set off
+	msg.verbose.set on
 	msg.prefix.set "$PRG"
 	
 main() {
@@ -25,27 +25,25 @@ main() {
 	msg.warn "Changing entities.bash global variable prefix"
 	msg.warn "in *all* files in directory $ENTITIES"
 	msg.warn "from [$OLDPREFIX] to [$NEWPREFIX]"
-	msg.yn   "Are you really sure about this?" || { echo; exit; }
-	msg.info "Changing variable prefic [$OLDPREFIX] to [$NEWPREFIX] in [$ENTITIES]"
+	msg.yn   "Do you wish to proceed?" || { echo; exit; }
+	msg.info "Changing variable prefix [$OLDPREFIX] to [$NEWPREFIX] in [$ENTITIES]"
 
-	shopt -s globstar
 	cd "$ENTITIES" || exit
+	shopt -s globstar
 	for file in **; do 
-		if grep -rs -m1 _ent_ "$file"; then
+		if grep -rs -m1 "$OLDPREFIX" "$file"; then
 			msg.info "Changing [$file]"
 			sed -i "s/$OLDPREFIX/$NEWPREFIX/" "$file"
 		fi
 	done
 
-	msg.info "Done."
+	msg.info 'Done.'
 }
 
-# shellcheck disable=SC2086
 cleanup() {
 	local -i err=$?
-	[[ -z ${1:-} ]] && err=$1
-	((err > 1)) && errno $err
-	exit $err
+	[[ -z ${1:-} ]] && err="$1"
+	exit "$err"
 }
 
 usage() {
@@ -56,10 +54,12 @@ usage() {
 	        : from [oldprefix] to [newprefix].
 	        : Default entities.bash prefix is '_ent_'
 	        : You will be asked before proceeding.
+	        :
 	Synopsis: $PRG oldprefix newprefix [-V] [-h]
 	        : Note: Make sure both oldprefix and newprefix are sufficiently
 	        : unique, in case you wish to change it again.
-	        : Use with caution.
+	        : Use with caution; make backups (see [archivedir]).
+	Example : $PRG "_ent_" "_e_"
 	usage
 	return 0
 }

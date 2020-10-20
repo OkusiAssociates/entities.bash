@@ -44,7 +44,7 @@ PRGDIR=$(dirname "$(readlink -f "$0")")
 	
 	Current functions:
 	
-	eot
+	etx
 
 	declare -a arr
 	mapfile -t arr < <("$ENTITIES"/entities.show -f)

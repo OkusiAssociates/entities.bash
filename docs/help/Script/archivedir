@@ -4,7 +4,7 @@
           :  called [.]{DirNameBase}.old.  Multiple snap-shots of directores
           :  can be maintained, with option to prune oldest files.
           :  The zip archive name uses the format {archiveName}.{time}.old
-  Synopsis: archivedir "dirname" [-H] [-l] [-P [limit]]  [-v][-q] [-V] [-h]
+  Synopsis: archivedir "dirname" [-H] [-l] [-P limit]  [-v][-q] [-V] [-h]
           :   -H|--hidden   Create archive directory as hidden (prefix '.')
           :                 Once created as hidden, -H must always be used to
           :                 add new archives.
@@ -16,9 +16,8 @@
           :   -q|--quiet    Turn off msg verbose.
           :   -V|--version  Print version.
           :   -h|--help     This help.
-          :  # 0. creates dir /usr/share/usr/.myscripts.old (if it doesn't exist)
-          :  #    then makes a zip archive called myscripts.1561065600.zip.
-          :  #    -H creates the .old directory as 'hidden', with a leading dot.
+          :  # 0. Creates hidden dir /usr/share/usr/.myscripts.old (if it doesn't already
+          :  #    exist) then makes zip archive called myscripts.zip.
           :  archivedir /usr/share/myscripts -H -l 15
           :  # 1. just make an archive of a directory
           :  #    Zip file would be located in directory myscripts.old.

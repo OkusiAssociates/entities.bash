@@ -2,7 +2,7 @@
 #! shellcheck disable=SC1072
 
 #X    Script:  entities.scripts.create-help
-#X   Version:  entities 0.98.420.487.12
+#X   Version:  entities 0.98.420.487.14
 #X      Desc:  For developers of entities.bash functions and scripts.
 #X          :  Assists the entities help system gather documentation.
 #X          :  All scripts in the entities/scripts directory must be 
@@ -17,7 +17,7 @@
 #X          :    -h|--help           This help.
 
 #X    Script:  dbh
-#X   Version:  entities.bash 0.98.420.487.12
+#X   Version:  entities.bash 0.98.420.487.14
 #X      Desc:  MySQL helper script to quickly view data/structure/info.
 #X          :  Fast in, fast out.
 #X  Synopsis:  dbh [database [table [command]]] [-p profile] [-V] [-h]
@@ -70,7 +70,7 @@
 #X          :  called [.]{DirNameBase}.old.  Multiple snap-shots of directores
 #X          :  can be maintained, with option to prune oldest files.    
 #X          :  The zip archive name uses the format {archiveName}.{time}.old
-#X  Synopsis:  archivedir "dirname" [-H] [-l] [-P [limit]]  [-v][-q] [-V] [-h]
+#X  Synopsis:  archivedir "dirname" [-H] [-l] [-P limit]  [-v][-q] [-V] [-h]
 #X          :   -H|--hidden   Create archive directory as hidden (prefix '.')
 #X          :                 Once created as hidden, -H must always be used to
 #X          :                 add new archives.
@@ -83,9 +83,8 @@
 #X          :   -V|--version  Print version.
 #X          :   -h|--help     This help.
 #X  Examples: 
-#X          :  # 0. creates dir /usr/share/usr/.myscripts.old (if it doesn't exist)
-#X          :  #    then makes a zip archive called myscripts.1561065600.zip.
-#X          :  #    -H creates the .old directory as 'hidden', with a leading dot.
+#X          :  # 0. Creates hidden dir /usr/share/usr/.myscripts.old (if it doesn't already 
+#X          :  #    exist) then makes zip archive called myscripts.zip.
 #X          :  archivedir /usr/share/myscripts -H -l 15 
 #X          : 
 #X          :  # 1. just make an archive of a directory
@@ -161,7 +160,7 @@
 #X          :  hashbang -s 'some_var_name' -p 'p' -x '-s' >editfiles
 
 #X    Script:  cln
-#X   Version:  entities 0.98.420.487.12
+#X   Version:  entities 0.98.420.487.14
 #X      Desc:  Search for and delete defined junk/trash/rubbish files.
 #X  Synopsis:  cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
 #X          :    dirspec           Path to clean. Default '.'
