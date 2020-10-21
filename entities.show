@@ -30,7 +30,7 @@ main() {
 	((ShowFuncs+ShowVars)) || { usage; return 1; }	
 
 	if ((ShowFuncs)); then
-		cmd='source '"$PRGDIR"'/entities.bash new || exit; set | /bin/grep -v "=" | /bin/grep "^[a-zA-Z][a-zA-Z0-9_.]*[[:blank:]]*\(\)" | /bin/grep -v "^$"'
+		cmd='source '"$PRGDIR"'/entities.bash new || exit; set | /bin/grep "()" |/bin/grep -v "=" | /bin/grep "^[a-zA-Z][a-zA-Z0-9_.]*[[:blank:]]*\(\)" | /bin/grep -v "^$"'
 		funcs=( "$(env -i bash --norc -c "$cmd")" )
 		( for func in "${funcs[@]}"; do
 				func=${func//\(\)/}; func=${func// /};
