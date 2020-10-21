@@ -1,10 +1,13 @@
 #X Function : trap.function
 #X Synopsis : trap.function [{ bash_exit_trap_function } ]
+#X See Also : trap.set
 # shellcheck disable=SC2016
 declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? ${LINENO:-0}; }'
 trap.function() {
-	if (( $# ));	then _ent_EXITTRAPFUNCTION="$1" 
-							else echo -n "$_ent_EXITTRAPFUNCTION"
+	if (($#));	then 
+		_ent_EXITTRAPFUNCTION="$1" 
+	else 
+		echo -n "$_ent_EXITTRAPFUNCTION"
 	fi
 	return 0
 }

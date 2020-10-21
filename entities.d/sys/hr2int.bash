@@ -3,7 +3,9 @@
 #X Desc		 : return integer from human-readable number text
 #X				 : (b)ytes	(k)ilobytes (m)egabytes (g)igabytes (t)erabytes (p)etabytes
 #X				 : Capitalise to use multiples of 1000 (S.I.) instead of 1024.
+#X         :
 #X Synopsis: hr2int integer[bkmgtp] [integer[bkmgtp]]...
+#X         :
 #X Example : hr2int 34M
 #X				 : hr2int 34m
 #X				 : hr2int 34000000
@@ -34,10 +36,12 @@ declare -fx hr2int
 #X Function: int2hr 
 #X Desc    : Convert integer to human-readable string, using SI (base 1000)
 #X         : or IEC (1024) for conversion.
+#X         :
 #X Synopsis: int2hr number [si|iec] [number [si|iec]]...
 #X				 :   number   is any integer.
 #X				 :   si|iec   number format (si: 1k=1000, iec: 1K=1024)
 #X         :            Default format is 'si'.
+#X         :
 #X Example : int2hr 1000 si 1000 iec 1024 si 1024 iec
 #X         : int2hr 10382 iec 872929292929 si
 int2hr() {

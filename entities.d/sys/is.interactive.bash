@@ -50,5 +50,5 @@ is.interactive() {
 	return $(( ! isit ))
 }
 declare -fx 'is.interactive'
-	is_interactive() { 'is.interactive' "$@"; }; declare -fx 'is_interactive'
+	is_interactive() { 'is.interactive' "$@"; }; declare -fx 'is_interactive' #X legacy X#
 #fin

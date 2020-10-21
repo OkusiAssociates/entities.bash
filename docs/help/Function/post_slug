@@ -1,15 +1,19 @@
 #-Function--post_slug
   Function: post_slug
-      Desc: produce a url-friendly slug string
-          : string is lowercased, and non-ascii letters replaced with ascii-equivalent
-          : all non-alnum characters are replaced with string {replstr} (default '-')
-          : multiple occurances of {replstr} are reduced to one, and
-          : leading and trailing {replstr} chars removed.
-  Synopsis: myslug=$(post_slug "str" ["replstr"])
-          : replstr is optional, defaults to '-'
+      Desc: Produce a URL-friendly slug string.
+          : String is lowercased, and non-ASCII chars replaced with
+          : ASCII-equivalent.
+          : All non-alnum chars are replaced with {replacestr} (default '-')
+          : Multiple occurances of {replacestr} are reduced to one, and
+          : leading and trailing {replacestr} chars removed.
+          : #X         :
+  Synopsis: myslug=$(post_slug "str" ["replacestr"])
+          :   replstr   is optional, defaults to '-'
+          : #X         :
+   Depends: iconv
    Example: post_slug 'A title, with  Ŝŧřãņġę  cHaracters ()'
-          : returns "a-title-with-strange-characters"
+          : # ^ returns "a-title-with-strange-characters"
           : post_slug ' A title, with  Ŝŧřãņġę  cHaracters ()" '_'
-          : returns: "a_title_with_strange_characters"
+          : # ^ returns: "a_title_with_strange_characters"
     Source: /usr/share/okusi/entities/entities.d/string/post_slug.bash
 #-Function--post_slug---------------------------------------------------------

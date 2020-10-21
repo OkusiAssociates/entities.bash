@@ -511,12 +511,12 @@ declare -gx _ent_EDITOR
 		[[ $EDITOR != *' '* ]] && EDITOR='' 
 		EDITOR="${_ed_} ${EDITOR#* }"
 	fi
-unset _ed_
-export EDITOR _ent_EDITOR
+	unset _ed_
+	export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.488.4'
+_ent_VERSION='0.98.420.488.10'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift
@@ -688,14 +688,21 @@ declare -fx mktempfile
 declare -x TMPDIR="${TMPDIR:-/tmp}"
 tmpdir.set() {
 	if (( $# )); then
-		tmp=$1
-		[[ -d "$tmp" ]] || mkdir -m 777 -p "$tmp"
+		local tmp=$1
+		if [[ ! -d "$tmp" ]]; then
+			mkdir -m 777 -p "$tmp" || { echo ''; return 1; }
+		fi
 		if [[ -w "$tmp" ]]; then
 			TMPDIR="$tmp"
 		elif [[ -n "${2:-}" ]]; then
-			[[ -d "$2" ]] || mkdir -m 777 -p "$2"
+			if [[ -d "$2" ]]; then
+				mkdir -m 777 -p "$2" || { echo ''; return $?; }
+			fi
 			if [[ -w "$2" ]]; then
 				TMPDIR="$2"
+			else
+				echo ''
+				return 1
 			fi
 		fi
 	fi
@@ -726,7 +733,12 @@ elipstr() {
 	echo "${str:0:$sx}${pd}..${str: -$sx}"
 }
 declare -fx elipstr
-explode() {	IFS="$1" a=( "${@:2}" ); echo "${a[@]}"; }
+explode() {	
+	local IFS
+	local -a a
+	IFS="$1" a=( "${@:2}" )
+	echo "${a[@]}"; 
+}
 declare -fx explode
 implode() {
 	local x d=','
@@ -805,7 +817,7 @@ remsp2() {
 	return $?
 }
 declare -fx remsp2
-s() {	(( ${1} == 1 )) || echo -n 's'; }
+s() {	(( ${1:-1} == 1 )) || echo -n 's'; }
 declare -fx s
 str_str() {
 	local str
@@ -847,7 +859,7 @@ cleanup() {
 			msg.info "$(set | grep ^_ent_)"
 			msg.info "$(set | grep ^BASH	| grep -v BASH_VERSINFO)"
 		fi
-		if ((exitcode > 1)); then
+		if ((exitcode > 1)) && ((_ent_DEBUG)); then
 			msg.err "script=[${PRG:-}] 
 							exit=[$exitcode] 
 							line=[${2:-}] 
@@ -941,7 +953,7 @@ is.interactive() {
 	return $(( ! isit ))
 }
 declare -fx 'is.interactive'
-	is_interactive() { 'is.interactive' "$@"; }; declare -fx 'is_interactive'
+	is_interactive() { 'is.interactive' "$@"; }; declare -fx 'is_interactive' #X legacy X#
 is.root() {
 	[[ "$(whoami)" == 'root' || $EUID == 0 ]] && return 0
 	return 1
@@ -954,15 +966,16 @@ is.tty() {
 declare -fx 'is.tty'
 	is_tty() { 'is.tty'; }; declare -fx 'is_tty'
 pause() { 
-	local timeout=86400
+	local -i timeout=86400
 	if [[ "${1:-}" == '-t' ]]; then
 		shift
 		timeout=${1:-0}
 		shift
 	fi
 	echo
-	read -t "$timeout" -n1 -p "${*:- *Pause*} "
+	read -t "$timeout" -n1 -r -p "${*:- *Pause*} " || { echo; return 1; }
 	echo
+	return 0
 }
 declare -fx pause
 declare -x _ent_perrnoListFile="${ENTITIES:-/lib/include/entities}/docs/perrno.list"
@@ -1019,8 +1032,10 @@ rtfm() {
 declare -fx rtfm
 declare -x _ent_EXITTRAPFUNCTION='{ cleanup $? ${LINENO:-0}; }'
 trap.function() {
-	if (( $# ));	then _ent_EXITTRAPFUNCTION="$1" 
-							else echo -n "$_ent_EXITTRAPFUNCTION"
+	if (($#));	then 
+		_ent_EXITTRAPFUNCTION="$1" 
+	else 
+		echo -n "$_ent_EXITTRAPFUNCTION"
 	fi
 	return 0
 }

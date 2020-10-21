@@ -1,16 +1,20 @@
 #!/bin/bash
 #X Function: post_slug
-#X Desc    : produce a url-friendly slug string
-#X         : string is lowercased, and non-ascii letters replaced with ascii-equivalent
-#X         : all non-alnum characters are replaced with string {replstr} (default '-')
-#X				 : multiple occurances of {replstr} are reduced to one, and 
-#X         : leading and trailing {replstr} chars removed.
-#X Synopsis: myslug=$(post_slug "str" ["replstr"])
-#X         : replstr is optional, defaults to '-'
+#X Desc    : Produce a URL-friendly slug string.
+#X         : String is lowercased, and non-ASCII chars replaced with 
+#X         : ASCII-equivalent.
+#X         : All non-alnum chars are replaced with {replacestr} (default '-')
+#X				 : Multiple occurances of {replacestr} are reduced to one, and 
+#X         : leading and trailing {replacestr} chars removed.
+#X         :
+#X Synopsis: myslug=$(post_slug "str" ["replacestr"])
+#X         :   replstr   is optional, defaults to '-'
+#X         :
 #X Example : post_slug 'A title, with  Ŝŧřãņġę  cHaracters ()'
-#X         : returns "a-title-with-strange-characters" 
+#X         : # ^ returns "a-title-with-strange-characters" 
 #X         : post_slug ' A title, with  Ŝŧřãņġę  cHaracters ()" '_'
-#X         : returns: "a_title_with_strange_characters"
+#X         : # ^ returns: "a_title_with_strange_characters"
+#X Depends : iconv
 shopt -s extglob
 post_slug() {
 	local str="${1:-}" repl="${2:--}" preserve_case="${3:-0}"

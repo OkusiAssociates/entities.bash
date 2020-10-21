@@ -3,7 +3,9 @@
       Desc: return integer from human-readable number text
           : (b)ytes (k)ilobytes (m)egabytes (g)igabytes (t)erabytes (p)etabytes
           : Capitalise to use multiples of 1000 (S.I.) instead of 1024.
+          : #X         :
   Synopsis: hr2int integer[bkmgtp] [integer[bkmgtp]]...
+          : #X         :
    Example: hr2int 34M
           : hr2int 34m
           : hr2int 34000000

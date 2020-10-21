@@ -1,8 +1,9 @@
 #!/bin/bash
 #X Function: elipstr
 #X Desc    : Insert elipsis (...) into middle of fixed with string.
+#X         : NOTE: uses tput thus requires terminal
 #X Synopsis: elipstr "string" [maxwidth]
-#X Example : echo $(elipstr "the quick brown fox jumped over." 15) 
+#X Example : elipstr "the quick brown fox jumped over." 15
 elipstr() {
 	local str=${1:-} pd=''
 	str=$(echo $str | head -n1)

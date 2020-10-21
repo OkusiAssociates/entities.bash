@@ -7,5 +7,6 @@
           : #X         :
    Example: tmpdir.set '/run/entities' '/tmp/entities'
           : tmpdir="$(tmpdir.set)"
+          : #X         :
     Source: /usr/share/okusi/entities/entities.d/files/chgConfigVar.bash
 #-Function--tmpdir.set--------------------------------------------------------

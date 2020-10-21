@@ -1,4 +1,5 @@
 #!/bin/bash
+#! shellcheck disable=SC1090
 #X GLOBALX : _ent_EDITOR	
 #X Desc    : Defines/validates default EDITOR setting.
 #X         : Sets value of EDITOR *if* EDITOR is unset/empty.
@@ -46,6 +47,8 @@
 		[[ $EDITOR != *' '* ]] && EDITOR='' 
 		EDITOR="${_ed_} ${EDITOR#* }"
 	fi
-unset _ed_
-export EDITOR _ent_EDITOR
+	
+	unset _ed_
+	export EDITOR _ent_EDITOR
+
 #fin

@@ -1,4 +1,5 @@
 #!/bin/bash
+#! shellcheck disable=SC2154
 #X Function : cleanup
 #X Desc     : a call to this function is made in the trap EXIT command.
 #X          : on exiting the script this function will always be called.
@@ -16,7 +17,7 @@ cleanup() {
 			msg.info "$(set | grep ^_ent_)"
 			msg.info "$(set | grep ^BASH	| grep -v BASH_VERSINFO)"
 		fi
-		if ((exitcode > 1)); then
+		if ((exitcode > 1)) && ((_ent_DEBUG)); then
 			msg.err "script=[${PRG:-}] 
 							exit=[$exitcode] 
 							line=[${2:-}] 

@@ -1,10 +1,12 @@
 #!/bin/bash
 #! shellcheck disable=SC2174,SC2154
 #X Function: mktempfile 
-#X         : Make a temporary file located in /tmp/entities 
-#X         : Template format is /tmp/{base_subdir}/{$PRG|basename_script}_XXXX
+#X         : Make a temporary file. 
+#X         : Template format is:
+#X         :    /{TMPDIR}/{subdir}/{PRG}_{RAND}
 #X Synopsis: mktempfile [base_subdir]
 #X         : Return value of '' means failure.
+#X See Also: tmpdir.set
 mktempfile() {
 	local TmpDir TmpFile
 	TmpDir="${TMPDIR:-/tmp}/${1:-entities}"
@@ -23,18 +25,27 @@ declare -fx mktempfile
 #X         :
 #X Example : tmpdir.set '/run/entities' '/tmp/entities'
 #X         : tmpdir="$(tmpdir.set)"
+#X         :
+#X See Also: mktempfile
 declare -x TMPDIR="${TMPDIR:-/tmp}"
 tmpdir.set() {
 	if (( $# )); then
-		tmp=$1
+		local tmp=$1
 		# fail silently if not found; do not change TMPDIR
-		[[ -d "$tmp" ]] || mkdir -m 777 -p "$tmp"
+		if [[ ! -d "$tmp" ]]; then
+			mkdir -m 777 -p "$tmp" || { echo ''; return 1; }
+		fi
 		if [[ -w "$tmp" ]]; then
 			TMPDIR="$tmp"
 		elif [[ -n "${2:-}" ]]; then
-			[[ -d "$2" ]] || mkdir -m 777 -p "$2"
+			if [[ -d "$2" ]]; then
+				mkdir -m 777 -p "$2" || { echo ''; return $?; }
+			fi
 			if [[ -w "$2" ]]; then
 				TMPDIR="$2"
+			else
+				echo ''
+				return 1
 			fi
 		fi
 	fi

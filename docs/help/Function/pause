@@ -1,7 +1,10 @@
 #-Function--pause
   Function: pause
-      Desc: Print message_str, or '*Pause*' if no message specified,
-          : wait for one keypress, or until timeout (default 86400).
+      Desc: Pause script, with optional message and timeout.
+          : Wait for one keypress, or until timeout (default 86400).
+          : #X         :
   Synopsis: pause [-t timeout] [message_str]...
+          :   -t timeout   Timeout in seconds; default 86400.
+          :   message_str  If not specified, defaults to '*Pause*'.
     Source: /usr/share/okusi/entities/entities.d/sys/calcfp.bash
 #-Function--pause-------------------------------------------------------------

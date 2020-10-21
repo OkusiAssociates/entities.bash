@@ -1,6 +1,6 @@
 #!/bin/bash
 #X Function: in_array
-#X Desc    : Return true is exact match for string is found in string list.
+#X Desc    : Return true if exact match for string is found in string list.
 #X Synopsis: in_array "needle" "haystack[*]"
 #X Example : in_array 'okusi2' 'okusi1 okusi2 okusi3' && echo 'found'
 in_array() { 

@@ -1,6 +1,9 @@
 #!/bin/bash
+#! shellcheck disable=SC2162
 #X Function: addslashes
-#X Synopsis: program | addslashes
+#X Desc    : Insert \ backslash before every single and double quote char. 
+#X Synopsis: addslashes
+#X Example : cat text1 | addslashes > text2
 addslashes() {
 	read line; 
 	while [[ "$line" != "" ]]; do 
