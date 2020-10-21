@@ -288,8 +288,9 @@ msg.emerg() 	{ msgx --emerg "$@"; }
 msg.alert() 	{ msgx --alert "$@"; }
 msg.crit()	 	{ msgx --crit "$@"; }
 msg.err() 		{ msgx --err "$@"; }
+msg.error()		{ msgx --err "$@"; } #X legacy X#
 msg.warning() { msgx --warning "$@"; }
-msg.warn() 		{ msgx --warning "$@"; }
+msg.warn() 		{ msgx --warning "$@"; }  #X legacy X#
 msg.notice() 	{ msgx --notice "$@"; }
 msg.info() 		{ msgx --info "$@"; }
 msg.debug() 	{ msgx --debug "$@"; }
@@ -378,7 +379,7 @@ declare -ix _ent_VERBOSE
 msg.verbose() { return $(( ! _ent_VERBOSE )); }
 declare -fx 'msg.verbose'
 #	verbose() { msg.verbose "$@"; }; 		declare -fx verbose 
-	is.verbose() { msg.verbose "$@"; };	declare -fx 'is.verbose'
+	is.verbose() { msg.verbose "$@"; };	declare -fx 'is.verbose' #X legacy X#
 
 msg.verbose.set() {
 	if (( ${#@} )); then
@@ -390,7 +391,7 @@ msg.verbose.set() {
 #	return 0
 }
 declare -fx 'msg.verbose.set'
-	verbose.set() { msg.verbose.set "$@"; }; declare -fx 'verbose.set'
+	verbose.set() { msg.verbose.set "$@"; }; declare -fx 'verbose.set' #X legacy X#
 	
 declare -ix _ent_MSG_USE_TAG=1
 msg.usetag.set() {
@@ -435,8 +436,8 @@ declare -ix _ent_COLOR=1
 [ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
 msg.color() { return $(( ! _ent_COLOR )); }
 declare -fx 'msg.color'
-	color() { 'msg.color' "$@"; }; declare -fx 'color'
-	is.color() { 'msg.color' "$@"; };	declare -fx 'is.color'
+	color() { 'msg.color' "$@"; }; declare -fx 'color' #X legacy X#
+	is.color() { 'msg.color' "$@"; };	declare -fx 'is.color' #X legacy X#
 	
 msg.color.set() {
 	if (( ${#@} )); then 
@@ -452,7 +453,7 @@ msg.color.set() {
 #	return 0
 }
 declare -fx 'msg.color.set'
-	color.set() { 'msg.color.set' "$@"; };	declare -fx 'color.set'
+	color.set() { 'msg.color.set' "$@"; };	declare -fx 'color.set' #X legacy X#
 
 #X Function : msg.tab.set msg.tab.width
 #X Synopsis : msg.tab.set [offset]; msg.tab.width [tabvalue]
@@ -477,7 +478,7 @@ msg.tab.width() {
 	return 0
 }
 declare -fx 'msg.tab.width'
-	tab.width() { 'msg.tab.width' "$@"; }; declare -fx 'tab.width'
+	tab.width() { 'msg.tab.width' "$@"; }; declare -fx 'tab.width' #X legacy X#
 
 declare -ix _ent_TABSET=0
 msg.tab.set() {
@@ -502,7 +503,7 @@ msg.tab.set() {
 	return 0
 }
 declare -fx	'msg.tab.set'
-	tab.set() { 'msg.tab.set' "$@"; }; declare -fx 'tab.set'
+	tab.set() { 'msg.tab.set' "$@"; }; declare -fx 'tab.set' #X legacy X#
 	
 #X Function: msg.prefix.separator.set
 #X Desc    : Set/Retrieve value of _ent_MSG_PRE_SEP for appending as a separator for msg.prefix.
@@ -623,7 +624,7 @@ msg.line() {
 	return 0
 }
 declare -fx 'msg.line'
-	msgline() { 'msg.line' "$@"; }; declare -fx 'msgline'
+	msgline() { 'msg.line' "$@"; }; declare -fx 'msgline' #X legacy X#
 
 #X Function : msg.yn
 #X Desc     : Ask y/n question,d return 0/1 
@@ -686,7 +687,7 @@ declare -fx 'version.set'
 declare -ix _ent_DRYRUN=0
 is.dryrun() { return $(( ! _ent_DRYRUN )); }
 declare -fx 'is.dryrun'
-	dryrun() { 'is.dryrun' "$@"; }; declare -fx 'dryrun'
+	dryrun() { 'is.dryrun' "$@"; }; declare -fx 'dryrun' #X legacy X#
 
 dryrun.set() {
 	if (( $# )); then 
@@ -717,7 +718,7 @@ declare -fx 'dryrun.set'
 declare -ix _ent_DEBUG=0
 is.debug() {	return $(( ! _ent_DEBUG )); }
 declare -fx 'is.debug'
-	debug() { is.debug "$@"; }; declare -fx 'debug'
+	debug() { is.debug "$@"; }; declare -fx 'debug' #X legacy X#
 	
 debug.set() {
 	if (( $# )); then _ent_DEBUG=$(onoff "$1" $_ent_DEBUG)
@@ -820,7 +821,7 @@ trap.breakp() {
 	return 0
 }
 declare -fx 'trap.breakp'
-	breakp() { 'trap.breakp' "$@"; }; declare -fx 'breakp'
+	breakp() { 'trap.breakp' "$@"; }; declare -fx 'breakp' #X legacy X#
 
 #--_ent_MINIMAL if defined, don't do this section.
 if (( ! ${_ent_MINIMAL:-0} )); then

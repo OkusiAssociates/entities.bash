@@ -9,7 +9,8 @@ source entities || exit 2
 
 	declare -i ShowFuncs=0 ShowVars=0	
 	
-	declare -- nonentities=" CH9 CLNTEMPFILES CR EDITOR IFS LF OLDIFS PRG PRGDIR _ent_TABSET _ent_TABWIDTH _slog_count _slog_file _slog_prefix color0 coloralert colorcrit colorcritical colordebug coloremerg colorerr colorerror colorinfo colornotice colorpanic colorreset colorwarn colorwarning perrnoListFile "
+	declare -x nonentities=" CH9 CLNTEMPFILES CR EDITOR IFS LF OLDIFS PRG PRGDIR _ent_TABSET _ent_TABWIDTH _slog_count _slog_file _slog_prefix color0 coloralert colorcrit colorcritical colordebug coloremerg colorerr colorerror colorinfo colornotice colorpanic colorreset colorwarn colorwarning perrnoListFile "
+	declare -x legacyfunctions
 
 main() {
 	local -a funcs=() vars=()
@@ -30,28 +31,31 @@ main() {
 	((ShowFuncs+ShowVars)) || { usage; return 1; }	
 
 	if ((ShowFuncs)); then
-		cmd='source '"$PRGDIR"'/entities.bash new || exit; set | /bin/grep "()" |/bin/grep -v "=" | /bin/grep "^[a-zA-Z][a-zA-Z0-9_.]*[[:blank:]]*\(\)" | /bin/grep -v "^$"'
+		legacyfunctions="$(echo ' '; grep '.*().*#X[[:blank:]]*legacy[[:blank:]]X#' "$PRGDIR"/entities.bash | while read -r l;do echo -n "${l%\(\)[[:blank:]]*} "; done)" || return 1
+		cmd='source '"$PRGDIR"'/entities.bash new || exit; set |/bin/grep "()" |/bin/grep -v "=" |/bin/grep "^[a-zA-Z][a-zA-Z0-9_.]*[[:blank:]]*\(\)" | /bin/grep -v "^$"'
 		funcs=( "$(env -i bash --norc -c "$cmd")" )
-		( for func in "${funcs[@]}"; do
+		( for func in ${funcs[*]}; do
 				func=${func//\(\)/}; func=${func// /};
-				echo "$func"
+				[[ -z $func ]] && continue
+				if [[ ! "$legacyfunctions" == *\ $func\ * ]]; then
+					echo "$func"
+				fi
 			done 
 		) | sort
 	fi
 	
 	if ((ShowVars)); then		
 		IFS=$'\n'
-		vars=( "$( env -i bash --norc -c "source $PRGDIR/entities.bash new; declare -p" )" )
-		# shellcheck disable=SC2068
-		( for var in ${vars[@]}; do
+		vars=( "$( env -i bash --norc -c "source $PRGDIR/entities.bash new; declare -p | grep 'declare[[:blank:]]*[aAfFgilnprtux-]*[[:blank:]]*[a-zA-Z0-9_]*=' -o | cut -d' ' -f3" )" )
+		## shellcheck disable=SC2068
+		( for var in ${vars[*]}; do
 				var=${var%%=*}
 				var=$(echo "$var" | cut -d' ' -f3)
+				[[ -z $var ]] && continue
 				if [[ $var == _ent_* ]]; then
 					echo "$var"
 				else
-					if [[ -n $var ]]; then
-						[[ "${nonentities}" == *"$var"* ]] && echo "$var"
-					fi
+					[[ ! "${nonentities}" == *\ $var\ * ]] && echo "$var"
 				fi
 			done 
 		) | sort
