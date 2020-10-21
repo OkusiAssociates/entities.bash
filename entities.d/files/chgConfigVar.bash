@@ -15,15 +15,15 @@
 #X Example : chgConfigVar environment OKROOT '/usr/share/okusi' '!TIME_STYLE'
 #X         :
 #X         : chgConfigVar ~/.profile.name TIME_STYLE '+%Y-%m-%d %H:%M'
-chgConfigVar()	{
+chgConfigVar() {
 	local Profile=${1:-} key
 	shift
 	if [[ ! -f $Profile ]]; then
-		cat >"$Profile" <<-etx
+		cat >"$Profile" <<-etxx
 		#!/bin/bash
 		#! shellcheck disable=SC2034
 		#  [$Profile] created $(date +'%F %T')$( [[ -n ${PRG:-} ]] && echo " by $PRG" )
-		etx
+		etxx
 	fi
 	while (($#)); do
 		key="$1"

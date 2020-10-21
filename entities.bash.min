@@ -515,13 +515,13 @@ export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.488.1'
-chgConfigVar()	{
+_ent_VERSION='0.98.420.488.2'
+chgConfigVar() {
 	local Profile=${1:-} key
 	shift
 	if [[ ! -f $Profile ]]; then
-		cat >"$Profile" <<-etx
-		etx
+		cat >"$Profile" <<-etxx
+		etxx
 	fi
 	while (($#)); do
 		key="$1"
