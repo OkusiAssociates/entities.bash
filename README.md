@@ -1,5 +1,5 @@
 # Entities.bash Environment/Function Library
-###### Version [0.98.420.488.10]
+###### Version [0.98.420.489.7]
 
 Entities.bash is a lightweight Bash scripting environment and library for systems and network administrators who use `Ubuntu 18.04` or higher.
 
@@ -157,7 +157,7 @@ Examples:
 #### Script `cln`
 ````
 Script  : cln
-Version : entities 0.98.420.488.10
+Version : entities 0.98.420.489.7
 Desc    : Search for and delete defined junk/trash/rubbish files.
 Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
         :   dirspec           Path to clean. Default '.'
@@ -181,7 +181,7 @@ Synopsis: cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
 #### Script `dbh`
 ````
 Script  : dbh
-Version : entities.bash 0.98.420.488.10
+Version : entities.bash 0.98.420.489.7
 Desc    : MySQL helper script to quickly view data/structure/info.
         : Fast in, fast out.
 Synopsis: dbh [database [table [command]]] [-p profile] [-V] [-h]
@@ -291,6 +291,10 @@ Synopsis: lsd [-ls] [-L num] [-n][-C] [pathspec ...] [-- ...]
         :  -V|--version  Print version information.
         :  -h|--help     Help.
 Depends : tree
+````
+
+#### Script `mailheader`
+````
 ````
 
 #### Script `p`

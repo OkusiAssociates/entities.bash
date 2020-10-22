@@ -1,5 +1,5 @@
 #!/bin/bash
-#! shellcheck disable=SC1090
+#! shellcheck disable=SC1090,1091
 	declare _u
 	_u=$(< /etc/issue)
 	[[ "${_u:0:12}" < 'Ubuntu 16.04' ]] \
@@ -336,16 +336,16 @@ install_files() {
 
 	# symlink to bundled utility scripts
 	declare -a arr
-	declare -- s
-	arr=( $(find scripts/ -maxdepth 1 -executable -type f) )
+	declare -- s sb
+	arr=( $(find scripts/ -executable -type f | grep -v ".gudang\|/dev/\|create-help") )
 	for s in "${arr[@]}"; do
-		s=$(basename "$s")
+		sb=$(basename "$s")
 		if [[ $HOSTNAME == 'okusi0' ]]; then
-			msg.info "Linking $PRGDIR/scripts/$s to /usr/local/bin/$s"
-			ln -fs "$PRGDIR/scripts/$s" "/usr/local/bin/$s"
+			msg.info "Linking $PRGDIR/$s to /usr/local/bin/$sb"
+			ln -fs "$PRGDIR/$s" "/usr/local/bin/$sb"
 		else
-			msg.info "Linking $ENTITIES/scripts/$s to /usr/local/bin/$s"
-			ln -fs "$ENTITIES/scripts/$s" "/usr/local/bin/$s"
+			msg.info "Linking $ENTITIES/$s to /usr/local/bin/$sb"
+			ln -fs "$ENTITIES/$s" "/usr/local/bin/$sb"
 		fi
 	done
 

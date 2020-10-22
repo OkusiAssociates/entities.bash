@@ -516,7 +516,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.488.10'
+_ent_VERSION='0.98.420.489.7'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift
@@ -608,25 +608,6 @@ declare -Ax _ent_TextFileTypes=(
 			['BSD makefile script']='bsdmake'
 		)
 textfiletype() {
-	if [[ -z ${_ent_TextFileTypes[*]:-} ]]; then
-		declare -Ax _ent_TextFileTypes=(	
-			['ASCII text']='text'
-			['Bourne-Again shell script']='bash'
-			['XML 1.0 document']='xml'
-			['HTML document']='html'
-			['POSIX shell script']='sh'
-			['PHP script']='php'
-			['C source']='c'
-			['SMTP mail']='smtp'
-			['exported SGML document']='sgml'
-			['Windows WIN.INI']='ini'
-			['TeX document']='tex'
-			['Python script']='python'
-			['Non-ISO extended-ASCII text']='text'
-			['Perl5 module source']='perl'
-			['BSD makefile script']='bsdmake'
-		)
-	fi
 	local -- testfile='' ext
 	local -i typeonly=0
 	local -- File=''
@@ -647,7 +628,7 @@ textfiletype() {
 		esac
 		if [[ -z $FileType ]]; then
 			if [[ -f "$testfile" ]]; then
-				h="$(head -c 64 "$testfile" 2>/dev/null || echo '' | strings -w)" || h=''
+				h="$( { head -c 64 "$testfile" 2>/dev/null || echo ' '; } | strings -w 2>/dev/null)" || h=''
 				if 	 [[ "$h" =~ ^\#\!.*/bash.* ]];	then	
 					FileType='bash'
 				elif [[ "$h" =~ ^\#\!.*/sh.*   ]];	then	
