@@ -1,0 +1,14 @@
+#-Function--is.binary
+  Function: is.binary
+      Desc: Examine *first 24 chars* of file for binary chars.
+          : Return true if found.
+          : Return 255 if file not found.
+          : 'Binary chars' are defined as follows:
+          :    >=127 <9 (<32 && >13)
+          : #X         :
+  Synopsis: is.binary [filename]
+          :   filename  File to examine. Default is stdin.
+          : #X         :
+   Example: is.binary /bin/bash && echo 'Is binary!'
+    Source: /usr/share/okusi/entities/scripts/mailheader/mailheader.c
+#-Function--is.binary---------------------------------------------------------

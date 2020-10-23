@@ -19,7 +19,6 @@ source "$(dirname "$0")/entities.bash.min" new || { echo >&2 "Could not open [$(
 #     DESCRIPTION
 #     SYNOPSIS
 #     OPTIONS
-#     _other_
 #     ENVIRONMENT
 #     FILES
 #     EXAMPLES
@@ -27,7 +26,6 @@ source "$(dirname "$0")/entities.bash.min" new || { echo >&2 "Could not open [$(
 #     REPORTING BUGS
 #     COPYRIGHT
 #     SEE ALSO
-# NAME
 
 	# Category Labels
 	declare -a CatHdrs=( 
@@ -120,8 +118,8 @@ main() {
 	"$EntitiesDir/scripts/entities.scripts.create-help" -y \
 		|| msg.die "Could not execute entities.scripts.create-help"
 
-	bashfiles="$(find "$EntitiesDir/" -name "*.bash"  -not -name "_*" -type f \
-								| grep -v '/docs/\|.gudang\|.min\|/dev/')"
+	bashfiles="$(find "$EntitiesDir/" \( -name "*.bash" -o -name "*.c" \)  -not -name "_*" -type f \
+								| grep -v '/docs/\|.gudang\|.min\|/dev/\|/test/')"
 	for file in ${bashfiles[@]}; do
 		msg.info "Searching [${file/${EntitiesDir}\//}]..."
 		hlp="$(grep '^#X\+' "$file" | grep ':')"
