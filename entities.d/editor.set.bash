@@ -10,6 +10,7 @@
 #X			   : If none of the above, EDITOR defaults to _ent_EDITOR
 #X 			   : The first argument is tested to see if it is executable.
 #X 			   : If it is not, then EDITOR defaults back to _ent_EDITOR.
+#X	         :
 #X See Also: EDITOR SUDO_EDITOR SELECTED_EDITOR _ent_EDITOR
 
 	# default entitites fallback EDITOR setting

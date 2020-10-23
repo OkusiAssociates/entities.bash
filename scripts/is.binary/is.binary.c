@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
   if(argc > 1) {
     fp1 = fopen(argv[1], "r");
     if(fp1 == NULL) {
-      perror("is.binary: ");
+//      perror("is.binary: ");
       return(-1);
     }
   } else fp1=stdin;

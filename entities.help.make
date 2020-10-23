@@ -1,10 +1,9 @@
 #!/bin/bash
-#! shellcheck disable=SC2034
+#! shellcheck disable=SC2034,1090
 source "$(dirname "$0")/entities.bash.min" new || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
 	strict.set off
 	# shellcheck disable=SC2154
 	version.set "${_ent_VERSION}"
-	msg.prefix.set "$(msg.prefix.set)help.make"
 	trap.set on
 		
 #	ENTITIES=$PRGDIR/entities
@@ -72,13 +71,15 @@ source "$(dirname "$0")/entities.bash.min" new || { echo >&2 "Could not open [$(
 
 	declare -i auto=0 wipe=0
 
-	declare dashes='----------------------------------------------------------------------------'
+	declare dashes='-----------------------------------------------------------------------------'
 	
 main() {
 	exit_if_not_root
 #	exit_if_already_running
 	declare label='About' oldlabel='' lbl='' cmt=''
 	local IFS=$'\n'
+
+	msg.prefix.set ++ 'help.make'
 
 	cmd=()
 	while (($#)); do
@@ -103,11 +104,11 @@ main() {
 	msg "Create help pages from canonical entities.bash file to " "directory $HelpFilesDir." 
 	if ((!auto)); then
 		msg.yn --warning "Do you wish to proceed?" || exit 1
-		echo
+		#echo
 	fi
 	if ((!auto)); then
-		msg.yn --warning "Wipe the [${HelpFilesDir//${EntitiesDir}/}] directory?" && wipe=1
-		echo
+		msg.yn --warning "Wipe directory [${HelpFilesDir//${EntitiesDir}/}]?" && wipe=1
+		#echo
 	fi
 	if ((wipe)); then
 		msg.info "Deleting all files in [$HelpFilesDir]..."
@@ -116,14 +117,16 @@ main() {
 	fi
 
 	"$EntitiesDir/scripts/entities.scripts.create-help" -y \
-		|| msg.die "Could not execute entities.scripts.create-help"
+			|| msg.die "Could not execute entities.scripts.create-help"
 
+	# find all .bash and .c files
 	bashfiles="$(find "$EntitiesDir/" \( -name "*.bash" -o -name "*.c" \)  -not -name "_*" -type f \
 								| grep -v '/docs/\|.gudang\|.min\|/dev/\|/test/')"
+	# go through them one-by-one ...
 	for file in ${bashfiles[@]}; do
 		msg.info "Searching [${file/${EntitiesDir}\//}]..."
-		hlp="$(grep '^#X\+' "$file" | grep ':')"
-		for hline in ${hlp[@]}; do 
+		mapfile -t hlp < <(grep '^#X[[:blank:]]*.*:' "$file" 2>/dev/null)
+		for hline in "${hlp[@]}"; do 
 			lbl=$(str_str "$hline" '#X' ':')
 			lbl=$(trim "$lbl")
 			lbl=${lbl/ /_}
@@ -132,7 +135,6 @@ main() {
 			[[ ${lbl} =~ ^Us[e]*age ]] && lbl='Synopsis'
 			[[ $lbl == 'Examples' || $lbl == 'Eg' ]] 						&& lbl='Example'
 			[[ $lbl == 'Requires' || $lbl == 'Dependencies' ]]	&& lbl='Depends'
-			
 			cmt="${hline#*:[[:blank:]]}"
 			cmt=$(rtrim "$cmt")
 			[[ -z "$cmt" ]] && continue
@@ -176,7 +178,7 @@ main() {
 					for s in ${Symlink[@]:1}; do
 						cd "$destdir" || return 1
 						ln -fs "${Symlink[0]}" "${s}"
-						cd - >/dev/null
+						cd - >/dev/null || return 1
 					done
 					IFS=$'\n'
 				fi
@@ -184,7 +186,7 @@ main() {
 				Header="$cmt"
 				Synopsis='' Version='' Desc='' Defaults='' Depends='' Example='' See_Also='' Tags='' Source=''
 	
-			elif [[ "${SubHdrs[@]}" == *"$label"* ]]; then  # check if new label is a subheader category
+			elif [[ "${SubHdrs[*]}" == *"$label"* ]]; then  # check if new label is a subheader category
 				#msg.info "  subheader [$label] found"
 				v="${label}+=\${cmt}\"\${LF}\""
 				eval "$v"
@@ -212,7 +214,7 @@ main() {
 }
 	
 cleanup() {
-	[[ $1 == '' ]] && exitcode=$? || exitcode=$1
+	[[ -z $1 ]] && exitcode=$? || exitcode=$1
 	exit "$exitcode"
 }
 

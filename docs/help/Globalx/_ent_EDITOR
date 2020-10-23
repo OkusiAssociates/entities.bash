@@ -9,5 +9,6 @@
           : If none of the above, EDITOR defaults to _ent_EDITOR
           : The first argument is tested to see if it is executable.
           : If it is not, then EDITOR defaults back to _ent_EDITOR.
+          : #X           :
     Source: /usr/share/okusi/entities/entities.d/string/trim.bash
 #--Globalx--_ent_EDITOR-------------------------------------------------------

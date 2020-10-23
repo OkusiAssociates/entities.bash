@@ -53,11 +53,12 @@ main() {
 	
 	File=$(readlink -f "${cmd[0]}") || File="${cmd[0]}"
 	[[ $(basename "$File") == "$(basename "$0")" ]] && msg.die "Not a good idea."
-	
+		
 	# File not exist!
 	if [[ ! -f "$File" ]]; then
 		# look for likely executable script
 		sx=$(readlink -f "$(which "$(basename "$File")")")
+		is.binary "$sx" && msg.die "[$sx] is a binary file."
 		if [[ -z $sx ]]; then
 			select sx in "Create New [$File]" "Locate [$(basename "$File")]" "Exit"; do
 				[[ 'q0' == *"$REPLY"* ]] && return 1; [[ -z $sx ]] && continue; [[ $sx == 'Exit' ]] && msg.die 'Exit'
