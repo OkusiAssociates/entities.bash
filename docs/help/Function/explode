@@ -1,9 +1,0 @@
-#-Function--explode
-  Function: explode
-      Desc: Convert delimited string into array.
-          : For most cases, this would be better done inline:
-          :   IFS=',' array=( "${cdstring" )
-  Synopsis: explode "delimiter" "${array[@]}"
-   Example: str=( $(explode '|' "${files[@]}") )
-    Source: /usr/share/okusi/entities/entities.d/string/in_array.bash
-#-Function--explode-----------------------------------------------------------

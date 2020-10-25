@@ -1,248 +1,181 @@
 #!/bin/bash
-#! shellcheck disable=SC2034,1090
+# shellcheck source=entities.bash.min
 source "$(dirname "$0")/entities.bash.min" new || { echo >&2 "Could not open [$(dirname "$0")/entities.bash]."; exit 1; }
-	strict.set off
-	# shellcheck disable=SC2154
-	version.set "${_ent_VERSION}"
 	trap.set on
+	strict.set off
+	version.set "${_ent_VERSION}"
+	msg.usetag.set off
+	msg.prefix.set 'entitites.help.make'
 		
-#	ENTITIES=$PRGDIR/entities
-#	export ENTITIES
-	declare EntitiesDir="$PRGDIR"
+	declare EntitiesDir
+	EntitiesDir="${PRGDIR:-}"
+	[[ -z $EntitiesDir ]] && msg.die "No dir [$EntitiesDir]"
 	# sanity check
 	[[ "$(basename "$EntitiesDir")" == 'entities' ]] || msg.die "Sanity check fail."
 	
-	declare HelpFilesDir="${PRGDIR}/docs/help"
+	declare HelpFilesDir="${EntitiesDir}/docs/help"
 
-#     NAME
-#     DESCRIPTION
-#     SYNOPSIS
-#     OPTIONS
-#     ENVIRONMENT
-#     FILES
-#     EXAMPLES
-#     AUTHOR
-#     REPORTING BUGS
-#     COPYRIGHT
-#     SEE ALSO
+	# Canonical Category Labels
+	declare -ura CatHdrs=(
+			ABOUT
+			GLOBALVAR
+			FUNCTION
+			SCRIPT
+			PROGRAM
+			REFERENCE
+		)
 
-	# Category Labels
-	declare -a CatHdrs=( 
-			About
-			Globalx
-			Global
-			Local
-			Function
-			Script
-			File
-			)
-	# Subheader Labels
-	declare -a SubHdrs=(
-			Version
-			Desc 
-			Synopsis 
-			Options
-			Defaults 
-			Env
-			Files
-			Depends 
-			Example 
-			Author
-			Bugs
-			Copyright	
-			See_also 
-			Tags
-			)
-			
-	# label output			
-	declare Label='' 		\
-					Header='' 	\
-					Version=''	\
-					Synopsis='' \
-					Desc='' 		\
-					Defaults='' \
-					Depends='' 	\
-					Example=''  \
-					See_Also='' \
-					Tags=''			\
-					Source=''
+	# Canonical Subheader Labels
+	declare -ura SubHdrs=(
+			AUTHOR
+			BUGS
+			COPYRIGHT
+			DEFAULTS
+			DEPENDS
+			DESC
+			ENVIRON
+			EXAMPLE
+			FILES
+			OPTIONS
+			SEE_ALSO
+			SYNOPSIS
+			TAGS
+			TODO
+			VERSION
+		)
 
-	declare -a Symlinks=()
+	# transpostion aliases
+	declare -urA TransHdrs=(
+			[FUNC]='FUNCTION'
+			[GLOBAL]='GLOBALVAR'
+			[GLOBALX]='GLOBALVAR'
+			[INTRO]='ABOUT'
+			[INTRODUCTION]='ABOUT'
+			[REF]='REFERENCE'
 
-	declare -i auto=0 wipe=0
+			[BUG]='BUGS'
+			[BY]='AUTHOR'
+			[COPYLEFT]='COPYRIGHT'
+			[DEF]='DEFAULTS'
+			[DEFS]='DEFAULTS'
+			[DESCRIPTION]='DESC'
+			[EG]='EXAMPLE'
+			[ENV]='ENVIRON'
+			[ENVIRONMENT]='ENVIRON'
+			[EXAMPLES]='EXAMPLE'
+			[EX]='EXAMPLE'
+			[FILE]='FILES'
+			[OPTS]='OPTIONS'
+			[REQ]='DEPENDS'
+			[REQUIRE]='DEPENDS'
+			[REQUIRES]='DEPENDS'
+			[SEE]='SEE_ALSO'
+			['SEE ALSO']='SEE_ALSO'
+			[TAG]='TAGS'
+			[USE]='SYNOPSIS'
+			[USAGE]='SYNOPSIS'
+			[USEAGE]='SYNOPSIS'
+			[VER]='VERSION'
+		)
 
-	declare dashes='-----------------------------------------------------------------------------'
+	declare -i HelpColWidth=66
 	
 main() {
-	exit_if_not_root
-#	exit_if_already_running
-	declare label='About' oldlabel='' lbl='' cmt=''
-	local IFS=$'\n'
+	local SourceFile HelpOutputFile=''
+	local -a DocLines
+	local DocLine txt lbl sx
+	local -a symlinks=()
 
-	msg.prefix.set ++ 'help.make'
+	rm -rf "${HelpFilesDir:-:}/"
 
-	cmd=()
-	while (($#)); do
-		case "$1" in
-			-y|--auto)			auto=1; wipe=1;;
-			-h|--help)			usage;;
-			-V|--version)		version.set; return 1;;
-			-v|--verbose)		msg.verbose.set on;;
-			-q|--quiet)			msg.verbose.set off=;;
-			*)							cmd+=( "$1" );;
-		esac
-		shift
-	done
-
-	if ((auto)); then
-		msg.verbose.set off
-		msg.color.set off
-	fi
-
-	msg "$PRG for entities.bash"
-	msg.tab.set ++
-	msg "Create help pages from canonical entities.bash file to " "directory $HelpFilesDir." 
-	if ((!auto)); then
-		msg.yn --warning "Do you wish to proceed?" || exit 1
-		#echo
-	fi
-	if ((!auto)); then
-		msg.yn --warning "Wipe directory [${HelpFilesDir//${EntitiesDir}/}]?" && wipe=1
-		#echo
-	fi
-	if ((wipe)); then
-		msg.info "Deleting all files in [$HelpFilesDir]..."
-		rm -rf "${HelpFilesDir:?}/"
-		mkdir -p "$HelpFilesDir"
-	fi
-
-	"$EntitiesDir/scripts/entities.scripts.create-help" -y \
+	"$EntitiesDir"/scripts/entities.scripts.create-help -y \
 			|| msg.die "Could not execute entities.scripts.create-help"
-
+	
 	# find all .bash and .c files
-	bashfiles="$(find "$EntitiesDir/" \( -name "*.bash" -o -name "*.c" \)  -not -name "_*" -type f \
-								| grep -v '/docs/\|.gudang\|.min\|/dev/\|/test/')"
+	mapfile -t bashfiles < <(find "$EntitiesDir/" \( -name "*.bash" -o -name "*.c" \) -type f \
+								| grep -v '/docs/\|.gudang\|.min\|/dev/\|/test/\|/_')
 	# go through them one-by-one ...
-	for file in ${bashfiles[@]}; do
-		msg.info "Searching [${file/${EntitiesDir}\//}]..."
-		mapfile -t hlp < <(grep '^#X[[:blank:]]*.*:' "$file" 2>/dev/null)
-		for hline in "${hlp[@]}"; do 
-			lbl=$(str_str "$hline" '#X' ':')
-			lbl=$(trim "$lbl")
-			lbl=${lbl/ /_}
-			# normalise to Title case
-			lbl=$(titlecase "$lbl")
-			[[ ${lbl} =~ ^Us[e]*age ]] && lbl='Synopsis'
-			[[ $lbl == 'Examples' || $lbl == 'Eg' ]] 						&& lbl='Example'
-			[[ $lbl == 'Requires' || $lbl == 'Dependencies' ]]	&& lbl='Depends'
-			cmt="${hline#*:[[:blank:]]}"
-			cmt=$(rtrim "$cmt")
-			[[ -z "$cmt" ]] && continue
-			if [[ -z "$lbl" ]]; then
-				v="${label}+=\"\${cmt}\"\${LF}\"\""
-				eval "$v"
-				continue
-			fi
-			
-			# change labels
-			label=$(titlecase "$lbl") 
-			if [[ "${CatHdrs[*]}" == *"${label}"* ]]; then  # check if new label is a header category
-				#msg.info "header [$label] found"
-			FinishFile="$file"
-				if (( ${#Label} )); then
-					destdir="$HelpFilesDir/$Label"
-					mkdir -p "$destdir"
-					declare -a Symlink=()
-					IFS=$' \t';	Symlink=( $Header ); IFS=$'\n'
-					#msg.info "#write $label out to file $Label:$destdir"
-					endtag="$Label-"
-					sx=$((10 - ${#endtag} ))
-					endtag+="-${Symlink[0]}"
-					endtag=$(printf "#%${sx}.${sx}s%s" "$dashes" "$endtag")
-					(	echo "${endtag}"
-						printlines "$Label"  	"$Header"
-						printlines 'Version'	"$Version"
-						printlines 'Tags' 		"$Tags"
-						printlines 'Desc' 		"$Desc"
-						printlines 'Synopsis' "$Synopsis"
-						printlines 'Defaults' "$Defaults"
-						printlines 'Depends' 	"$Depends"
-						printlines 'See_Also' "$See_Also"
-						printlines 'Example' 	"$Example"
-						printlines 'Source'  	"$FinishFile"
-						sx=$(( 76-${#endtag} ))
-						printf "%s--%${sx}.${sx}s%s" "$endtag" "$dashes" "$LF"
-					) > "$destdir/${Symlink[0]}"
-	
-					IFS=$' \t\n'
-					for s in ${Symlink[@]:1}; do
-						cd "$destdir" || return 1
-						ln -fs "${Symlink[0]}" "${s}"
-						cd - >/dev/null || return 1
+	for SourceFile in "${bashfiles[@]}"; do
+		msg.info "Searching [${SourceFile/${EntitiesDir}\//}]"
+		mapfile -t DocLines < <(grep '^#X[[:blank:][:alnum:]._-]*:[[:blank:]]' "$SourceFile")
+		for	DocLine in "${DocLines[@]}"; do
+			txt=$(rtrim "${DocLine#*:[[:blank:]]}")
+			#[[ -z $txt ]] && continue
+			lbl=${DocLine%%:*}; lbl=${lbl^^}
+			lbl=$(trim "${lbl:2}")
+			if [[ -n $lbl ]]; then
+				# transpose aliases
+				# shellcheck disable=SC2102
+				[[ -v TransHdrs[$lbl] ]] && lbl=${TransHdrs[$lbl]}
+				# has HEADER changed? Then change the HelpOutputFile
+				if [[ " ${CatHdrs[*]} " == *" $lbl "* ]]; then
+					# say goodbye to current HelpOutputFile
+					[[ -n $HelpOutputFile ]] && \
+							print2OutputFile 'URL'  "file://${SourceFile//\/\//\/}"
+					# close current HelpOutputFile
+
+					# open new HelpOutputFile ===================
+					Label=$lbl
+					Header=$txt
+					mkdir -p "$HelpFilesDir/$Label" || msg.die "mkdir [$HelpFilesDir/$Label] failed."
+					read -r -a symlinks <<<"$Header"
+					HelpOutputFile="$HelpFilesDir/$Label/${symlinks[0]}"
+					rm -f "$HelpOutputFile"
+					#print2OutputFile 'SOURCE' "${SourceFile/${EntitiesDir}\//}"
+					# if more than one entry in Header, then make symlinks to first entry.
+					for sx in "${symlinks[@]:1}"; do
+						(	cd "$HelpFilesDir/$Label" || msg.die "cd [$HelpFilesDir/$Label] failed."		# catastophic error that Must Not Happen
+							ln -fs "${symlinks[0]}" "${sx}"
+						)
 					done
-					IFS=$'\n'
+				elif [[ " ${SubHdrs[*]} " == *" $lbl "* ]]; then
+					Label=$lbl #???	
+				else
+					msg.warn "Unknown Help Label [$lbl] in [$SourceFile]"
 				fi
-				Label="$label"
-				Header="$cmt"
-				Synopsis='' Version='' Desc='' Defaults='' Depends='' Example='' See_Also='' Tags='' Source=''
-	
-			elif [[ "${SubHdrs[*]}" == *"$label"* ]]; then  # check if new label is a subheader category
-				#msg.info "  subheader [$label] found"
-				v="${label}+=\${cmt}\"\${LF}\""
-				eval "$v"
-			else
-				msg.err "File [$file]:" "  bad label [$label] not found in categories/subheaders."
 			fi
-	
-			oldlabel=$label
+			print2OutputFile "${lbl:0:11}" "${txt}"
 		done
-		FinishFile="$file"
+		# say goodbye to current HelpOutputFile
+		print2OutputFile 'URL' "file://$SourceFile"
+		# close current HelpOutputFile
+		HelpOutputFile=''
+		# say goodbye to Label
+		Label=''
+		Header=''
 	done
 
-	# make symlinks in the help root to canonical files in category directories
-	msg.info 	"Making symlinks in [$HelpFilesDir]" 
-	msg.info	"  to files in category directories."
-	cd "$HelpFilesDir" || msg.die "Could not cd into [$HelpFilesDir]"
-	for c in $(find -L . -mindepth 1 -type f); do 
-		target="${c:2}"
-		ln -fs "$target" "$(basename "$target")" >/dev/null
-	done 
+#	# make symlinks in the help root to canonical files in category directories
+#	msg.info 	"Making symlinks in [$HelpFilesDir]" 
+#	msg.info	"  to files in category directories."
+#	cd "$HelpFilesDir" || msg.die "Could not cd into [$HelpFilesDir]"
+#	mapfile -t symlinks < <(find -L . -mindepth 1 -type f)
+##	read -r -a symlinks < <(find -L . -mindepth 1 -type f)
+#	for sx in "${symlinks[@]}"; do 
+#		sx="${sx:2}"
+#		ln -fs "$sx" "$(basename "$sx")" >/dev/null
+#	done 
 
-	msg.tab.set 0
-	msg "$PRG finished"
+	msg.info "Done"
 	return 0
 }
-	
-cleanup() {
-	[[ -z $1 ]] && exitcode=$? || exitcode=$1
-	exit "$exitcode"
-}
 
-printlines() {
-	local label content l
- 	local IFS=$'\n'	
-	label=$(trim "${1:-}")
-	content=$(trim "${2:-}")
-	[[ -z "$content" ]] && return 0
-	for l in $content; do
-		l="$(echo "$l" | expand -t 2)"
-		printf '%10.10s: %s\n' "$label" "$l"
-		label=''
+print2OutputFile() {
+	local lbl="${1:-}" txt="${2:-}"
+	local -a WR
+	if [[ -z $HelpOutputFile ]]; then
+		msg.warn "No Output File for [$lbl]:[$txt]"
+		return 0
+	fi
+	txt=$(expand -t 2 <<<"$txt")
+	mapfile -t WR < <(fold -w "$HelpColWidth" -s <<<"$txt")
+	lbl="${lbl,,}"
+	for txt in "${WR[@]}"; do
+		printf '%10s: %s\n' "${lbl^}" "$txt" >>"$HelpOutputFile"
+		lbl=''
 	done
+	return 0
 }
 
-usage() {
-	cat <<-usage
-		Script  : $PRG
-		Desc    : Create entities.bash help files.
-		Synopsis: $PRG [-y] [-v][-q] [-V] [-h]
-		        :   -y|--auto
-		        :   -v|--verbose
-		        :   -q|--quiet
-		        :   -V|--verbose
-		        :   -h|--help
-	usage
-	exit 1
-}
 main "$@"
 #fin

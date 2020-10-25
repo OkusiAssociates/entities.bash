@@ -1,9 +1,0 @@
-#-Function--s
-  Function: s
-      Desc: Print 's' if number is not 1.
-  Synopsis: s number
-          : #X         :
-   Example: num=30; echo "$num file$(s $num) counted."
-          : num=1; echo "$num file$(s $num) counted."
-    Source: /usr/share/okusi/entities/entities.d/string/impode.bash
-#-Function--s-----------------------------------------------------------------

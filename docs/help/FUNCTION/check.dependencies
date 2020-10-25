@@ -1,0 +1,10 @@
+  Function: check.dependencies
+      Desc: check for script dependencies (programs, scripts, or functions in 
+          : the environment).
+  Synopsis: check.dependencies [-q|--quiet] name...
+          :   -q|--quiet  do not print 'dependency-not-found' messages.
+          :   name        is a list of programs, scripts or functions.
+   Example: (( check.dependencies dirname ln )) && msg.die "Dependencies 
+          : missing."
+   Depends: which (not fatal if not found)
+       Url: file:///usr/share/okusi/entities/entities.bash

@@ -1,0 +1,9 @@
+  Function: rtfm
+      Desc: Read The Fucking Manual.
+          : Searches for command first in [help], then [man],
+          : then [entities.help], then [google search] using $BROWSER.
+          : If BROWSER not defined, defaults to w3m or lynx.
+          : For convenience in a terminal, set alias man='rtfm'
+  Synopsis: rtfm ["command"]
+   Depends: man entities.help w3m lynx
+       Url: file:///usr/share/okusi/entities/entities.d/sys/rtfm.bash

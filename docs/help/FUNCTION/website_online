@@ -1,0 +1,6 @@
+  Function: website_online
+      Desc: Return true if website is available and online.
+  Synopsis: website_online "website"...
+   Example: website_online 'okusi.id' 'okusiassociates.com' && echo 'Online'
+       Url: file:///usr/share/okusi/entities/entities.d/sys/website_online.bas
+          : h

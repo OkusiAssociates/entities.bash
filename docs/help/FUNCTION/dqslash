@@ -1,0 +1,9 @@
+  Function: dqslash
+      Desc: Add backslash to every double quote char (").
+          : If specified, takes parameter argument first.
+          : if no parameters specifed, assume input from stdin.
+  Synopsis: dqslash [string]
+   Example: dqslash 'Hello "World"!'
+          : echo 'Hello "World"!' | dqslash
+          : dqslash <myfile.txt
+       Url: file:///usr/share/okusi/entities/entities.d/string/quoteslash.bash

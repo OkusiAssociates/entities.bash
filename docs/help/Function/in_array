@@ -1,7 +1,0 @@
-#-Function--in_array
-  Function: in_array
-      Desc: Return true if exact match for string is found in string list.
-  Synopsis: in_array "needle" "haystack[*]"
-   Example: in_array 'okusi2' 'okusi1 okusi2 okusi3' && echo 'found'
-    Source: /usr/share/okusi/entities/entities.d/string/remsp2.bash
-#-Function--in_array----------------------------------------------------------

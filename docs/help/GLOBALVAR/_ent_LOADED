@@ -1,0 +1,4 @@
+ Globalvar: _ent_LOADED
+      Desc: Integer flag to announce that entities.bash has been loaded.
+          : If not set, or set to 0, then entities.bash is not loaded.
+       Url: file:///usr/share/okusi/entities/entities.bash

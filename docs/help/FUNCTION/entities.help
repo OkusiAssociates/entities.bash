@@ -1,0 +1,6 @@
+  Function: entities.help
+      Desc: display help info about Entities functions and variables.
+  Synopsis: entities.help [function|globalvar|localvar|file] | [-s|--search 
+          : searchstring] [-h|--help]
+   Example: entities.help msg.yn msg.info
+       Url: file:///usr/share/okusi/entities/entities.bash

@@ -1,9 +1,0 @@
-#-Function--trim
-  Function: trim ltrim rtrim
-      Desc: trim   strip string of leading and trailing space chars
-          :   ltrim  strip string of leading space chars
-          :   rtrim  strip string of trailing space chars
-  Synopsis: trim string
-   Example: str=" 123 "; str=$(trim "$str")
-    Source: /usr/share/okusi/entities/entities.d/string/titlecase.bash
-#-Function--trim--------------------------------------------------------------

@@ -185,12 +185,13 @@ msg.verbose.set() {
 	if (( ${#@} )); then
 		_ent_VERBOSE=$(onoff "$1")
 	else
-		echo -n $_ent_VERBOSE
+		echo -n "$_ent_VERBOSE"
 	fi
 }
 declare -fx 'msg.verbose.set'
 	verbose.set() { msg.verbose.set "$@"; }; declare -fx 'verbose.set' #X legacy X#
-declare -ix _ent_MSG_USE_TAG=1
+declare -ix '_ent_MSG_USE_TAG'
+_ent_MSG_USE_TAG=1
 msg.usetag.set() {
 	if (( ${#@} )); then
 		_ent_MSG_USE_TAG=$(onoff "$1")
@@ -210,7 +211,8 @@ declare -x colorerr="\x1b[31m";							declare -nx colorerror='colorerr'
 declare -x colorcrit="\x1b[1;31m";					declare -nx colorcritical='colorcrit'
 declare -x coloralert="\x1b[1;33;41m"
 declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
-declare -ix _ent_COLOR=1
+declare -ix '_ent_COLOR'
+_ent_COLOR=1
 [ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
 msg.color() { return $(( ! _ent_COLOR )); }
 declare -fx 'msg.color'
@@ -230,7 +232,8 @@ msg.color.set() {
 }
 declare -fx 'msg.color.set'
 	color.set() { 'msg.color.set' "$@"; };	declare -fx 'color.set' #X legacy X#
-declare -ix _ent_TABWIDTH=4
+declare -ix '_ent_TABWIDTH'
+_ent_TABWIDTH=4
 msg.tab.width() {
 	if (( $# )); then
 		_ent_TABWIDTH=$(( $1 ))
@@ -242,7 +245,8 @@ msg.tab.width() {
 }
 declare -fx 'msg.tab.width'
 	tab.width() { 'msg.tab.width' "$@"; }; declare -fx 'tab.width' #X legacy X#
-declare -ix _ent_TABSET=0
+declare -ix '_ent_TABSET'
+_ent_TABSET=0
 msg.tab.set() {
 	if (( $# )); then
 		case "$1" in
@@ -266,7 +270,7 @@ msg.tab.set() {
 }
 declare -fx	'msg.tab.set'
 	tab.set() { 'msg.tab.set' "$@"; }; declare -fx 'tab.set' #X legacy X#
-declare -x _ent_MSG_PRE_SEP
+declare -x '_ent_MSG_PRE_SEP'
 _ent_MSG_PRE_SEP=': '
 msg.prefix.separator.set() {
 	if (( $# ));	then 
@@ -276,7 +280,7 @@ msg.prefix.separator.set() {
 	fi
 }
 declare -fx 'msg.prefix.separator.set'
-declare -ax _ent_MSG_PRE
+declare -ax '_ent_MSG_PRE'
 _ent_MSG_PRE=()
 msg.prefix.set() {
 	if (( $# ));	then 
@@ -362,7 +366,8 @@ msg.yn() {
 	done
 }
 declare -fx 'msg.yn'
-declare -x _ent_SCRIPT_VERSION='0.0.0'
+declare -x '_ent_SCRIPT_VERSION'
+_ent_SCRIPT_VERSION='0.0.0'
 version() { echo -n "$_ent_SCRIPT_VERSION"; return 0; }
 declare -fx 'version'
 version.set() {
@@ -372,7 +377,8 @@ version.set() {
 	return 0
 }
 declare -fx 'version.set'
-declare -ix _ent_DRYRUN=0
+declare -ix '_ent_DRYRUN'
+_ent_DRYRUN=0
 is.dryrun() { return $(( ! _ent_DRYRUN )); }
 declare -fx 'is.dryrun'
 	dryrun() { 'is.dryrun' "$@"; }; declare -fx 'dryrun' #X legacy X#
@@ -385,7 +391,8 @@ dryrun.set() {
 	return 0
 }
 declare -fx 'dryrun.set'
-declare -ix _ent_DEBUG=0
+declare -ix '_ent_DEBUG'
+_ent_DEBUG=0
 is.debug() {	return $(( ! _ent_DEBUG )); }
 declare -fx 'is.debug'
 	debug() { is.debug "$@"; }; declare -fx 'debug' #X legacy X#
@@ -396,7 +403,8 @@ debug.set() {
 	return 0
 }
 declare -fx 'debug.set'
-declare -ix _ent_STRICT=0
+declare -ix '_ent_STRICT'
+_ent_STRICT=0
 is.strict() { return $(( ! _ent_STRICT )); }
 declare -fx 'is.strict'
 strict.set() {
@@ -459,7 +467,7 @@ declare -fx 'trap.breakp'
 if (( ! ${_ent_MINIMAL:-0} )); then
 	shopt -s globstar
 	if [[ -d "${ENTITIES:-/lib/include/entities}/entities.d" ]]; then
-		declare _e
+		declare '_e'
 		declare -a _userbash=()
 		for _e in "${ENTITIES:-/lib/include/entities}"/entities.d/**/*.bash; do
 			if [[ -r "$_e" ]]; then
@@ -483,8 +491,8 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 fi
 shopt -s expand_aliases # Enables alias expansion.
 _ent_scriptstatus+='[entities loaded]'
-declare -xig _ent_LOADED=1
-	declare -xng __entities__='_ent_LOADED' 	 #X legacy X#
+declare -xig '_ent_LOADED'
+_ent_LOADED=1
 declare -gx _ent_EDITOR
 	_ent_EDITOR="$(which nano 2>/dev/null)"
 	declare -gx EDITOR
@@ -516,7 +524,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.490.9'
+_ent_VERSION='0.98.420.492.3'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift
@@ -999,14 +1007,16 @@ phpini_short_tags() {
 declare -fx 'phpini_short_tags'
 rtfm() { 
 	if [[ -z ${1:-} || ${1:-} == '-h' || ${1:-} == '--help' ]]; then
-		echo 'Script  : rtfm'
-		echo 'Desc    : read-the-fucking-manual wrapper for help -> man -> entities.help -> google'
-		echo 'Synopsis: rtfm "command"'
-		return 1
+		cat <<-etx
+		Script  : rtfm
+		Desc    : read-the-fucking-manual wrapper for help -> man -> entities.help -> google
+		Synopsis: rtfm "command"
+		etx
+		return 0
 	fi
-	builtin help -m "$@" 2>/dev/null && return 0
+	builtin help    "$@" 2>/dev/null && return 0
 	$(which man) 		"$@" 2>/dev/null && return 0
-	entities.help 	"$@" 2>/dev/null && return 0 
+	entities.help 	function "$@" exit 2>/dev/null && return 0 
 	"${BROWSER:-$(which w3m || which lynx)}" "http://www.google.com/search?q=linux+bash+%2B$*" \
 			&& return 0
 }
@@ -1059,6 +1069,54 @@ website_online() {
 	return 0	
 }
 declare -fx 'website_online'
+xselect() {
+	local pathname reply prompt='Select: '
+	local -i COLUMNS
+	COLUMNS=$(tput cols 2>/dev/null || echo '78')
+	local -i i stcol numcols
+	local -i columnwidth itemwidth=10 itempad=2 numpad=0
+	local -a Items=() ItemsDisp=()
+	i=0
+	while(($#)); do
+		case $1 in
+			-p|--prompt)		shift; (($#)) && prompt="$1";;
+			-i|--itempad)		shift; (($#)) && itempad=$1;;
+			-w|--itemwidth)	shift; (($#)) && itemwidth=$1;;
+			-c|--columns)		shift; (($#)) && COLUMNS=$1;;
+			*)	pathname="$1"
+					Items+=( "$pathname" )
+					pathname=$(basename "$pathname")
+					(( ${#pathname} > itemwidth )) && itemwidth=${#pathname}
+					ItemsDisp+=( "$pathname" )
+					i+=1;;
+		esac
+		shift
+	done
+	numpad=${#i}
+	columnwidth=$((numpad + 2 + itemwidth + itempad))
+	numcols=$((COLUMNS / columnwidth))
+	while((1)); do
+		stcol=0; i=0
+		for pathname in "${ItemsDisp[@]}"; do
+			i+=1
+			printf "%${numpad}.${numpad}d) %-${itemwidth}.${itemwidth}s%-${itempad}.${itempad}s" "$i" "$(basename "$pathname")" '           ' >&2
+			stcol+=1; ((stcol >= numcols)) && { stcol=0; echo >&2; } 
+		done
+		((stcol)) && echo	>&2
+		read -r -p "$prompt" reply >&2
+		[[ -z $reply ]] && continue
+		[[ $reply == '0' || $reply == 'q' ]] && { echo "!$reply"; return 0; }		
+    [[ ${reply:-} =~ ^[-+]?[0-9]+$ ]] || continue
+		i=${reply%%)*}	
+		if (( i > "${#Items[@]}" || i < 1 )); then
+			echo 'Invalid selection.' >&2
+		else
+			echo "${Items[$i-1]}"
+			return 0
+		fi
+	done
+}
+declare -fx 'xselect'
 urlpayload_encode() {	
 	echo -n "$( urlencode "$(payload_encode "${1}")" )" 
 	return 0

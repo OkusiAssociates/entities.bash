@@ -1,5 +1,0 @@
-#-Function--trap.set
-  Function: trap.set
-  Synopsis: trap.set [[on|1] | [off|0]]
-    Source: /usr/share/okusi/entities/entities.d/sys/exit_if_already_running.bash
-#-Function--trap.set----------------------------------------------------------

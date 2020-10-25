@@ -9,17 +9,19 @@
 #X Depends : man entities.help w3m lynx
 rtfm() { 
 	if [[ -z ${1:-} || ${1:-} == '-h' || ${1:-} == '--help' ]]; then
-		echo 'Script  : rtfm'
-		echo 'Desc    : read-the-fucking-manual wrapper for help -> man -> entities.help -> google'
-		echo 'Synopsis: rtfm "command"'
-		return 1
+		cat <<-etx
+		Script  : rtfm
+		Desc    : read-the-fucking-manual wrapper for help -> man -> entities.help -> google
+		Synopsis: rtfm "command"
+		etx
+		return 0
 	fi
 
-	builtin help -m "$@" 2>/dev/null && return 0
+	builtin help    "$@" 2>/dev/null && return 0
 	
 	$(which man) 		"$@" 2>/dev/null && return 0
 
-	entities.help 	"$@" 2>/dev/null && return 0 
+	entities.help 	function "$@" exit 2>/dev/null && return 0 
 
 	"${BROWSER:-$(which w3m || which lynx)}" "http://www.google.com/search?q=linux+bash+%2B$*" \
 			&& return 0

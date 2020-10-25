@@ -1,0 +1,8 @@
+  Function: mktempfile
+          : Make a temporary file.
+          : Template format is:
+          :    /{TMPDIR}/{subdir}/{PRG}_{RAND}
+  Synopsis: mktempfile [base_subdir]
+          : Return value of '' means failure.
+  See_also: tmpdir.set
+       Url: file:///usr/share/okusi/entities/entities.d/files/mktempfile.bash

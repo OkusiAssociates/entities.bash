@@ -1,5 +1,5 @@
 /* mailhead
-#X Function: mailheader
+#X Program : mailheader
 #X Desc    : Program to extract the header portion of an email message
 #X         : file up to the first blank line. CR are ignored and not output.
 #X         : NOTE: A space/tab char in the first postiion of a line is 

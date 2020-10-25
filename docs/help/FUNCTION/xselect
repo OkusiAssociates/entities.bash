@@ -1,0 +1,14 @@
+  Function: xselect
+      Desc: [select] command alternative.
+          : Returns name of item selected, or exit key preceeded with '!'.
+  Synopsis: xselect [-p "prompt"] [-i num] [-w num] [-c num] array
+          :   array               An array of any kind.
+          :   -p|--prompt str     Select prompt. Default 'Select: '
+          :   -i|--itempad num    Number of spaces at the end of select item.
+          :   -w|--itemwidth num  Max width of each select item.
+          :   -c|--columns num    Number of screen columns (Default COLUMNS)
+   Example: filename=$(xselect *)
+          : [[ $filename == '!0' ]] && return
+          : [[ $filename == '!q' ]] && exit
+          : $EDITOR "$filename"
+       Url: file:///usr/share/okusi/entities/entities.d/sys/xselect.bash

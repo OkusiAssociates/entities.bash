@@ -1,5 +1,0 @@
-#-Function--entities.location
-  Function: entities.location
-      Desc: Return with current setting for ENTITIES and PATH.
-    Source: /usr/share/okusi/entities/entities.d/files/filetype/textfiletype.bash
-#-Function--entities.location-------------------------------------------------

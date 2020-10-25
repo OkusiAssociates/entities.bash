@@ -2,7 +2,7 @@
 # *global* !shellcheck 'disables' used by 'p' editor
 #! shellcheck disable=SC1090
 
-# entities.bash - Bash programming environment and library
+# Entities.bash - Bash programming environment and library
 # Copyright (C) 2019-2020  Gary Dean <garydean@okusi.id>
 # 
 # This program is free software: you can redistribute it and/or modify
@@ -25,26 +25,34 @@
 #   https://garydean.id
 
 #X About  : entities.bash
-#X Desc   : Entities Functions/Globals/Local Declarations and Initialisations.
+#X Desc   : Entities Functions/Globals Declarations and Initialisations.
 #X        : entities.bash is a light-weight Bash function library for systems
 #X        : programmers and administrators.
-#X        : _ent_LOADED is set if entities.bash has been successfully loaded.
-#X        : PRG=basename of current script. 
-#X        : PRGDIR=directory location of current script, with softlinks 
-#X        : resolved to actual location.
+#X        : 
+#X        :   _ent_0       $PRGDIR/$PRG
+#X        :   PRG          basename of current script. 
+#X        :   PRGDIR       directory location of current script, with 
+#X        :                symlinks resolved to actual location.
+#X        :   _ent_LOADED  is set if entities.bash has been successfully 
+#X        :                loaded.
+#X        : 
 #X        : PRG/PRGDIR are *always* initialised as local vars regardless of 
 #X        : 'inherit' status when loading entities.bash.
+#X        : 
 #X Depends: basename dirname readlink mkdir ln cat stty
 
 #X Global  : _ent_0 PRGDIR PRG
-#X Desc    : _ent_0, PRGDIR and PRG are global variables that are initialised
-#X         : every time entities.bash is sourced.  They are not exported.
+#X Desc    : [_ent_0], [PRGDIR] and [PRG] are global variables that are 
+#X         : initialised every time entities.bash is sourced.
+#X         : 
 #X         :   _ent_0   is the fully-qualified path of the calling program. 
 #X         :   PRGDIR   is the directory location of the calling program.
 #X         :   PRG      is the basename of the calling program.
+#X         : 
 #X         : PRG is most often used to identify a running script. 
-#X         : PRGDIR is used to identify the directory location of the running
-#X         : script, which often comes in handy.
+#X         : PRGDIR is used to identify the directory location of the 
+#X         : running script, which often comes in handy.
+#X         :
 #X Examples: 0. source entities.bash 
 #X         :    # If entities.bash has already been loaded, 
 #X         :    # then only _ent_0, PRGDIR and PRG globals are initialised.
@@ -125,8 +133,8 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 
 #X Global  : _ent_LOADED
 #X Desc    : _ent_LOADED global flags whether entities.bash has 
-#X         : already been loaded or not. If it has, then it exit 
-#X         : straight away.
+#X         : already been loaded or not. If it has, then it exits 
+#X         : immediately without re-initialising entities functions.
 #X Example : (( ${_ent_LOADED:-0} )) \
 #X         :     || { echo >&2 'entities.bash not loaded!'; exit; }
 ((_ent_LOADED)) && return 0;
@@ -149,18 +157,18 @@ shopt -s globstar
 #X         : Tabs and prefixes (if set) are printed with the string.
 #X         :
 #X Synopsis: msg.* [--log] [--notag] [--raw] [--errno num] "str" ["str" ...]
-#X         :   msg           Print message to stdout with no color or stdio tag.
+#X         :   msg           Print to stdout with no color or stdio tag.
 #X         :   msg.die       Print die message to stderr and exit.
 #X         :   msg.emerg     Print emergency message to stderr and exit.
 #X         :   msg.alert     Print alert message to stderr and and exit.
-#X         :   msg.crit      Print critical alert message to stderr and exit.  
+#X         :   msg.crit      Print critical message to stderr and exit.  
 #X         :   msg.err       Print error message to stderr.
 #X         :   msg.warning   Print warning message to stderr.
 #X         :   msg.notice    Print notice message to stdout.
 #X         :   msg.info      Print notice message to stdout.
 #X         :   msg.debug     Print debug message to stderr.
-#X         :   msg.sys       Print system message to stderr and log message 
-#X         :                 using stdio code.
+#X         :   msg.sys       Print system message to stderr and log
+#X         :                 message using stdio code.
 #X         :   -e|--errno n  Set error return/exit code to n.
 #X         :   -l|--log      Log message to syslog.
 #X         :   -n|--raw      Print without tabs, prefixes or linefeeds.
@@ -297,7 +305,7 @@ msg.debug() 	{ msgx --debug "$@"; }
 msg.sys() 		{ msgx --sys "$@"; }
 declare -fx 'msg' 'msg.die' 'msg.emerg' 'msg.alert' 'msg.crit' 'msg.err' 'msg.warning' 'msg.warn' 'msg.notice' 'msg.info' 'msg.debug' 'msg.sys'
 
-#X GlobalX : _PATH_LOG LOG_EMERG LOG_ALERT LOG_CRIT LOG_ERR LOG_WARNING LOG_NOTICE LOG_INFO LOG_DEBUG LOG_PRIORITYNAMES 
+#X Global  : _PATH_LOG LOG_EMERG LOG_ALERT LOG_CRIT LOG_ERR LOG_WARNING LOG_NOTICE LOG_INFO LOG_DEBUG LOG_PRIORITYNAMES 
 #X Desc    : Global Exported Read-Only constants from [syslog.h].
 #X         :  _PATH_LOG='/dev/log'
 #X         : 	# priorities (these are ordered)
@@ -326,7 +334,7 @@ if (( ! ${LOG_ALERT:-0} )); then
 	declare -xr		LOG_PRIORITYNAMES='emerg alert crit err warning notice info debug'
 fi
 
-#X GlobalX : CR CH9 LF OLDIFS IFS
+#X Global  : CR CH9 LF OLDIFS IFS
 #X Desc    : Constant global char values.
 #X         : NOTE: IFS is 'normalised' on every 'new' execution of 
 #X         :       entities. OLDIFS retains the existing IFS.
@@ -361,8 +369,8 @@ declare -fx 'onoff'
 #X Desc    : Set global verbose status for msg* functions. For shell 
 #X         : terminal verbose is ON by default, otherwise, when called 
 #X         : from another script, verbose is OFF by default.
-#X         : msg.verbose.set() status is used in the msg.yn() and some msg.*() 
-#X         : commands, except msg.sys(), msg.die() and msg.crit(), which will 
+#X         : msg.verbose.set status is used in the msg.yn and some msg.* 
+#X         : commands, except msg.sys, msg.die and msg.crit, which will 
 #X         : always ignore verbose status and output to STDERR.
 #X Synopsis: msg.verbose.set [on|1] | [off|0]
 #X         : curstatus=$(msg.verbose.set)      
@@ -385,15 +393,15 @@ msg.verbose.set() {
 	if (( ${#@} )); then
 		_ent_VERBOSE=$(onoff "$1")
 	else
-		# shellcheck disable=SC2086
-		echo -n $_ent_VERBOSE
+		echo -n "$_ent_VERBOSE"
 	fi
 #	return 0
 }
 declare -fx 'msg.verbose.set'
 	verbose.set() { msg.verbose.set "$@"; }; declare -fx 'verbose.set' #X legacy X#
 	
-declare -ix _ent_MSG_USE_TAG=1
+declare -ix '_ent_MSG_USE_TAG'
+_ent_MSG_USE_TAG=1
 msg.usetag.set() {
 	if (( ${#@} )); then
 		_ent_MSG_USE_TAG=$(onoff "$1")
@@ -405,11 +413,11 @@ msg.usetag.set() {
 }
 declare -fx 'msg.usetag.set'
 	
-#X GlobalX  : colorreset colordebug colorinfo colornotice colorwarning colorerr colorcrit coloralert coloremerg
-#X Desc     : Colors used by entities msg.* functions.
-#X          : emerg alert crit err warning notice info debug
-#X          : panic (dep=emerg) err (dep=error) warning (dep=warn)
-#X See Also :
+#X Global  : colorreset colordebug colorinfo colornotice colorwarning colorerr colorcrit coloralert coloremerg
+#X Desc    : Colors used by entities msg.* functions.
+#X         : emerg alert crit err warning notice info debug
+#X         : panic (dep=emerg) err (dep=error) warning (dep=warn)
+#X See Also:
 declare -x colorreset="\x1b[0;39;49m"
 declare -x color="\x1b[0;39;49m"
 declare -x color0="\x1b[0;39;49m"
@@ -423,8 +431,8 @@ declare -x coloralert="\x1b[1;33;41m"
 declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 
 #X Function: msg.color.set msg.color
-#X Desc    : turn on/off colorized output from msg.* functions.
-#X         : Color is turned off if msg.verbose() is also set to off.
+#X Desc    : Turn on/off colorized output from msg.* functions.
+#X         : 
 #X Synopsis: msg.color.set [ON|1][OFF|0][auto]
 #X         : curstatus=$(msg.color.set)
 #X Example : 
@@ -432,7 +440,8 @@ declare -x coloremerg="\x1b[1;4;5;33;41m";	declare -nx colorpanic='coloremerg'
 #X         : msg.color.set off
 #X         : # do stuff... #
 #X         : msg.color.set $oldstatus
-declare -ix _ent_COLOR=1
+declare -ix '_ent_COLOR'
+_ent_COLOR=1
 [ -t 1 ] && _ent_COLOR=1 || _ent_COLOR=0
 msg.color() { return $(( ! _ent_COLOR )); }
 declare -fx 'msg.color'
@@ -460,14 +469,17 @@ declare -fx 'msg.color.set'
 #X Desc     :   msg.tab.set    set tab position for output from msg.* functions.
 #X          :   msg.tab.width  set tab width (default 4).
 #X          : used for formatting output for msg.* and ask.* functions.
+#X          : 
 #X Synopsis : msg.tab.set [reset | [forward|++] | [backward|--] [indent|+indent|-indent] ]
 #X          : no argument causes current tab level to be returned.
+#X          : 
 #X Example  : msg.tab.width 2; msg.info "msg.tab.width is $(msg.tab.width)"
 #X          : msg.tab.set ++; msg.sys "indent 2 columns"
 #X          : msg.tab.set reset; msg.warn "indent reset to 0"
 #X          : msg.tab.set +3; msg.info "indent to column 6"
 #X          : msg "current tab setting is $(msg.tab.set)" 
-declare -ix _ent_TABWIDTH=4
+declare -ix '_ent_TABWIDTH'
+_ent_TABWIDTH=4
 msg.tab.width() {
 	if (( $# )); then
 		_ent_TABWIDTH=$(( $1 ))
@@ -480,7 +492,8 @@ msg.tab.width() {
 declare -fx 'msg.tab.width'
 	tab.width() { 'msg.tab.width' "$@"; }; declare -fx 'tab.width' #X legacy X#
 
-declare -ix _ent_TABSET=0
+declare -ix '_ent_TABSET'
+_ent_TABSET=0
 msg.tab.set() {
 	if (( $# )); then
 		case "$1" in
@@ -509,12 +522,13 @@ declare -fx	'msg.tab.set'
 #X Desc    : Set/Retrieve value of _ent_MSG_PRE_SEP for appending as a separator for msg.prefix.
 #X         : Default separator is ': '
 #X Synopsis: msg.prefix.separator.set ["separator"]
+#X         : 
 #X Example : # 0. set a msg prefix with '>' separator
 #X         : msg.prefix.separator.set '>'
 #X         : msg.prefix.set "$PRG"
 #X         : msg 'Hello world.'
 #X See Also: msg.prefix.set
-declare -x _ent_MSG_PRE_SEP
+declare -x '_ent_MSG_PRE_SEP'
 _ent_MSG_PRE_SEP=': '
 msg.prefix.separator.set() {
 	if (( $# ));	then 
@@ -537,7 +551,7 @@ declare -fx 'msg.prefix.separator.set'
 #X         : # 2. set additive msg prefix
 #X         : msg.prefix.set -a 'processing'
 #X See Also: msg.prefix.separator.set
-declare -ax _ent_MSG_PRE
+declare -ax '_ent_MSG_PRE'
 _ent_MSG_PRE=()
 msg.prefix.set() {
 	if (( $# ));	then 
@@ -666,7 +680,8 @@ declare -fx 'msg.yn'
 #X Example  : version.set '4.20'	# set script version.
 #X          : version.set					# print current script version.
 #X          : ver=$(version.set)	# store current version setting to variable.
-declare -x _ent_SCRIPT_VERSION='0.0.0'
+declare -x '_ent_SCRIPT_VERSION'
+_ent_SCRIPT_VERSION='0.0.0'
 version() { echo -n "$_ent_SCRIPT_VERSION"; return 0; }
 declare -fx 'version'
 version.set() {
@@ -684,7 +699,8 @@ declare -fx 'version.set'
 #X         : $(dryrun.set)
 #X Example : dryrun.set off
 #X         : is.dryrun || doit.bash
-declare -ix _ent_DRYRUN=0
+declare -ix '_ent_DRYRUN'
+_ent_DRYRUN=0
 is.dryrun() { return $(( ! _ent_DRYRUN )); }
 declare -fx 'is.dryrun'
 	dryrun() { 'is.dryrun' "$@"; }; declare -fx 'dryrun' #X legacy X#
@@ -715,7 +731,8 @@ declare -fx 'dryrun.set'
 #X Example : debug.set on
 #X         : debug && msg "my debug message"
 #X         : olddebug=$(debug.set)
-declare -ix _ent_DEBUG=0
+declare -ix '_ent_DEBUG'
+_ent_DEBUG=0
 is.debug() {	return $(( ! _ent_DEBUG )); }
 declare -fx 'is.debug'
 	debug() { is.debug "$@"; }; declare -fx 'debug' #X legacy X#
@@ -738,7 +755,8 @@ declare -fx 'debug.set'
 #X Synopsis: strict.set [[on|1] | [off|0*]]
 #X Example : strict.set on
 #X         : curstatus=$(strict.set)
-declare -ix _ent_STRICT=0
+declare -ix '_ent_STRICT'
+_ent_STRICT=0
 is.strict() { return $(( ! _ent_STRICT )); }
 declare -fx 'is.strict'
 	
@@ -832,7 +850,7 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 #X     : Symlinks to *.bash files are processed last.
 	shopt -s globstar
 	if [[ -d "${ENTITIES:-/lib/include/entities}/entities.d" ]]; then
-		declare _e
+		declare '_e'
 		declare -a _userbash=()
 		for _e in "${ENTITIES:-/lib/include/entities}"/entities.d/**/*.bash; do
 			if [[ -r "$_e" ]]; then
@@ -867,7 +885,7 @@ _ent_scriptstatus+='[entities loaded]'
 
 #X Global  : _ent_LOADED
 #X Desc    : Integer flag to announce that entities.bash has been loaded. 
-#X Defaults: 0
-declare -xig _ent_LOADED=1
-	declare -xng __entities__='_ent_LOADED' 	 #X legacy X#
+#X         : If not set, or set to 0, then entities.bash is not loaded.
+declare -xig '_ent_LOADED'
+_ent_LOADED=1
 #fin

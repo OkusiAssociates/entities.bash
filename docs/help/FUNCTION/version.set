@@ -1,0 +1,9 @@
+  Function: version.set
+      Desc: Set or return version number of the current script.
+  Defaults: '0.0.0'
+  Synopsis: version.set "verstring"
+          : $(version.set)
+   Example: version.set '4.20'  # set script version.
+          : version.set         # print current script version.
+          : ver=$(version.set)  # store current version setting to variable.
+       Url: file:///usr/share/okusi/entities/entities.bash

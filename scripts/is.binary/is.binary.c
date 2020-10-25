@@ -1,5 +1,5 @@
 /* mailhead
-#X Function: is.binary
+#X Program : is.binary
 #X Desc    : Examine *first 24 chars* of file for binary chars.  
 #X         : Return true if found.  
 #X         : Return 255 if file not found.

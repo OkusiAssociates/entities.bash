@@ -1,9 +1,9 @@
 #!/bin/bash
 #X Function: hr2int
-#X Desc		 : return integer from human-readable number text
+#X Desc		 : Return integer from human-readable number text
 #X				 : (b)ytes	(k)ilobytes (m)egabytes (g)igabytes (t)erabytes (p)etabytes
 #X				 : Capitalise to use multiples of 1000 (S.I.) instead of 1024.
-#X         :
+#X         : test: 
 #X Synopsis: hr2int integer[bkmgtp] [integer[bkmgtp]]...
 #X         :
 #X Example : hr2int 34M

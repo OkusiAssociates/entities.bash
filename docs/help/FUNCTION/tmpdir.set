@@ -1,0 +1,8 @@
+  Function: tmpdir.set
+      Desc: Sets TMPDIR location, with optional fallback if first
+          : option not writable. Final fallback is always /tmp.
+  Synopsis: tmpdir.set ["tmpdir" ["fallbackdir"]]
+   Example: tmpdir.set '/run/entities' '/tmp/entities'
+          : tmpdir="$(tmpdir.set)"
+  See_also: mktempfile
+       Url: file:///usr/share/okusi/entities/entities.d/files/mktempfile.bash

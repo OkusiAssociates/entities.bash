@@ -1,7 +1,0 @@
-#-Function--textfiletype
-  Function: textfiletype
-      Desc: Return type of text.
-  Synopsis: textfiletype [-t] filename
-          :   -t  Return type only without filename.
-    Source: /usr/share/okusi/entities/entities.d/files/convertCfg2php.bash
-#-Function--textfiletype------------------------------------------------------

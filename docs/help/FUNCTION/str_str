@@ -1,0 +1,5 @@
+  Function: str_str
+      Desc: Return string that occurs between two strings.
+  Synopsis: str_str "string" "beginstr" "endstr"
+   Example: param=$(str_str "this is a [[test]] of str_str" '[[' ']]'
+       Url: file:///usr/share/okusi/entities/entities.d/string/str_str.bash

@@ -1,8 +1,0 @@
-#-Function--is.tty
-  Function: is.tty
-      Desc: return 0 if tty available, otherwise 1.
-  Synopsis: is.tty
-   Depends: tty
-   Example: is.tty && msg.yn "Continue?"
-    Source: /usr/share/okusi/entities/entities.d/sys/urldecode.bash
-#-Function--is.tty------------------------------------------------------------

@@ -1,0 +1,6 @@
+ Globalvar: colorreset colordebug colorinfo colornotice colorwarning colorerr 
+          : colorcrit coloralert coloremerg
+      Desc: Colors used by entities msg.* functions.
+          : emerg alert crit err warning notice info debug
+          : panic (dep=emerg) err (dep=error) warning (dep=warn)
+       Url: file:///usr/share/okusi/entities/entities.bash

@@ -1,0 +1,21 @@
+    Script:  cln
+   Version:  entities 0.98.420.492.2
+      Desc:  Search for and delete defined junk/trash/rubbish files.
+  Synopsis:  cln [-m depth] [-n][-N] [-v][-q] [dirspec ...]
+          :    dirspec           Path to clean. Default '.'
+          :    -a|-add file      Add file to cleanup scan. Can be used
+          :                      multiple times, and filesname can comma
+          :                      delimited.
+          :    -m|--depth depth  Maximum depth to recurse. Default 2.
+          :    -n|--dryrun       Dry run. Default on.
+          :    -N|--notdryrun    Not a dry run. Delete files straight away.
+          :    -v|--verbose      Enable output to stdout. Default on.
+          :    -q|--quiet        Disable output to stdout.
+          :    -h|--help         This help.
+          :  Recursively remove all temporary files defined in
+          :  envvar _ent_CLNTEMP that defines temporary files to delete.
+          :  If not defined, _ent_CLNTEMP defaults to:
+          :    ( '*~' '~*' '.~*' '.*~' )
+          :  _ent_CLNTEMP is currently set to:
+          :    ( *~ ~* .~* .*~ DEADJOE dead.letter wget-log* )
+       Url: file:///usr/share/okusi/entities/scripts/scripts.help.bash
