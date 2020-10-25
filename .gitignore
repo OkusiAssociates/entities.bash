@@ -1,6 +1,5 @@
 # git notes
 git/
-bash/
 .git*
 
 # rubbish files
@@ -16,6 +15,8 @@ tt
 ttt
 t1
 t2
+t3
+t4
 .bash_*
 
 # under development 
