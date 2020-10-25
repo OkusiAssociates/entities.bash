@@ -11,7 +11,7 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 			while (( $# )); do
 				case "${1,,}" in
 					help|/\?|-\?|-h|--help)	
-								"${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
+								exec "${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
 								exit $?
 								break;;
 					-*)		echo >&2 "$(basename "$0"): Bad option [$1]";		exit 22;;
@@ -524,7 +524,7 @@ declare -gx _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.492.3'
+_ent_VERSION='0.98.420.492.5'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift
@@ -1014,9 +1014,9 @@ rtfm() {
 		etx
 		return 0
 	fi
-	builtin help    "$@" 2>/dev/null && return 0
-	$(which man) 		"$@" 2>/dev/null && return 0
-	entities.help 	function "$@" exit 2>/dev/null && return 0 
+	builtin help   "$@" 2>/dev/null && return 0
+	$(which man) 	"$@" 2>/dev/null && return 0
+	"$ENTITIES/entities.help" 'function' "$@" 'exit' 2>/dev/null && return 0 
 	"${BROWSER:-$(which w3m || which lynx)}" "http://www.google.com/search?q=linux+bash+%2B$*" \
 			&& return 0
 }

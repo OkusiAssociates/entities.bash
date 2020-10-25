@@ -77,7 +77,7 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 			while (( $# )); do
 				case "${1,,}" in
 					help|/\?|-\?|-h|--help)	
-								"${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
+								exec "${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
 								exit $?
 								break;;
 					# All other passed parameters return error.
@@ -785,7 +785,8 @@ declare -fx 'exit_if_not_root'
 
 #X Function : entities.help 
 #X Desc     : display help info about Entities functions and variables.
-#X Synopsis : entities.help [function|globalvar|localvar|file] | [-s|--search searchstring] [-h|--help]
+#X Synopsis : entities.help [about|function|globalvar|file] [filename] [action]
+#X          : entities.help [-s|--search searchstring] [-h|--help]
 #X Example  : entities.help msg.yn msg.info
 entities.help() {
 	"${ENTITIES:-/lib/include/entities}/entities.help" "$@" || return $?

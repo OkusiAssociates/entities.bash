@@ -57,11 +57,13 @@ main() {
 		if [[ ! -d $Category ]]; then
 			msg.err "Category [$Category] not found."
 			Category='' Item=''
+			[[ $Action == 'exit' ]] && return 1
 		fi
 		if [[ -n $Item ]]; then
 			if [[ ! -f $Category/$Item ]]; then
 				msg.err "Item [$Category/$Item] not found."
 				Item=''
+				[[ $Action == 'exit' ]] && return 1
 			fi
 		fi
 		if [[ -n $Category ]]; then
@@ -84,6 +86,7 @@ main() {
 		elif [[ -d "$Path" ]]; then
 			cd "$Path" || break
 		else
+			[[ ! -f $Path ]] && break
 			while((1)); do
 				more "$Path"
 				srcfile=$(grep -i '[[:blank:]]*URL: ' "$Path")

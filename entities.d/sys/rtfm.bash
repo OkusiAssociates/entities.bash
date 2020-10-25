@@ -17,11 +17,11 @@ rtfm() {
 		return 0
 	fi
 
-	builtin help    "$@" 2>/dev/null && return 0
+	builtin help   "$@" 2>/dev/null && return 0
 	
-	$(which man) 		"$@" 2>/dev/null && return 0
+	$(which man) 	"$@" 2>/dev/null && return 0
 
-	entities.help 	function "$@" exit 2>/dev/null && return 0 
+	"$ENTITIES/entities.help" 'function' "$@" 'exit' 2>/dev/null && return 0 
 
 	"${BROWSER:-$(which w3m || which lynx)}" "http://www.google.com/search?q=linux+bash+%2B$*" \
 			&& return 0
