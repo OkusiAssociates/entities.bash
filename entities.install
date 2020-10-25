@@ -312,13 +312,13 @@ install_files() {
 	cp -p "$ENTITIES/README.md" README.md || exit $?	# yes, other way around; saves using a temp file
 
 	mkdir -p "$ENTITIES/e.d"
-	/usr/bin/rsync -al --exclude-from "$SyncExclude" entities.d/*				"$ENTITIES/entities.d/" || exit $?
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" e.d/*			"$ENTITIES/e.d/" || exit $?
 
 	mkdir -p "$ENTITIES/scripts"
-	/usr/bin/rsync -al --exclude-from "$SyncExclude" scripts/*					"$ENTITIES/scripts/" || exit $?
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" scripts/*	"$ENTITIES/scripts/" || exit $?
 
 	mkdir -p "$ENTITIES/docs/help"
-	/usr/bin/rsync -al --exclude-from "$SyncExclude" docs/*							"$ENTITIES/docs/" || exit $?
+	/usr/bin/rsync -al --exclude-from "$SyncExclude" docs/*			"$ENTITIES/docs/" || exit $?
 
 	# make symlinks in $ENTITIES directory
 	msg.info "Creating symlinks in [$ENTITIES] directory"
