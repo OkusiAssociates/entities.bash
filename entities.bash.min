@@ -489,8 +489,10 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 		echo >&2 'Warning: Dependencies not found. entities.bash may not run correctly.'	
 	fi 
 fi
-shopt -s expand_aliases # Enables alias expansion.
-_ent_scriptstatus+='[entities loaded]'
+_ent_scriptstatus+="[entities loaded $(date +'%F %T')]"
+if [[ -f '/etc/entities/entities.bash.startup.conf' ]]; then
+	source '/etc/entities/entities.bash.startup.conf'
+fi
 declare -xig '_ent_LOADED'
 _ent_LOADED=1
 declare -gx '_ent_EDITOR'
@@ -524,7 +526,7 @@ declare -gx '_ent_EDITOR'
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.492.17'
+_ent_VERSION='0.98.420.492.19'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift

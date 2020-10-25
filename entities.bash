@@ -880,9 +880,20 @@ fi
 #-Function Declarations End --------------------------------------------------
 
 # expand all the aliases defined above.
-shopt -s expand_aliases # Enables alias expansion.
+#shopt -s expand_aliases # Enables alias expansion.
 
-_ent_scriptstatus+='[entities loaded]'
+_ent_scriptstatus+="[entities loaded $(date +'%F %T')]"
+
+#X FILE: entities.bash.startup.conf 
+#X Desc: If it exists, the file [/etc/entities/entities.bash.startup.conf]
+#X     : is executed immediately *after* entities.bash has been fully 
+#X     : loaded.
+#X     : This file should contain server-preferred defaults for the new 
+#X     : entities.bash instance.
+#X See : /etc/entities/entities.bash.startup.conf
+if [[ -f '/etc/entities/entities.bash.startup.conf' ]]; then
+	source '/etc/entities/entities.bash.startup.conf'
+fi
 
 #X Global  : _ent_LOADED
 #X Desc    : Integer flag to announce that entities.bash has been loaded. 

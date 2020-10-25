@@ -179,7 +179,7 @@ main() {
 		_p=${_arr[*]}
 		cat >"$_verfile" <<-etx
 			#!$(command -v bash)
-			#X GlobalX: _ent_VERSION
+			#X Global : _ent_VERSION
 			#X Version: ${_p// /.}
 			#X Desc   : Return version/build of this entities.bash.
 			#X        : Returns string in the form:
@@ -197,6 +197,8 @@ main() {
 		source "$_verfile" || exit 2
 		unset _verfile _arr _dayssince
 	fi
+
+	mkdir -p /etc/entities
 
 	"$PRGDIR/entities.make.minimal" --no-prompt \
 			|| msg.die "[$PRGDIR/entities.make.minimal] failed!"

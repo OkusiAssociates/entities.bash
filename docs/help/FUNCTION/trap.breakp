@@ -6,4 +6,11 @@
           : $ENTITIES/e.d/** are automatically included in the
           : entities.bash source file.
           : Symlinks to *.bash files are processed last.
+     Files: entities.bash.startup.conf
+      Desc: If it exists, the file [/etc/entities/entities.bash.startup.conf]
+          : is executed immediately *after* entities.bash has been fully
+          : loaded.
+          : This file should contain server-preferred defaults for the new
+          : entities.bash instance.
+  See_also: /etc/entities/entities.bash.startup.conf
        Url: file:///usr/share/okusi/entities/entities.bash

@@ -3,28 +3,29 @@
 # set entities location to *this* script directory
 ENTITIES="$(dirname "$(readlink -f "$0")")" || exit 2
 source "$ENTITIES/entities.bash" || exit 2
-strict.set on
-msg.prefix.set ++ 'make.minimal'
 
-declare    entities_file="$ENTITIES/entities.bash"
-declare     entities_min="$ENTITIES/entities.bash.min"
-declare entities_min_tmp=''
+	strict.set on
+	msg.prefix.set 'make.minimal'
 
-declare -i noprompt=0
+	declare entities_file="$ENTITIES/entities.bash"
+	declare entities_min="$ENTITIES/entities.bash.min"
+	declare entities_min_tmp=''
+
+	declare -i noprompt=0
 
 main() {
 	while (($#)); do
 		case "$1" in
-			--minfile|-m)	shift; entities_min="${1:-}";;
-			--no-prompt|--noprompt|-y)		
+			-m|--minfile)	shift; entities_min="${1:-}";;
+			-y|--no-prompt|--noprompt)		
 										noprompt=1; msg.color.set off;;
-			--verbose|-v)	msg.verbose.set on;;
-			--quiet|-q)		msg.verbose.set off;;
-			--help|-h)		usage; return 0;;
-			--version|-V)	echo "$PRG $_ent_VERSION"; return 0;;
-			*)						msg.err "Bad parameter [$1]"
+			-v|--verbose)	msg.verbose.set on;;
+			-q|--quiet)		msg.verbose.set off;;
+			-h|--help)		usage; return 0;;
+			-V|--version)	echo "$PRG $_ent_VERSION"; return 0;;
+			*)						msg.err --errno 22 "Bad parameter [$1]"
 										usage
-										return 1;;
+										return $?;;
 		esac
 		shift
 	done
@@ -40,11 +41,8 @@ main() {
 	cd "$ENTITIES" \
 			|| msg.die --log "Could not cd into [$ENTITIES]"
 
-	local -i tab
-	tab=$(msg.tab.set)
-	msg.tab.set ++
 	if (( ! noprompt )); then
-		msg.yn "Do you wish to proceed?" || { msg.tab.set "$tab"; return 1; }
+		msg.yn "Do you wish to proceed?" || return 1
 		msg 'Proceeding'
 	fi
 
@@ -57,13 +55,13 @@ main() {
 	chmod 755 "$entities_min_tmp"
 	# assemble all .bash files; define entities.bash as start point
 	local -a templates=( "$ENTITIES/entities.bash" )
-	# get all .bash files in entities.d/
-	[[ ! -d "$ENTITIES/entities.d" ]] && msg.die --log "[$ENTITIES/entities.d] not found!"
+	# get all .bash files in e.d/
+	[[ ! -d "$ENTITIES/e.d" ]] && msg.die --log "[$ENTITIES/e.d] not found!"
 	local _e
 	local -a _userbash=()
 	shopt -s globstar
 	# shellcheck disable=SC2231
-	for _e in $ENTITIES/entities.d/**/*.bash; do
+	for _e in $ENTITIES/e.d/**/*.bash; do
 		if [[ -r "$_e" ]]; then
 			if [[ ${_e} == *"/dev/"* || ${_e} == *"/tmp/"* || ${_e} == *"/temp/"*	]]; then 
 				((_ent_DEBUG)) && msg.warn "[${_e}] not included."
@@ -116,12 +114,8 @@ main() {
 	chmod 755 "$entities_min"	\
 			|| msg.err "Could not chmod 755 [$entities_min]!"
 
-	msg.tab.set "$tab"
 	msg.info "$entities_min created."
 }
-
-# docs ===============================================================
-printTitle() { msg "$PRG vs $(version.set)"; }
 
 usage() {
 	cat <<-etx
@@ -131,7 +125,7 @@ usage() {
 	        : All comments and blank lines are removed.
 	        : Default output file is [${entities_min:-}]
 	        : Core script [$(basename "$entities_file")] is always included first,
-	        :   then *all* *.bash files found in [$ENTITIES/entities.d/]
+	        :   then *all* *.bash files found in [$ENTITIES/e.d/]
 	        :   *except* those occuring within subdirectories dev/ tmp/ or /temp
 	        : Within user scripts, [source $(basename "$entities_min")] can be used instead
 	        :   of [source $(basename "$entities_file")]
