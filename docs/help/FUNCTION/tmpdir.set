@@ -5,4 +5,4 @@
    Example: tmpdir.set '/run/entities' '/tmp/entities'
           : tmpdir="$(tmpdir.set)"
   See_also: mktempfile
-       Url: file:///usr/share/okusi/entities/entities.d/files/mktempfile.bash
+       Url: file:///usr/share/okusi/entities/e.d/files/mktempfile.bash

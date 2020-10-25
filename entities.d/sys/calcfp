@@ -1,4 +1,0 @@
-#!/bin/bash
-	PRG=$(readlink -f "$0")
-	source "$PRG.bash"
-	$(basename $PRG) "$@"

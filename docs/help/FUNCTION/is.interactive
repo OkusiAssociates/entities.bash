@@ -3,5 +3,4 @@
           : !!! this function requires attention
   Synopsis: is.interactive [report|noreport*]
    Example: is.interactive && msg.yn "Continue?"
-       Url: file:///usr/share/okusi/entities/entities.d/sys/is.interactive.bas
-          : h
+       Url: file:///usr/share/okusi/entities/e.d/sys/is.interactive.bash

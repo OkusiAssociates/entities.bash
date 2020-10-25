@@ -5,4 +5,4 @@
           :   name=${f##/*/}
           :   cat $f | urldecode > /mylogdir/$HOSTNAME.$name
           : done
-       Url: file:///usr/share/okusi/entities/entities.d/sys/urldecode.bash
+       Url: file:///usr/share/okusi/entities/e.d/sys/urldecode.bash

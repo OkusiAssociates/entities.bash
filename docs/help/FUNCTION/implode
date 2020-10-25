@@ -4,4 +4,4 @@
   Synopsis: implode [-d "delimiter"] "${array[@]}"
           :   -d  if specified must preceed array.
    Example: str=$(implode -d '|' "${files[@]}")
-       Url: file:///usr/share/okusi/entities/entities.d/string/impode.bash
+       Url: file:///usr/share/okusi/entities/e.d/string/impode.bash

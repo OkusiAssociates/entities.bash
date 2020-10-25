@@ -4,4 +4,4 @@
           :   IFS=',' array=( "${cdstring" )
   Synopsis: explode "delimiter" "${array[@]}"
    Example: str=( $(explode '|' "${files[@]}") )
-       Url: file:///usr/share/okusi/entities/entities.d/string/explode.bash
+       Url: file:///usr/share/okusi/entities/e.d/string/explode.bash

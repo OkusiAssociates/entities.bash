@@ -2,4 +2,4 @@
       Desc: Transliterate non-ASCII characters to an ASCII
           : near-equivalent. Uses iconv.
   Synopsis: remove_accents "string"
-       Url: file:///usr/share/okusi/entities/entities.d/string/post_slug.bash
+       Url: file:///usr/share/okusi/entities/e.d/string/post_slug.bash

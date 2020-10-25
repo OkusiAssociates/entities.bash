@@ -10,7 +10,7 @@ usage() {
 	local v PRG PRGDIR
 	PRG=$(basename "$0")
 	PRGDIR=$(dirname "$( readlink -fn -- "$0")")
-	v="$(dirname "$(readlink "$0")")/entities.d/entities.version.bash"
+	v="$(dirname "$(readlink "$0")")/e.d/entities.version.bash"
 	# shellcheck disable=2015
 	[[ -f "$v" ]] && source "$v" 2>/dev/null || true	# yes, this is deliberate
 	cat <<-etx
@@ -126,7 +126,7 @@ usage() {
 	declare _l; for _l in "${exclude[@]}"; do	echo "${_l}"; done >>"$SyncExclude"; unset _l
 		
 main() {
-	declare _verfile="$PRGDIR/entities.d/entities.version.bash"
+	declare _verfile="$PRGDIR/e.d/entities.version.bash"
 	source "$_verfile" || msg.die "Could not source [$_verfile]"
 	while (( $# )); do
 		case "$1" in
@@ -311,7 +311,7 @@ install_files() {
 	) > "$ENTITIES/README.md"
 	cp -p "$ENTITIES/README.md" README.md || exit $?	# yes, other way around; saves using a temp file
 
-	mkdir -p "$ENTITIES/entities.d"
+	mkdir -p "$ENTITIES/e.d"
 	/usr/bin/rsync -al --exclude-from "$SyncExclude" entities.d/*				"$ENTITIES/entities.d/" || exit $?
 
 	mkdir -p "$ENTITIES/scripts"
@@ -328,16 +328,18 @@ install_files() {
 	# in production, entities points to the min version
 	ln -fs entities.bash.min entities							|| exit $?
 	ln -fs entities.bash.min entities.min					|| exit $?
-
+	ln -fs e.d entities.d													|| exit $?
+	
 	# MAIN EXECUTABLE in /usr/local/bin
-	ln -fs "$ENTITIES/entities.bash" /usr/local/bin/entities || exit $?
+	ln -fs "$ENTITIES/entities.bash" '/usr/local/bin/entities' || exit $?
 	# this INSTALL EXECUTABLE points to entities.bash *installation* directory
-	ln -fs "$PRGDIR/entities.install" /usr/local/bin/entities.install || exit $?
+	ln -fs "$PRGDIR/entities.install" '/usr/local/bin/entities.install' || exit $?
 
 	# symlink to bundled utility scripts
 	declare -a arr
 	declare -- s sb
-	arr=( $(find scripts/ -executable -type f | grep -v ".gudang\|/dev/\|create-help") )
+	mapfile -t arr < <(find scripts/ -executable -type f | grep -v ".gudang\|/dev/\|create-help")
+#	arr=( $(find scripts/ -executable -type f | grep -v ".gudang\|/dev/\|create-help") )
 	for s in "${arr[@]}"; do
 		sb=$(basename "$s")
 		if [[ $HOSTNAME == 'okusi0' ]]; then
@@ -355,12 +357,10 @@ install_files() {
 	chown root:root ${ENTITIES}/* -R || exit $?
 	local IFS=$'\n' f fd
 	local -a arr
-	arr=( $(/usr/bin/find "$ENTITIES" | grep -v '.g\|~') )
+	mapfile -t arr < <(/usr/bin/find "$ENTITIES" -not -type l | grep -v '.g\|~')
   for f in "${arr[@]}"; do
-		if [[ -d "$f" ]]; then
-			chmod 775 "$f"
-		else
-			chmod u+rw,g+rw,o+rw "$f"	### should this be 555 perhaps?? ###
+		if [[ -d "$f" ]]; then chmod 775 "$f"
+		else chmod u+rw,g+rw,o+rw "$f"	### should this be 555 perhaps?? ###
 		fi
 		fd=$(stat "$f" -c '%y');
 		fd=${fd%% *}
@@ -410,7 +410,7 @@ make.syncexclude() {
 		*/tmp/*
 		tmp/*
 		tt
-		e.d/
+		entities.d/
 	EOT
 }
 

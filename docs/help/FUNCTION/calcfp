@@ -1,4 +1,4 @@
   Function: calcfp
       Desc: Simple [bc] wrapper.
   Synopsis: calcfp numericExpression
-       Url: file:///usr/share/okusi/entities/entities.d/sys/calcfp.bash
+       Url: file:///usr/share/okusi/entities/e.d/sys/calcfp.bash

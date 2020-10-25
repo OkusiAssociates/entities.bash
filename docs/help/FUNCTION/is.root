@@ -3,4 +3,4 @@
   Synopsis: is.root
    Depends: whoami
    Example: is.root || exit 1
-       Url: file:///usr/share/okusi/entities/entities.d/sys/is.root.bash
+       Url: file:///usr/share/okusi/entities/e.d/sys/is.root.bash

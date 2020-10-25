@@ -6,4 +6,4 @@
    Example: sqslash "Hello 'World'!
           : echo "Hello 'World'! | sqslash
           : sqslash <myfile.txt
-       Url: file:///usr/share/okusi/entities/entities.d/string/quoteslash.bash
+       Url: file:///usr/share/okusi/entities/e.d/string/quoteslash.bash

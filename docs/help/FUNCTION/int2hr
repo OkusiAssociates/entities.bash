@@ -7,4 +7,4 @@
           :            Default format is 'si'.
    Example: int2hr 1000 si 1000 iec 1024 si 1024 iec
           : int2hr 10382 iec 872929292929 si
-       Url: file:///usr/share/okusi/entities/entities.d/sys/hr2int.bash
+       Url: file:///usr/share/okusi/entities/e.d/sys/hr2int.bash

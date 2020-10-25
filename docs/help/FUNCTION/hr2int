@@ -8,4 +8,4 @@
    Example: hr2int 34M
           : hr2int 34m
           : hr2int 34000000
-       Url: file:///usr/share/okusi/entities/entities.d/sys/hr2int.bash
+       Url: file:///usr/share/okusi/entities/e.d/sys/hr2int.bash

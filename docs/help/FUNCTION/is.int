@@ -4,4 +4,4 @@
    Example: is.int "420"  && echo "is int"  # returns true
           : is.int "4.20" && echo "is int"  # returns false
           : is.int "4Z20" && echo "is int"  # returns false
-       Url: file:///usr/share/okusi/entities/entities.d/string/is.number.bash
+       Url: file:///usr/share/okusi/entities/e.d/string/is.number.bash

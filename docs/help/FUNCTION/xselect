@@ -11,4 +11,4 @@
           : [[ $filename == '!0' ]] && return
           : [[ $filename == '!q' ]] && exit
           : $EDITOR "$filename"
-       Url: file:///usr/share/okusi/entities/entities.d/sys/xselect.bash
+       Url: file:///usr/share/okusi/entities/e.d/sys/xselect.bash

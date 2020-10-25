@@ -12,4 +12,4 @@
           : post_slug ' A title, with  Ŝŧřãņġę  cHaracters ()" '_'
           : # ^ returns: "a_title_with_strange_characters"
    Depends: iconv
-       Url: file:///usr/share/okusi/entities/entities.d/string/post_slug.bash
+       Url: file:///usr/share/okusi/entities/e.d/string/post_slug.bash

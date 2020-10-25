@@ -4,4 +4,4 @@
   Synopsis: pause [-t timeout] [message_str]...
           :   -t timeout   Timeout in seconds; default 86400.
           :   message_str  If not specified, defaults to '*Pause*'.
-       Url: file:///usr/share/okusi/entities/entities.d/sys/pause.bash
+       Url: file:///usr/share/okusi/entities/e.d/sys/pause.bash

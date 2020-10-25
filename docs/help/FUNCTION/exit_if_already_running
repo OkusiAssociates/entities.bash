@@ -5,5 +5,5 @@
           : beginning of a script.
   Synopsis: exit_if_already_running
    Example: exit_if_already_running
-       Url: file:///usr/share/okusi/entities/entities.d/sys/exit_if_already_ru
-          : nning.bash
+       Url: file:///usr/share/okusi/entities/e.d/sys/exit_if_already_running.b
+          : ash

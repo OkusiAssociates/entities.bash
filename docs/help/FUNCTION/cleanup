@@ -7,4 +7,4 @@
   Synopsis: cleanup [exitcode] [_LINENO_]
    Example: cleanup
   See_also: trap.set trap.function, exit_if_already_running
-       Url: file:///usr/share/okusi/entities/entities.d/sys/cleanup.bash
+       Url: file:///usr/share/okusi/entities/e.d/sys/cleanup.bash

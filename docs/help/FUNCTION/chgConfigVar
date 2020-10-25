@@ -10,5 +10,4 @@
           : "file".
    Example: chgConfigVar environment OKROOT '/usr/share/okusi' '!TIME_STYLE'
           : chgConfigVar ~/.profile.name TIME_STYLE '+%Y-%m-%d %H:%M'
-       Url: file:///usr/share/okusi/entities/entities.d/files/chgConfigVar.bas
-          : h
+       Url: file:///usr/share/okusi/entities/e.d/files/chgConfigVar.bash

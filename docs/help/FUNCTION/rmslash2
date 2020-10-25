@@ -3,4 +3,4 @@
   Synopsis: rmslash string
    Example: filename="//123/456///789/0"; rmslash2 "$filename" # returns 
           : /123/456/789/0
-       Url: file:///usr/share/okusi/entities/entities.d/files/rmslash2.bash
+       Url: file:///usr/share/okusi/entities/e.d/files/rmslash2.bash

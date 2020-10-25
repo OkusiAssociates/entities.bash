@@ -9,4 +9,4 @@
           : The first argument is tested to see if it is executable.
           : If it is not, then EDITOR defaults back to _ent_EDITOR.
   See_also: EDITOR SUDO_EDITOR SELECTED_EDITOR _ent_EDITOR
-       Url: file:///usr/share/okusi/entities/entities.d/editor.set.bash
+       Url: file:///usr/share/okusi/entities/e.d/editor.set.bash

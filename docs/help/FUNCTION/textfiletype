@@ -2,5 +2,5 @@
       Desc: Return type of text.
   Synopsis: textfiletype [-t] filename
           :   -t  Return type only without filename.
-       Url: file:///usr/share/okusi/entities/entities.d/files/filetype/textfil
-          : etype.bash
+       Url: file:///usr/share/okusi/entities/e.d/files/filetype/textfiletype.b
+          : ash

@@ -3,4 +3,4 @@
   Synopsis: titlecase "str" [...]
    Example: str="dharmA bUms"
           : titlecase "$str"
-       Url: file:///usr/share/okusi/entities/entities.d/string/titlecase.bash
+       Url: file:///usr/share/okusi/entities/e.d/string/titlecase.bash

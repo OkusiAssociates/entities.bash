@@ -7,4 +7,4 @@
           : str2=$(remsp2 "$str")
           : echo "$str" | remsp2
    Depends: trim
-       Url: file:///usr/share/okusi/entities/entities.d/string/remsp2.bash
+       Url: file:///usr/share/okusi/entities/e.d/string/remsp2.bash

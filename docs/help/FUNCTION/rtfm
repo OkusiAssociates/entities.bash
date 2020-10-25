@@ -6,4 +6,4 @@
           : For convenience in a terminal, set alias man='rtfm'
   Synopsis: rtfm ["command"]
    Depends: man entities.help w3m lynx
-       Url: file:///usr/share/okusi/entities/entities.d/sys/rtfm.bash
+       Url: file:///usr/share/okusi/entities/e.d/sys/rtfm.bash

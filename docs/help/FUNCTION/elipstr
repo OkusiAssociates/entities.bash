@@ -3,4 +3,4 @@
           : NOTE: uses tput thus requires terminal
   Synopsis: elipstr "string" [maxwidth]
    Example: elipstr "the quick brown fox jumped over." 15
-       Url: file:///usr/share/okusi/entities/entities.d/string/elipstr.bash
+       Url: file:///usr/share/okusi/entities/e.d/string/elipstr.bash

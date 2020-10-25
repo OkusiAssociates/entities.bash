@@ -3,4 +3,4 @@
   Synopsis: is.tty
    Example: is.tty && msg.yn "Continue?"
    Depends: tty
-       Url: file:///usr/share/okusi/entities/entities.d/sys/is.tty.bash
+       Url: file:///usr/share/okusi/entities/e.d/sys/is.tty.bash

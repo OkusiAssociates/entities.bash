@@ -846,14 +846,14 @@ declare -fx 'trap.breakp'
 if (( ! ${_ent_MINIMAL:-0} )); then
 #X File: Modules 
 #X Desc: By default, *all* files with a '.bash' extension located in
-#X     : $ENTITIES/entities.d/** are automatically included in the 
+#X     : $ENTITIES/e.d/** are automatically included in the 
 #X     : entities.bash source file. 
 #X     : Symlinks to *.bash files are processed last.
 	shopt -s globstar
-	if [[ -d "${ENTITIES:-/lib/include/entities}/entities.d" ]]; then
+	if [[ -d "${ENTITIES:-/lib/include/entities}/e.d" ]]; then
 		declare '_e'
 		declare -a _userbash=()
-		for _e in "${ENTITIES:-/lib/include/entities}"/entities.d/**/*.bash; do
+		for _e in "${ENTITIES:-/lib/include/entities}"/e.d/**/*.bash; do
 			if [[ -r "$_e" ]]; then
 				if [[ ! -L "$_e" ]] ; then
 					_userbash+=( "$_e" )
@@ -862,7 +862,7 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 				fi
 			fi
 		done
-		# do symlinks last (includes entities.d/user/*)
+		# do symlinks last (includes e.d/user/*)
 		for _e in "${_userbash[@]}"; do
 			source "$_e" || echo >&2 "**Source file [$_e] could not be included!" && true
 		done
