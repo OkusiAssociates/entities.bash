@@ -1,5 +1,5 @@
     Script:  dbh
-   Version:  entities.bash 0.98.420.492.7
+   Version:  entities.bash 0.98.420.492.8
       Desc:  MySQL helper script to quickly view data/structure/info.
           :  Fast in, fast out.
   Synopsis:  dbh [database [table [command]]] [-p profile] [-V] [-h]
