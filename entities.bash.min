@@ -493,9 +493,9 @@ shopt -s expand_aliases # Enables alias expansion.
 _ent_scriptstatus+='[entities loaded]'
 declare -xig '_ent_LOADED'
 _ent_LOADED=1
-declare -gx _ent_EDITOR
-	_ent_EDITOR="$(which nano 2>/dev/null)"
-	declare -gx EDITOR
+declare -gx '_ent_EDITOR'
+	_ent_EDITOR="$(command -v nano 2>/dev/null || command -v joe 2>/dev/null)"
+	declare -gx 'EDITOR'
 	if [[ -z "${EDITOR:-}" ]]; then
 		[[ -n "${_ent_EDITOR:-}" ]] && EDITOR="${_ent_EDITOR}"
 		if [[ -n "${SUDO_EDITOR:-}" ]]; then
@@ -509,9 +509,9 @@ declare -gx _ent_EDITOR
 			EDITOR='/etc/alternatives/editor'
 		fi
 	fi
-	declare _ed_
+	declare '_ed_'
 	_ed_="${EDITOR%% *}"
-	_ed_="$(which "${_ed_}" 2>/dev/null)"
+	_ed_="$(command -v "${_ed_}" 2>/dev/null)"
 	if [[ ! -x "${_ed_}" ]]; then
 		echo >&2 "Editor [${EDITOR}] not found! Using [${_ent_EDITOR}]"
 		EDITOR="${_ent_EDITOR}"
@@ -519,12 +519,12 @@ declare -gx _ent_EDITOR
 		[[ $EDITOR != *' '* ]] && EDITOR='' 
 		EDITOR="${_ed_} ${EDITOR#* }"
 	fi
-	unset _ed_
+	unset '_ed_'
 	export EDITOR _ent_EDITOR
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.492.5'
+_ent_VERSION='0.98.420.492.7'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift

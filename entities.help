@@ -15,12 +15,13 @@ source "$(dirname "$0")/entities.bash.min" new || { echo >&2 "Could not open [$(
 	
 	declare HelpFilesDir="${EntitiesDir}/docs/help"
 	cd "$HelpFilesDir" || exit
-	
-# main
+
+# shellcheck disable=SC2153
 main() {
-	local Path='' Item='' srcfile Action
+	local Path='' Item='' srcfile Editor="$EDITOR"
 	local -u Category=''
-	 
+	local -l Action=''
+	
 	while (($#)); do
 		case "$1" in
 			-C|--category)	shift; (($#)) && Category="$1";;
@@ -29,13 +30,14 @@ main() {
 			-s|--search)		shift; Search="$1"
 											local -a files
 											mapfile -t files < <(grep -rsli "$Search" .)
-											((${#files[@]})) || { msg.err ""; return 2; } 
-											srcfile=$(xselect -p 'Select file to view: ' "${files[@]}" 'exit')
+											((${#files[@]})) || msg.die -e 22 "Search [$Search] not found." 
+											srcfile=$(xselect -p "$PRG: Select file to view: " "${files[@]}" 'exit')
 											[[ $srcfile == '!q' || $srcfile == 'exit' ]] && break
 											Category=$(dirname "$srcfile")
 											Item=$(basename "$srcfile")
-#											return $?
 											;;
+			-t|--tree)			display_tree; return 0;;
+			-e|--editor)		shift; (($#)) && Editor="$1";;
 			-v|--verbose)		msg.verbose.set on;;
 			-q|--quiet)			msg.verbose.set off;;
 			-V|--version)		version.set; return 0;;
@@ -75,10 +77,8 @@ main() {
 		fi
 	fi
 	
-	msg.info "Entities Help"
-
 	while((1)); do 
-		[[ -z $Path ]] && Path=$(xselect -p "Select Category: " ./* 'exit')
+		[[ -z $Path ]] && Path=$(xselect -p "$PRG: Select Category: " ./* 'exit')
 		[[ $Path == '!q' || $Path == 'exit' ]] && break
 		if [[ $Path == '!0' ]]; then
 			[[ $PWD == "$HelpFilesDir" ]] && break
@@ -92,10 +92,11 @@ main() {
 				srcfile=$(grep -i '[[:blank:]]*URL: ' "$Path")
 				srcfile=${srcfile#*:[[:blank:]]*}
 				srcfile="${srcfile/file\:\/\//}"
-				[[ -z $Action ]] && Action=$(xselect -p "Select action: " "edit $(basename "$srcfile")" 'exit')
+				[[ -z $Action ]] \
+						&& Action=$(xselect -p "$PRG: Select action: " "edit $(basename "$srcfile")" 'exit')
 				[[ $Action == '!q' || $Action == 'exit' ]] && break 2
 				[[ $Action == '!0' ]] && break
-				$EDITOR "$srcfile"
+				$Editor "$srcfile"
 				Action=''
 			done
 		fi
@@ -114,15 +115,14 @@ cleanup() {
 
 display_tree() {
 	local tmp
-	local htmfile='index.html'
+	local htmfile='index.html' tmpfile="/tmp/$PRG-$$-$RANDOM"
 	local browser
-	browser="$(which lynx || which w3m)"
+	browser="$(command -v lynx || command -v w3m)"
 	
-	if [[ ! -f "$HelpFilesDir/$htmfile" ]]; then
-		msg.info "Creating [$htmfile]..."
-		(
-			cd "$HelpFilesDir" || msg.die "Could not cd into [$HelpFilesDir]."
-			/usr/bin/tree --dirsfirst --noreport -H ./ -T 'entities.bash help files' "$(pwd)"
+	#if [[ ! -f "$HelpFilesDir/$htmfile" ]]; then
+		msg.info "Creating [$htmfile]"
+		cd "$HelpFilesDir" || msg.die "Could not cd into [$HelpFilesDir]"
+		(	/usr/bin/tree --dirsfirst --noreport -H ./ -T 'entities.bash help files' "$(pwd)"
 			# clean up html output
 			tmp=$(cat "$htmfile")
 			tmp="${tmp//<!--/}" 
@@ -131,10 +131,12 @@ display_tree() {
 			tmp="${tmp//<\/style>/H1,h1 \{text-align:left;color:green;\}${LF}<\/style>}"
 			# blast it back to the html file
 			echo "$tmp"
-		) >$htmfile
+		) >"$tmpfile"
+		mv "$tmpfile" "$htmfile"
 		chmod 666 "$htmfile"
-	fi
-
+	#fi
+	unset tmp htmfile tmpfile
+	
 	## open up helpfiles	
 	$browser "$HelpFilesDir/index.html" 
 
@@ -146,15 +148,28 @@ usage() {
 	cat <<-usage
 	Script  : $PRG
 	Version : entities ${_ent_VERSION:-}
-	Synopsis: $PRG [-a][-t][-s "search"][name]  [-v][-q] [-V] [-h] 
-	        :  name          Any entities function|globalx|global|file
-	        :  -t|--tree     Show interactive web tree of all functions.
-	        :  -s|--search   Wildcard search all help files for keyword.
-	        :  -v|--verbose  Turn on  msg verbose. (default)
-	        :  -q|--quiet    Turn off msg verbose.
-	        :  -V|--version  Print version.
-	        :  -h|--help     This help.
-	Example : $PRG msg.info msg.line 
+	Desc    : Entities.bash Helpfiles and Source Editting.
+	Synopsis: $PRG [cat [item ['exit']]] [-t] [-s "search"] [-v][-q] [-V] [-h] 
+	        :    cat          Either of scripts|function|global|file
+	        :    item         Help item/file to open.
+	        :    exit         Command to exit $PRG when finished displaying
+	        :                 category:item. Otherwise, continues in interactive mode.
+	        :    -e|--editor str
+	        :                 Set editor to use to edit source files.
+	        :    -t|--tree    Show web tree of all helpfiles.
+	        :    -s|--search str  
+	        :                 Search all help files for keyword.
+	        :    -v|--verbose Turn on  msg verbose. (default)
+	        :    -q|--quiet   Turn off msg verbose.
+	        :    -V|--version Print version.
+	        :    -h|--help    This help.
+	Example : #0. Show all functions:  
+	        : $PRG function
+	        : #1. Show helpfiles tree:
+	        : $PRG -t
+	        : #2. Set editor to 'p' with shellcheck, and open $PRG 
+	        : #   in functions:
+	        : $PRG -p 'p -s' function
 	usage
 # 0#######:#|##|############|#################################################78
 }

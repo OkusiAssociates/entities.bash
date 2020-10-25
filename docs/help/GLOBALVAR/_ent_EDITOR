@@ -1,5 +1,5 @@
  Globalvar: _ent_EDITOR
-      Desc: Defines/validates default EDITOR setting.
+      Desc: Defines/validates default EDITOR envvar.
           : Sets value of EDITOR *if* EDITOR is unset/empty.
           :   1. first priority is SUDO_EDITOR
           :   2. then SELECTED_EDITOR

@@ -1,7 +1,7 @@
 #!/bin/bash
 #! shellcheck disable=SC1090
-#X GLOBALX : _ent_EDITOR	
-#X Desc    : Defines/validates default EDITOR setting.
+#X GLOBAL  : _ent_EDITOR	
+#X Desc    : Defines/validates default EDITOR envvar.
 #X         : Sets value of EDITOR *if* EDITOR is unset/empty.
 #X			   :   1. first priority is SUDO_EDITOR
 #X 			   :   2. then SELECTED_EDITOR
@@ -14,11 +14,11 @@
 #X See Also: EDITOR SUDO_EDITOR SELECTED_EDITOR _ent_EDITOR
 
 	# default entitites fallback EDITOR setting
-	declare -gx _ent_EDITOR
+	declare -gx '_ent_EDITOR'
 	# explicit LCD editor
-	_ent_EDITOR="$(which nano 2>/dev/null)"
+	_ent_EDITOR="$(command -v nano 2>/dev/null || command -v joe 2>/dev/null)"
 
-	declare -gx EDITOR
+	declare -gx 'EDITOR'
 	if [[ -z "${EDITOR:-}" ]]; then
 		# default bottom line editor, in the absense of all others
 		[[ -n "${_ent_EDITOR:-}" ]] && EDITOR="${_ent_EDITOR}"
@@ -38,9 +38,9 @@
 		fi
 	fi
 	# the first argument must be found as an executable program
-	declare _ed_
+	declare '_ed_'
 	_ed_="${EDITOR%% *}"
-	_ed_="$(which "${_ed_}" 2>/dev/null)"
+	_ed_="$(command -v "${_ed_}" 2>/dev/null)"
 	if [[ ! -x "${_ed_}" ]]; then
 		echo >&2 "Editor [${EDITOR}] not found! Using [${_ent_EDITOR}]"
 		EDITOR="${_ent_EDITOR}"
@@ -49,7 +49,7 @@
 		EDITOR="${_ed_} ${EDITOR#* }"
 	fi
 	
-	unset _ed_
+	unset '_ed_'
 	export EDITOR _ent_EDITOR
 
 #fin
