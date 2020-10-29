@@ -154,7 +154,7 @@ main() {
 		msg.warn "Backup will be at [$ENTITIES/entities.bash.old]."
 	fi
 
-	if (( ! autoInstall)); then
+	if (( ! autoInstall )); then
 		infotext
 		msg.yn 'Install with these settings?' \
 				|| { echo; return 0; }
@@ -412,7 +412,8 @@ make.syncexclude() {
 		*/tmp/*
 		tmp/*
 		tt
-		entities.d/
+		entities.d
+		entities.d/*
 	EOT
 }
 

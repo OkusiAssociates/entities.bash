@@ -526,7 +526,7 @@ declare -gx '_ent_EDITOR'
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.492.19'
+_ent_VERSION='0.98.420.496.1'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift
@@ -1017,7 +1017,7 @@ rtfm() {
 		return 0
 	fi
 	builtin help "$@" 2>/dev/null && return 0
-	$(command -v man) "$@" 2>/dev/null && return 0
+	/usr/bin/man "$@" 2>/dev/null && return 0
 	"$ENTITIES/entities.help" 'function' "$@" 'exit' 2>/dev/null && return 0 
 	"${BROWSER:-$(command -v w3m 2>/dev/null || command -v lynx 2>/dev/null)}" "http://www.google.com/search?q=linux+bash+%2B$*" \
 			&& return 0

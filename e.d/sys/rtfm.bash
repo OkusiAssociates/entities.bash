@@ -19,7 +19,7 @@ rtfm() {
 
 	builtin help "$@" 2>/dev/null && return 0
 	
-	$(command -v man) "$@" 2>/dev/null && return 0
+	/usr/bin/man "$@" 2>/dev/null && return 0
 
 	"$ENTITIES/entities.help" 'function' "$@" 'exit' 2>/dev/null && return 0 
 
