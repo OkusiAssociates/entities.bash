@@ -1,5 +1,5 @@
  Globalvar: _ent_VERSION
-   Version: 0.98.420.496.3
+   Version: 0.98.420.500.1
       Desc: Return version/build of this entities.bash.
           : Returns string in the form:
           :   majorver.minorver.420.day0.build
@@ -7,6 +7,6 @@
           :   majorver  1
           :   minorver  0
           :   420       Constant
-          :   day0      Days since 2019-06-21 (496)
-          :   build     This is build #3 on day 496
+          :   day0      Days since 2019-06-21 (500)
+          :   build     This is build #1 on day 500
        Url: file:///usr/share/okusi/entities/e.d/entities.version.bash

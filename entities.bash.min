@@ -7,15 +7,27 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 		_ent_scriptstatus+="[is.script][\$_ent_0=${_ent_0}]"
 		if [[ "$(/bin/readlink -fn -- "${BASH_SOURCE[0]:-}")" == "$_ent_0" ]]; then
 			_ent_scriptstatus+='[execute]'
-			_ent_LOADED=0
-			while (( $# )); do
-				case "${1,,}" in
-					help|/\?|-\?|-h|--help)	
-								exec "${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
-								exit $?
-								break;;
-					-*)		echo >&2 "$(basename "$0"): Bad option [$1]";		exit 22;;
-					*)		echo >&2 "$(basename "$0"): Bad argument [$1]";	exit 22;;
+			declare -ix _ent_LOADED=0
+			while (($#)); do
+				case "$1" in
+					help)	
+							exec "${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
+							exit $?
+							break;;
+					-h|--help)	
+							source "${ENTITIES:-/lib/include/entities}/e.d/entities.version.bash"
+							cat <<-etx
+								Program : entities.bash
+								Version : ${_ent_VERSION:- Entities.bash version not found. Check installation.}
+								Synopsis: 0. entities.bash [help] [-V|--version] [-h|--help] 
+								        : 1. source entities.bash [new] 
+							etx
+							exit 0;;
+					-V|--version)
+							echo "$_ent_VERSION"
+							exit ;;	
+					-*)	echo >&2 "$(basename "$0"): Bad option [$1]";		exit 22;;
+					*)	echo >&2 "$(basename "$0"): Bad argument [$1]";	exit 22;;
 				esac
 				shift
 			done		
@@ -40,7 +52,7 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 		fi
 		export ENTITIES="$PRGDIR"
 		export PATH="${PATH}:${ENTITIES}"		
-		_ent_LOADED=0		# always reload when sourced from command line
+		declare -ix _ent_LOADED=0		# always reload when sourced from command line
 	fi
 	while (( $# )); do
 		case "${1,,}" in
@@ -526,7 +538,7 @@ declare -gx '_ent_EDITOR'
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.497.1'
+_ent_VERSION='0.98.420.500.2'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift

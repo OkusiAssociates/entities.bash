@@ -72,17 +72,29 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 		# Has entities.bash been executed?
 		if [[ "$(/bin/readlink -fn -- "${BASH_SOURCE[0]:-}")" == "$_ent_0" ]]; then
 			_ent_scriptstatus+='[execute]'
-			_ent_LOADED=0
+			declare -ix _ent_LOADED=0
 			# do options for execute mode
-			while (( $# )); do
-				case "${1,,}" in
-					help|/\?|-\?|-h|--help)	
-								exec "${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
-								exit $?
-								break;;
+			while (($#)); do
+				case "$1" in
+					help)	
+							exec "${ENTITIES:-/lib/include/entities}/entities.help" "${@:2}"
+							exit $?
+							break;;
+					-h|--help)	
+							source "${ENTITIES:-/lib/include/entities}/e.d/entities.version.bash"
+							cat <<-etx
+								Program : entities.bash
+								Version : ${_ent_VERSION:- Entities.bash version not found. Check installation.}
+								Synopsis: 0. entities.bash [help] [-V|--version] [-h|--help] 
+								        : 1. source entities.bash [new] 
+							etx
+							exit 0;;
+					-V|--version)
+							echo "$_ent_VERSION"
+							exit ;;	
 					# All other passed parameters return error.
-					-*)		echo >&2 "$(basename "$0"): Bad option [$1]";		exit 22;;
-					*)		echo >&2 "$(basename "$0"): Bad argument [$1]";	exit 22;;
+					-*)	echo >&2 "$(basename "$0"): Bad option [$1]";		exit 22;;
+					*)	echo >&2 "$(basename "$0"): Bad argument [$1]";	exit 22;;
 				esac
 				shift
 			done		
@@ -112,7 +124,7 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 		fi
 		export ENTITIES="$PRGDIR"
 		export PATH="${PATH}:${ENTITIES}"		
-		_ent_LOADED=0		# always reload when sourced from command line
+		declare -ix _ent_LOADED=0		# always reload when sourced from command line
 	fi
 
 	# there are parameters

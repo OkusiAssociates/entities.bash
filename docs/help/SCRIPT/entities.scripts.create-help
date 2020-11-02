@@ -1,5 +1,5 @@
     Script:  entities.scripts.create-help
-   Version:  entities 0.98.420.496.3
+   Version:  entities 0.98.420.500.1
       Desc:  For developers of entities.bash functions and scripts.
           :  Assists the entities help system gather documentation.
           :  All scripts in the entities/scripts directory must be
