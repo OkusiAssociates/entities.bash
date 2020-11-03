@@ -338,11 +338,11 @@ msg.line() {
 	if (( ! screencols )); then
 		local -- IFS=' ' sx
 		local -ai sz
-		sz=( $(stty size) )
+		sz=( $(stty size 2>/dev/null) ) || sz[1]=78
 		if (( ${#sz[@]} )); then
 			screencols=$(( sz[1] ))
 		else
-			screencols=$(( COLUMNS ))
+			screencols=$(( ${COLUMNS:-78} ))
 		fi
 		IFS=$' \t\n'
 	fi
@@ -538,7 +538,7 @@ declare -gx '_ent_EDITOR'
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.500.2'
+_ent_VERSION='0.98.420.501.2'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift

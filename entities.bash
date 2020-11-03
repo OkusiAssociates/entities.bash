@@ -630,11 +630,11 @@ msg.line() {
 		local -- IFS=' ' sx
 		local -ai sz
 		# shellcheck disable=SC2207
-		sz=( $(stty size) )
+		sz=( $(stty size 2>/dev/null) ) || sz[1]=78
 		if (( ${#sz[@]} )); then
 			screencols=$(( sz[1] ))
 		else
-			screencols=$(( COLUMNS ))
+			screencols=$(( ${COLUMNS:-78} ))
 		fi
 		IFS=$' \t\n'
 	fi
