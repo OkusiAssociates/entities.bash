@@ -629,8 +629,7 @@ msg.line() {
 	if (( ! screencols )); then
 		local -- IFS=' ' sx
 		local -ai sz
-		# shellcheck disable=SC2207
-		sz=( $(stty size 2>/dev/null) ) || sz[1]=78
+		mapfile -d' ' -t sz < <(stty size)
 		if (( ${#sz[@]} )); then
 			screencols=$(( sz[1] ))
 		else

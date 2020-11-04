@@ -338,7 +338,7 @@ msg.line() {
 	if (( ! screencols )); then
 		local -- IFS=' ' sx
 		local -ai sz
-		sz=( $(stty size 2>/dev/null) ) || sz[1]=78
+		mapfile -d' ' -t sz < <(stty size)
 		if (( ${#sz[@]} )); then
 			screencols=$(( sz[1] ))
 		else
@@ -538,7 +538,7 @@ declare -gx '_ent_EDITOR'
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.501.2'
+_ent_VERSION='0.98.420.502.3'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift
@@ -1142,7 +1142,8 @@ payload_encode() {
 }
 declare -fx payload_encode 
 payload_decode() {
-	local str="${1}" bstr='' gzipid="$(echo -e "\x1f\x8b")" 
+	local str="${1:-}" bstr='' gzipid
+	gzipid="$(echo -e "\x1f\x8b")" 
 	[[ -z "$str" ]] && { echo -n ''; return 0; }
   bstr="$(echo "$str" | base64 -d -i 2> /dev/null | tr -d '\r\n\0')"
   if ((! ${#bstr})); then

@@ -18,7 +18,8 @@ declare -fx payload_encode
 #X Function: payload_decode
 #X Synopsis: payload_decode "encoded_payload_string"
 payload_decode() {
-	local str="${1}" bstr='' gzipid="$(echo -e "\x1f\x8b")" 
+	local str="${1:-}" bstr='' gzipid
+	gzipid="$(echo -e "\x1f\x8b")" 
 	[[ -z "$str" ]] && { echo -n ''; return 0; }
 	# is base64?
   bstr="$(echo "$str" | base64 -d -i 2> /dev/null | tr -d '\r\n\0')"
