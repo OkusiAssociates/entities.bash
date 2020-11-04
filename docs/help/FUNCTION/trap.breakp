@@ -10,7 +10,11 @@
       Desc: If it exists, the file [/etc/entities/entities.bash.startup.conf]
           : is executed immediately *after* entities.bash has been fully
           : loaded.
-          : This file should contain server-preferred defaults for the new
-          : entities.bash instance.
+          : 
+          : This file should contain server-preferred global defaults for 
+          : every
+          : entities.bash instance on this machine.
+          : 
+          : Keep entries simple.
   See_also: /etc/entities/entities.bash.startup.conf
        Url: file:///usr/share/okusi/entities/entities.bash

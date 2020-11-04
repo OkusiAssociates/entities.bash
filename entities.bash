@@ -149,14 +149,15 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 #X         : immediately without re-initialising entities functions.
 #X Example : (( ${_ent_LOADED:-0} )) \
 #X         :     || { echo >&2 'entities.bash not loaded!'; exit; }
-((_ent_LOADED)) && return 0;
+(( ${_ent_LOADED:-0} )) && return 0;
+declare -ix _ent_LOADED=0
 
 _ent_scriptstatus+='[reloading]'
 
 # turn off 'strict' by default
 set +o errexit +o nounset +o pipefail
 
-# oh why not ...
+# oh why not ... (please, tell me why not.)
 shopt -s extglob
 shopt -s globstar
 
@@ -188,22 +189,22 @@ shopt -s globstar
 #X         :
 #X Example : msg "hello world!" "it's so nice to be back!"
 #X         : msg.sys "Sir, I have something to log."
-#X         : msg.info "Sir. There's something you might want to know."
+#X         : msg.info "Sir. There's something you need to know."
 #X         : msg.warn --log "Pardon me, Sir." "Is this supposed to happen?"
 #X         : msg.err --log "Sir!" "I think you better come here."
 #X         : msg.die --log --errno 22 "Sir!" "This isn't supposed to happen."
 #X         : # Results:
-#X         :   [0;39;49mhello world!
-#X         :   [0;39;49m[0;39;49mit's so nice to be back!
-#X         :   [0;39;49msys: Sir, I have something to log.
-#X         :   [0;39;49m[32minfo: Sir. There's something you might want to know.
-#X         :   [0;39;49m[33mwarning: Pardon me, Sir.
-#X         :   [0;39;49m[33mwarning: Is this supposed to happen?
-#X         :   [0;39;49m[31merr: Sir!
-#X         :   [0;39;49m[31merr: I think you better come here.
-#X         :   [0;39;49mdie: Sir!
-#X         :   [0;39;49mdie: This isn't supposed to happen.
-#X         :   [0;39;49m
+#X         :  [0;39;49mhello world!
+#X         :  [0;39;49m[0;39;49mit's so nice to be back!
+#X         :  [0;39;49msys: Sir, I have something to log.
+#X         :  [0;39;49m[32minfo: Sir. There's something you need to know.
+#X         :  [0;39;49m[33mwarning: Pardon me, Sir.
+#X         :  [0;39;49m[33mwarning: Is this supposed to happen?
+#X         :  [0;39;49m[31merr: Sir!
+#X         :  [0;39;49m[31merr: I think you better come here.
+#X         :  [0;39;49mdie: Sir!
+#X         :  [0;39;49mdie: This isn't supposed to happen.
+#X         :  [0;39;49m
 #X See Also: msg.verbose.set msg.color.set msg.prefix.set msg.tab.set
 # shellcheck disable=SC2034,2016
 declare -x \
@@ -384,11 +385,12 @@ declare -fx 'onoff'
 #X         : msg.verbose.set status is used in the msg.yn and some msg.* 
 #X         : commands, except msg.sys, msg.die and msg.crit, which will 
 #X         : always ignore verbose status and output to STDERR.
+#X         : 
 #X Synopsis: msg.verbose.set [on|1] | [off|0]
 #X         : curstatus=$(msg.verbose.set)      
 #X         : msg.verbose returns true if verbose is set, false if not.
-#X Example : 
-#X         : oldverbose=$(msg.verbose.set)
+#X         : 
+#X Example : oldverbose=$(msg.verbose.set)
 #X         : msg.verbose.set on
 #X         : # do stuff... #
 #X         : msg.verbose.set $oldverbose
@@ -883,7 +885,7 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 	#--check dependencies if not minimal
 	if ! check.dependencies \
 			basename dirname readlink mkdir ln cat \
-			systemd-cat stty wget base64 seq tty find touch tree lynx; then
+			systemd-cat wget base64 seq tty find touch tree lynx; then
 		echo >&2 'Warning: Dependencies not found. entities.bash may not run correctly.'	
 	fi 
 fi
@@ -895,13 +897,16 @@ fi
 
 _ent_scriptstatus+="[entities loaded $(date +'%F %T')]"
 
-#X FILE: entities.bash.startup.conf 
-#X Desc: If it exists, the file [/etc/entities/entities.bash.startup.conf]
-#X     : is executed immediately *after* entities.bash has been fully 
-#X     : loaded.
-#X     : This file should contain server-preferred defaults for the new 
-#X     : entities.bash instance.
-#X See : /etc/entities/entities.bash.startup.conf
+#X FILE    : entities.bash.startup.conf 
+#X Desc    : If it exists, the file [/etc/entities/entities.bash.startup.conf]
+#X         : is executed immediately *after* entities.bash has been fully 
+#X         : loaded.
+#X         : 
+#X         : This file should contain server-preferred global defaults for every 
+#X         : entities.bash instance on this machine.
+#X         : 
+#X         : Keep entries simple.
+#X See     : /etc/entities/entities.bash.startup.conf
 if [[ -f '/etc/entities/entities.bash.startup.conf' ]]; then
 	source '/etc/entities/entities.bash.startup.conf'
 fi

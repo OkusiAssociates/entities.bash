@@ -62,7 +62,8 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 		esac
 		shift
 	done
-((_ent_LOADED)) && return 0;
+(( ${_ent_LOADED:-0} )) && return 0;
+declare -ix _ent_LOADED=0
 _ent_scriptstatus+='[reloading]'
 set +o errexit +o nounset +o pipefail
 shopt -s extglob
@@ -497,7 +498,7 @@ if (( ! ${_ent_MINIMAL:-0} )); then
 	fi
 	if ! check.dependencies \
 			basename dirname readlink mkdir ln cat \
-			systemd-cat stty wget base64 seq tty find touch tree lynx; then
+			systemd-cat wget base64 seq tty find touch tree lynx; then
 		echo >&2 'Warning: Dependencies not found. entities.bash may not run correctly.'	
 	fi 
 fi
@@ -538,7 +539,7 @@ declare -gx '_ent_EDITOR'
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.502.3'
+_ent_VERSION='0.98.420.502.6'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift
