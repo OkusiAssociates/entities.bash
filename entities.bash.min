@@ -24,6 +24,7 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 							etx
 							exit 0;;
 					-V|--version)
+							source "${ENTITIES:-/lib/include/entities}/e.d/entities.version.bash"
 							echo "$_ent_VERSION"
 							exit ;;	
 					-*)	echo >&2 "$(basename "$0"): Bad option [$1]";		exit 22;;
@@ -539,7 +540,7 @@ declare -gx '_ent_EDITOR'
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.502.6'
+_ent_VERSION='0.98.420.504.3'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift

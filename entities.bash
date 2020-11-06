@@ -90,6 +90,7 @@ declare -x _ent_scriptstatus="[\$0=$0]"
 							etx
 							exit 0;;
 					-V|--version)
+							source "${ENTITIES:-/lib/include/entities}/e.d/entities.version.bash"
 							echo "$_ent_VERSION"
 							exit ;;	
 					# All other passed parameters return error.
