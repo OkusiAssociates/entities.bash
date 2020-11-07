@@ -11,6 +11,7 @@ declare -a _ent_ESSENTIAL_PACKAGES=(
 	shellcheck
 	tree
 	unzip
+	util-linux
 	wget
 	zip
 )
