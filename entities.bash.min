@@ -340,7 +340,7 @@ msg.line() {
 	if (( ! screencols )); then
 		local -- IFS=' ' sx
 		local -ai sz
-		mapfile -d' ' -t sz < <(stty size)
+		mapfile 2>/dev/null -d' ' -t sz < <(stty size) || sz=()
 		if (( ${#sz[@]} )); then
 			screencols=$(( sz[1] ))
 		else
@@ -540,7 +540,7 @@ declare -gx '_ent_EDITOR'
 entities.location() { echo -n "ENTITIES=\"$ENTITIES\";PATH=\"$PATH\""; }
 declare -fx entities.location
 declare -xg _ent_VERSION
-_ent_VERSION='0.98.420.505.1'
+_ent_VERSION='0.98.420.516.1'
 chgConfigVar() {
 	local Profile=${1:-} key
 	shift

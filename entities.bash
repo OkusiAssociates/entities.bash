@@ -632,7 +632,7 @@ msg.line() {
 	if (( ! screencols )); then
 		local -- IFS=' ' sx
 		local -ai sz
-		mapfile -d' ' -t sz < <(stty size)
+		mapfile 2>/dev/null -d' ' -t sz < <(stty size) || sz=()
 		if (( ${#sz[@]} )); then
 			screencols=$(( sz[1] ))
 		else
